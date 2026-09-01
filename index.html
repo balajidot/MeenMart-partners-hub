@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0d0e12">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>MeenMart | Co-Founder Operations Hub</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anek+Tamil:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ROOT CONTAINER -->
+  <div class="app-layout">
+    
+    <!-- TOP APP BAR -->
+    <header class="app-header">
+      <div class="brand-area">
+        <div class="brand-badge">
+          <span class="brand-emoji">🐟</span>
+        </div>
+        <div class="brand-meta">
+          <div class="brand-name">MeenMart <span class="hub-pill">OPERATIONS HUB</span></div>
+          <div class="brand-founders">
+            <span class="dot-balaji"></span>Balaji • <span class="dot-nagoor"></span>Nagoor • <span class="dot-jp"></span>JP
+          </div>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button class="btn-icon" onclick="openModal('dataModal')" title="Data Backup & Sync">
+          <span>⚙️</span>
+        </button>
+        <button class="btn-icon btn-wa-header" onclick="shareDaySummaryWhatsApp()" title="Share WhatsApp Summary">
+          <span>💬</span>
+        </button>
+        <button class="header-cta-btn" onclick="openModal('workModal')">
+          <span>⏱️</span> உழைப்புப் பதிவு
+        </button>
+      </div>
+    </header>
+
+    <!-- LIVE KPI METRICS TICKER -->
+    <section class="kpi-ticker-grid">
+      <div class="kpi-pill">
+        <span class="kpi-label">மொத்த முதலீடு</span>
+        <span class="kpi-val text-green" id="kpi-total-invested">₹0</span>
+      </div>
+      <div class="kpi-pill">
+        <span class="kpi-label">மொத்த செலவு</span>
+        <span class="kpi-val text-yellow" id="kpi-total-spent">₹0</span>
+      </div>
+      <div class="kpi-pill">
+        <span class="kpi-label">மீதி நிதி (Balance)</span>
+        <span class="kpi-val text-blue" id="kpi-cash-balance">₹0</span>
+      </div>
+      <div class="kpi-pill">
+        <span class="kpi-label">நிலுவை பணிகள்</span>
+        <span class="kpi-val text-red" id="kpi-pending-tasks">0</span>
+      </div>
+    </section>
+
+    <!-- 3 CO-FOUNDER PERFORMANCE CARDS -->
+    <section class="founders-summary-grid">
+      <!-- Balaji -->
+      <div class="founder-card p-balaji" onclick="filterByPartner('Balaji')">
+        <div class="founder-avatar-row">
+          <div class="founder-avatar">👨‍💻</div>
+          <div class="founder-info">
+            <h3 class="founder-name">Balaji</h3>
+            <span class="founder-role">Tech & Product</span>
+          </div>
+        </div>
+        <div class="founder-metrics-row">
+          <div class="metric-item">
+            <span class="m-val" id="f-balaji-hours">0h</span>
+            <span class="m-lbl">நேரம்</span>
+          </div>
+          <div class="metric-divider"></div>
+          <div class="metric-item">
+            <span class="m-val" id="f-balaji-tasks">0/0</span>
+            <span class="m-lbl">பணிகள்</span>
+          </div>
+          <div class="metric-divider"></div>
+          <div class="metric-item">
+            <span class="m-val" id="f-balaji-contrib">0%</span>
+            <span class="m-lbl">பங்கு</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nagoor -->
+      <div class="founder-card p-nagoor" onclick="filterByPartner('Nagoor')">
+        <div class="founder-avatar-row">
+          <div class="founder-avatar">🦐</div>
+          <div class="founder-info">
+            <h3 class="founder-name">Nagoor</h3>
+            <span class="founder-role">Procure & Pack</span>
+          </div>
+        </div>
+        <div class="founder-metrics-row">
+          <div class="metric-item">
+            <span class="m-val" id="f-nagoor-hours">0h</span>
+            <span class="m-lbl">நேரம்</span>
+          </div>
+          <div class="metric-divider"></div>
+          <div class="metric-item">
+            <span class="m-val" id="f-nagoor-tasks">0/0</span>
+            <span class="m-lbl">பணிகள்</span>
+          </div>
+          <div class="metric-divider"></div>
+          <div class="metric-item">
+            <span class="m-val" id="f-nagoor-contrib">0%</span>
+            <span class="m-lbl">பங்கு</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- JP -->
+      <div class="founder-card p-jp" onclick="filterByPartner('JP')">
+        <div class="founder-avatar-row">
+          <div class="founder-avatar">🛵</div>
+          <div class="founder-info">
+            <h3 class="founder-name">JP</h3>
+            <span class="founder-role">Delivery & Sales</span>
+          </div>
+        </div>
+        <div class="founder-metrics-row">
+          <div class="metric-item">
+            <span class="m-val" id="f-jp-hours">0h</span>
+            <span class="m-lbl">நேரம்</span>
+          </div>
+          <div class="metric-divider"></div>
+          <div class="metric-item">
+            <span class="m-val" id="f-jp-tasks">0/0</span>
+            <span class="m-lbl">பணிகள்</span>
+          </div>
+          <div class="metric-divider"></div>
+          <div class="metric-item">
+            <span class="m-val" id="f-jp-contrib">0%</span>
+            <span class="m-lbl">பங்கு</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALENDAR TIMELINE STRIP -->
+    <section class="calendar-card">
+      <div class="cal-top-bar">
+        <div class="cal-current-info">
+          <span class="cal-icon">📅</span>
+          <span class="cal-month-title" id="currentMonthName">செப்டம்பர் 2026</span>
+          <button class="cal-today-btn" onclick="jumpToToday()">இன்று</button>
+        </div>
+        
+        <div class="cal-controls">
+          <div class="active-filter-tag" id="calFilterBadge" onclick="clearDateFilter()" style="display:none;">
+            <span id="calFilterText">2026-09-01</span> ✕
+          </div>
+          <button class="cal-arrow-btn" onclick="prevWeek()" title="முந்தைய வாரம்">‹</button>
+          <button class="cal-arrow-btn" onclick="nextWeek()" title="அடுத்த வாரம்">›</button>
+        </div>
+      </div>
+
+      <!-- 7-Day Interactive Strip -->
+      <div class="weekly-strip-container" id="weeklyDaysStrip">
+        <!-- Rendered by app.js -->
+      </div>
+    </section>
+
+    <!-- FLOATING/STICKY QUICK ACTIONS BAR -->
+    <div class="quick-action-strip">
+      <button class="btn-main-action primary" onclick="openModal('taskModal')">
+        <span class="btn-icon-wrap">➕</span>
+        <div class="btn-text-group">
+          <strong>புதிய பணி ஒதுக்கீடு</strong>
+          <small>Assign Task with Proof</small>
+        </div>
+      </button>
+      <button class="btn-main-action secondary" onclick="openModal('expenseModal')">
+        <span class="btn-icon-wrap">💰</span>
+        <div class="btn-text-group">
+          <strong>செலவு பதிவு</strong>
+          <small>Auto Capital Credit</small>
+        </div>
+      </button>
+    </div>
+
+    <!-- MAIN SEGMENTED NAVIGATION TABS -->
+    <nav class="nav-tabs-wrapper">
+      <button class="tab-item active" data-tab="tasksTab" onclick="switchTab('tasksTab')">
+        <span class="tab-emoji">📋</span>
+        <span class="tab-text">பணிகள்</span>
+        <span class="tab-badge" id="taskCountBadge">0</span>
+      </button>
+      <button class="tab-item" data-tab="workTab" onclick="switchTab('workTab')">
+        <span class="tab-emoji">⏱️</span>
+        <span class="tab-text">உழைப்பு</span>
+      </button>
+      <button class="tab-item" data-tab="analyticsTab" onclick="switchTab('analyticsTab')">
+        <span class="tab-emoji">📊</span>
+        <span class="tab-text">அனலிட்டிக்ஸ்</span>
+      </button>
+      <button class="tab-item" data-tab="financeTab" onclick="switchTab('financeTab')">
+        <span class="tab-emoji">💳</span>
+        <span class="tab-text">நிதி & கணக்கு</span>
+      </button>
+    </nav>
+
+    <!-- ================= TAB 1: TASKS LIST ================= -->
+    <main id="tasksTab" class="tab-content active">
+      <!-- Filter Bar -->
+      <div class="filter-toolbar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="taskSearchInput" placeholder="பணிகளைத் தேடுக..." oninput="renderTasks()">
+        </div>
+        <select id="taskStatusFilter" class="filter-select" onchange="renderTasks()">
+          <option value="all">அனைத்து பணிகள்</option>
+          <option value="pending">நிலுவையில் உள்ளவை (Pending)</option>
+          <option value="completed">முடிந்தவை (Completed)</option>
+        </select>
+        <select id="taskPartnerFilter" class="filter-select" onchange="renderTasks()">
+          <option value="all">அனைத்து பார்ட்னர்ஸ்</option>
+          <option value="Balaji">Balaji</option>
+          <option value="Nagoor">Nagoor</option>
+          <option value="JP">JP</option>
+        </select>
+      </div>
+
+      <div class="tasks-feed" id="tasksContainer">
+        <!-- Rendered by app.js -->
+      </div>
+    </main>
+
+    <!-- ================= TAB 2: WORK LOGS ================= -->
+    <main id="workTab" class="tab-content">
+      <div class="filter-toolbar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="workSearchInput" placeholder="உழைப்புப் பதிவுகளைத் தேடுக..." oninput="renderWorklogs()">
+        </div>
+        <select id="workPartnerFilter" class="filter-select" onchange="renderWorklogs()">
+          <option value="all">அனைத்து பார்ட்னர்ஸ்</option>
+          <option value="Balaji">Balaji</option>
+          <option value="Nagoor">Nagoor</option>
+          <option value="JP">JP</option>
+        </select>
+      </div>
+
+      <div class="worklogs-feed" id="worklogsContainer">
+        <!-- Rendered by app.js -->
+      </div>
+    </main>
+
+    <!-- ================= TAB 3: 3D PERFORMANCE ANALYTICS ================= -->
+    <main id="analyticsTab" class="tab-content">
+      <!-- Quick Insights Box -->
+      <div class="ai-insight-box">
+        <div class="insight-header">
+          <span class="sparkle-icon">✨</span>
+          <strong>MeenMart Business Intelligence & Work Summary</strong>
+        </div>
+        <div class="insight-body" id="analyticsInsightText">
+          அனைத்து பார்ட்னர்களின் உழைப்பு, செலவுகள் மற்றும் பணிகள் சுருக்கம் இங்கே காண்பிக்கப்படும்.
+        </div>
+      </div>
+
+      <!-- Chart 1: Co-Founder Work Hours -->
+      <div class="analytics-card">
+        <div class="analytics-card-head">
+          <div class="head-left">
+            <span class="card-icon">⏱️</span>
+            <div>
+              <h3>உழைத்த மணிநேரம் (Effort Hours)</h3>
+              <p>ஒவ்வொரு பார்ட்னரின் மொத்த உழைப்பு நேரம்</p>
+            </div>
+          </div>
+          <span class="badge-accent">Balaji • Nagoor • JP</span>
+        </div>
+        <div class="chart-canvas-box">
+          <canvas id="workHoursChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 2: Task Status & Efficiency -->
+      <div class="analytics-card">
+        <div class="analytics-card-head">
+          <div class="head-left">
+            <span class="card-icon">✅</span>
+            <div>
+              <h3>பணிகளின் முன்னேற்றம் (Task Health)</h3>
+              <p>முடிந்த பணிகள் vs நிலுவை விகிதம்</p>
+            </div>
+          </div>
+          <span class="badge-accent">Completion Rate</span>
+        </div>
+        <div class="chart-canvas-box">
+          <canvas id="taskStatusChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 3: Capital & Expense Share -->
+      <div class="analytics-card">
+        <div class="analytics-card-head">
+          <div class="head-left">
+            <span class="card-icon">🥧</span>
+            <div>
+              <h3>பங்களிப்பு விகிதம் (Financial Split %)</h3>
+              <p>மூலதனம் + செலவுகள் சேர்த்த மொத்த விகிதம்</p>
+            </div>
+          </div>
+          <span class="badge-accent">Capital & Spends</span>
+        </div>
+        <div class="chart-canvas-box">
+          <canvas id="capitalShareChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 4: Expense Categories Breakdown -->
+      <div class="analytics-card">
+        <div class="analytics-card-head">
+          <div class="head-left">
+            <span class="card-icon">🏷️</span>
+            <div>
+              <h3>செலவு வகைகள் (Expense Categories)</h3>
+              <p>மீன் கொள்முதல், பேக்கிங், பெட்ரோல் & பிற செலவுகள்</p>
+            </div>
+          </div>
+          <span class="badge-accent">Categories</span>
+        </div>
+        <div class="chart-canvas-box">
+          <canvas id="expenseCategoryChart"></canvas>
+        </div>
+      </div>
+    </main>
+
+    <!-- ================= TAB 4: FINANCE & CAPITAL LEDGER ================= -->
+    <main id="financeTab" class="tab-content">
+      <!-- Capital Overview Card -->
+      <div class="finance-overview-card">
+        <div class="fin-card-header">
+          <div>
+            <h3>🏦 மொத்த வணிகப் பங்களிப்பு (Total Contribution)</h3>
+            <p>மூலதன முதலீடு + சொந்த செலவு முதலீட்டு வரவு</p>
+          </div>
+          <button class="btn-sub-action" onclick="openModal('capitalModal')">
+            <span>➕</span> மூலதனம் சேர்
+          </button>
+        </div>
+
+        <div class="capital-rows-container" id="capitalBreakdownContainer">
+          <!-- Rendered by app.js -->
+        </div>
+      </div>
+
+      <!-- 3-Way Fair Debt Settlement Engine -->
+      <div class="settlement-card">
+        <div class="settle-card-header">
+          <div class="settle-title-group">
+            <span class="settle-icon">⚖️</span>
+            <div>
+              <h3>கொடுக்கல் வாங்கல் தீர்வு (Fair Settlement)</h3>
+              <p>செலவுகளை சமமாக (33.3%) பகிர்வதற்கான எளிய பரிவர்த்தனைகள்</p>
+            </div>
+          </div>
+          <button class="btn-wa-icon" onclick="shareSettlementWhatsApp()" title="Share Settlement via WhatsApp">
+            <span>💬 Share</span>
+          </button>
+        </div>
+        <div class="settle-list" id="settleListContainer">
+          <!-- Rendered by app.js -->
+        </div>
+      </div>
+
+      <!-- Unified Transactions Feed -->
+      <div class="ledger-header-row">
+        <div>
+          <h4>📜 பரிவர்த்தனை வரலாறு (Ledger)</h4>
+          <span class="ledger-count" id="txCountBadge">0 பதிவுகள்</span>
+        </div>
+        <div class="ledger-actions">
+          <button class="btn-export-csv" onclick="exportLedgerCSV()">
+            <span>📥</span> CSV பதிவிறக்கு
+          </button>
+        </div>
+      </div>
+
+      <div class="transactions-feed" id="transactionFeedContainer">
+        <!-- Rendered by app.js -->
+      </div>
+    </main>
+
+  </div> <!-- END .app-layout -->
+
+  <!-- ================= POPUP MODALS ================= -->
+
+  <!-- 1. ADD TASK MODAL -->
+  <div id="taskModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">📋</span>
+          <div>
+            <h3>புதிய பணி ஒதுக்கீடு</h3>
+            <small>Task Delegation & Proof Attachment</small>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal()">✕</button>
+      </div>
+
+      <form id="taskForm" class="modal-form">
+        <div class="form-field">
+          <label>செய்ய வேண்டிய வேலை (Task Description): *</label>
+          <input type="text" id="taskTitle" class="form-input" placeholder="எ.கா: காலை மீன் மார்க்கெட் கொள்முதல் & பேக்கிங்" required>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>அசைன் செய்தவர் (From): *</label>
+            <select id="taskFromPartner" class="form-input" required>
+              <option value="Balaji">Balaji (Tech)</option>
+              <option value="Nagoor">Nagoor (Procure)</option>
+              <option value="JP">JP (Delivery)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>யாருக்கு ஒதுக்கப்பட்டது (To): *</label>
+            <select id="taskToPartner" class="form-input" required>
+              <option value="Nagoor">Nagoor (கொள்முதல் & பேக்கிங்)</option>
+              <option value="JP">JP (டெலிவரி & மார்க்கெட்டிங்)</option>
+              <option value="Balaji">Balaji (தொழில்நுட்பம் & ஆப்)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>முன்னுரிமை (Priority):</label>
+            <select id="taskPriority" class="form-input">
+              <option value="urgent">🔴 அவசரம் (Urgent)</option>
+              <option value="high">🟠 முக்கியம் (High)</option>
+              <option value="normal" selected>🟢 சாதாரண (Normal)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>முடிவு நேரம் (Due Time): *</label>
+            <input type="datetime-local" id="taskDateTime" class="form-input" required>
+          </div>
+        </div>
+
+        <!-- Task Proof Attachment with Auto-Compression -->
+        <div class="form-field">
+          <label>📸 பணிப் புகைப்பட சான்று (Proof Photo):</label>
+          <div class="file-upload-box" onclick="document.getElementById('taskProofInput').click()">
+            <span class="upload-icon">📷</span>
+            <span class="upload-text" id="taskProofLabel">புகைப்படம் இணைக்க தட்டவும்</span>
+            <small class="upload-hint">10MB போட்டோவும் 80KB ஆக சுருங்கி 48 மணிநேரத்தில் தானாக அழியும்</small>
+            <input type="file" id="taskProofInput" accept="image/*" class="file-hidden" onchange="handleFileSelect(this, 'taskProofLabel')">
+          </div>
+        </div>
+
+        <div class="modal-actions-row">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal()">ரத்து</button>
+          <button type="submit" class="btn-modal-submit">💾 அசைன் செய்</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. ADD EXPENSE MODAL -->
+  <div id="expenseModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">💰</span>
+          <div>
+            <h3>வணிகச் செலவு பதிவு</h3>
+            <small>Expense Entry (Credited to Capital Share)</small>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal()">✕</button>
+      </div>
+
+      <form id="expenseForm" class="modal-form">
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>செலவு செய்தவர் (Paid By): *</label>
+            <select id="expPartner" class="form-input" required>
+              <option value="Balaji">Balaji</option>
+              <option value="Nagoor">Nagoor</option>
+              <option value="JP">JP</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>செலவுத் தொகை (Amount ₹): *</label>
+            <input type="number" id="expAmount" class="form-input font-mono" placeholder="₹ 3,500" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>செலவு வகை (Category): *</label>
+            <select id="expCategory" class="form-input" required>
+              <option value="மீன் கொள்முதல்">🐟 மீன் கொள்முதல் (Fish Stock)</option>
+              <option value="ஐஸ் & பாக்ஸ்">🧊 ஐஸ் & பாக்ஸ் (Ice & Packing)</option>
+              <option value="டெலிவரி & பெட்ரோல்">🛵 டெலிவரி & பெட்ரோல் (Fuel & Delivery)</option>
+              <option value="பேக்கிங் கவர்கள்">📦 பேக்கிங் கவர்கள் (Pouches & Bags)</option>
+              <option value="மார்க்கெட்டிங்">📢 மார்க்கெட்டிங் & விளம்பரம் (Ads)</option>
+              <option value="ஆப் & சர்வர்">💻 ஆப் & சர்வர் செலவு (Tech/Hosting)</option>
+              <option value="இதர செலவுகள்">🏷️ இதர செலவுகள் (Miscellaneous)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>தேதி (Date): *</label>
+            <input type="date" id="expDate" class="form-input" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>செலவு விளக்கம் (Reason / Item Notes): *</label>
+          <input type="text" id="expReason" class="form-input" placeholder="எ.கா: காசிமேடு மீன் கொள்முதல் வஞ்சிரம் & இறால்" required>
+        </div>
+
+        <!-- Receipt Proof Photo -->
+        <div class="form-field">
+          <label>🧾 பில் / ரசீது புகைப்படம் (Receipt Proof):</label>
+          <div class="file-upload-box" onclick="document.getElementById('expProofInput').click()">
+            <span class="upload-icon">🧾</span>
+            <span class="upload-text" id="expProofLabel">ரசீது இணைக்க தட்டவும்</span>
+            <small class="upload-hint">புகைப்படம் 48 மணிநேரத்தில் தானாக காலாவதியாகும்</small>
+            <input type="file" id="expProofInput" accept="image/*" class="file-hidden" onchange="handleFileSelect(this, 'expProofLabel')">
+          </div>
+        </div>
+
+        <div class="auto-credit-alert">
+          <span>ℹ️</span>
+          <span><strong>முதலீட்டு வரவு:</strong> நீங்கள் செய்யும் செலவு தானாகவே உங்கள் மொத்த மூலதனப் பங்களிப்பில் சேர்க்கப்பட்டு, சம பங்குத் தீர்வு கணக்கிடப்படும்.</span>
+        </div>
+
+        <div class="modal-actions-row">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal()">ரத்து</button>
+          <button type="submit" class="btn-modal-submit">💾 செலவு பதிவு செய்</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. ADD CAPITAL MODAL -->
+  <div id="capitalModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">🏦</span>
+          <div>
+            <h3>மூலதன முதலீடு பதிவு</h3>
+            <small>Direct Capital Investment Deposit</small>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal()">✕</button>
+      </div>
+
+      <form id="capitalForm" class="modal-form">
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>முதலீடு செய்த பார்ட்னர்: *</label>
+            <select id="capPartner" class="form-input" required>
+              <option value="Balaji">Balaji</option>
+              <option value="Nagoor">Nagoor</option>
+              <option value="JP">JP</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>முதலீட்டுத் தொகை (₹): *</label>
+            <input type="number" id="capAmount" class="form-input font-mono" placeholder="₹ 50,000" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>முதலீட்டு நோக்கம் / வங்கி பரிவர்த்தனை குறிப்பு:</label>
+          <input type="text" id="capNote" class="form-input" placeholder="எ.கா: MeenMart வங்கி கணக்கு தொடக்க முதலீடு">
+        </div>
+
+        <div class="form-field">
+          <label>தேதி (Date): *</label>
+          <input type="date" id="capDate" class="form-input" required>
+        </div>
+
+        <div class="modal-actions-row">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal()">ரத்து</button>
+          <button type="submit" class="btn-modal-submit">💾 மூலதனம் சேமி</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. ADD WORK LOG MODAL -->
+  <div id="workModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">⏱️</span>
+          <div>
+            <h3>தினசரி உழைப்புப் பதிவு</h3>
+            <small>Log Co-Founder Effort Hours & Actions</small>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal()">✕</button>
+      </div>
+
+      <form id="workForm" class="modal-form">
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>பார்ட்னர் (Co-Founder): *</label>
+            <select id="workPartner" class="form-input" required>
+              <option value="Balaji">Balaji (தொழில்நுட்பம் & ஆப்)</option>
+              <option value="Nagoor">Nagoor (கொள்முதல் & பேக்கிங்)</option>
+              <option value="JP">JP (டெலிவரி & மார்க்கெட்டிங்)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>உழைத்த மணிநேரம்: *</label>
+            <div class="hours-input-group">
+              <input type="number" id="workHours" class="form-input font-mono" min="0.5" step="0.5" value="4" required>
+              <div class="hour-presets">
+                <button type="button" onclick="setWorkHours(2)">2h</button>
+                <button type="button" onclick="setWorkHours(4)">4h</button>
+                <button type="button" onclick="setWorkHours(6)">6h</button>
+                <button type="button" onclick="setWorkHours(8)">8h</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>வேலை வகை (Work Type): *</label>
+            <select id="workCategory" class="form-input" required>
+              <option value="மீன் கொள்முதல்">🐟 மீன் கொள்முதல் (Procurement)</option>
+              <option value="பேக்கிங் & கிளீனிங்">📦 பேக்கிங் & கிளீனிங் (Packaging)</option>
+              <option value="டெலிவரி மேலாண்மை">🛵 டெலிவரி மேலாண்மை (Delivery)</option>
+              <option value="ஆப் & டெவலப்மென்ட்">💻 ஆப் & டெவலப்மென்ட் (Tech/App)</option>
+              <option value="மார்க்கெட்டிங் & கஸ்டமர் கேர்">📢 மார்க்கெட்டிங் & வாடிக்கையாளர் (Sales)</option>
+              <option value="வணிகத் திட்டம் & கணக்கு">📋 வணிகத் திட்டம் & கணக்கு (Operations)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>தேதி (Date): *</label>
+            <input type="date" id="workDate" class="form-input" required>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>செய்த முக்கிய வேலைகள் விவரம்: *</label>
+          <textarea id="workDesc" class="form-input" rows="3" placeholder="எ.கா: காலை 5 மணிக்கு மார்க்கெட் சென்று பிரெஷ் வஞ்சிரம், சங்கரா கொள்முதல் செய்து 12 ஆர்டர்கள் பேக்கிங் செய்தேன்..." required></textarea>
+        </div>
+
+        <!-- Work Photo Proof -->
+        <div class="form-field">
+          <label>📸 உழைப்பு சான்று புகைப்படம் (Work Proof):</label>
+          <div class="file-upload-box" onclick="document.getElementById('workProofInput').click()">
+            <span class="upload-icon">📷</span>
+            <span class="upload-text" id="workProofLabel">புகைப்படம் இணைக்க தட்டவும்</span>
+            <small class="upload-hint">48 மணிநேரத்திற்குப் பிறகு தானாக அழியும்</small>
+            <input type="file" id="workProofInput" accept="image/*" class="file-hidden" onchange="handleFileSelect(this, 'workProofLabel')">
+          </div>
+        </div>
+
+        <div class="modal-actions-row">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal()">ரத்து</button>
+          <button type="submit" class="btn-modal-submit">💾 சேமிக்க</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. LIGHTBOX PHOTO PROOF VIEWER -->
+  <div id="proofLightboxModal" class="lightbox-overlay" onclick="closeProofModal()">
+    <div class="lightbox-card" onclick="event.stopPropagation()">
+      <div class="lightbox-top">
+        <div class="lightbox-title-wrap">
+          <span class="lightbox-badge" id="proofModalTag">சான்று</span>
+          <span class="lightbox-partner" id="proofModalPartner">பதிவு: Balaji</span>
+        </div>
+        <button class="lightbox-close-btn" onclick="closeProofModal()">✕</button>
+      </div>
+      <div class="lightbox-viewport">
+        <img id="proofModalImg" src="" alt="Proof Preview">
+      </div>
+      <div class="lightbox-bottom">
+        <span class="lightbox-expiry" id="proofModalExpiry">⏳ 2 நாட்களில் அழியும்</span>
+        <button class="lightbox-download-btn" onclick="downloadCurrentProof()">📥 சேமி</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. DATA BACKUP & RESTORE MODAL -->
+  <div id="dataModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">⚙️</span>
+          <div>
+            <h3>தரவு மேலாண்மை & காப்புப்பிரதி</h3>
+            <small>Data Sync, Backup & Reset</small>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal()">✕</button>
+      </div>
+
+      <div class="data-mgmt-body">
+        <div class="data-section">
+          <h4>📥 காப்புப்பிரதி பதிவிறக்கம் (Export JSON)</h4>
+          <p>உங்கள் பணிகள், செலவுகள், உழைப்புப் பதிவுகள் அனைத்தையும் JSON கோப்பாக சேமிக்கவும்.</p>
+          <button class="btn-data-action" onclick="exportDataJSON()">💾 பேக்கப் பதிவிறக்கு (Download Backup)</button>
+        </div>
+
+        <div class="data-section">
+          <h4>📤 காப்புப்பிரதி ஏற்றுமதி (Import JSON)</h4>
+          <p>ஏற்கனவே சேமித்த பேக்கப் கோப்பை ஏற்றி தரவுகளை மீட்டெடுக்கவும்.</p>
+          <input type="file" id="importJsonInput" accept=".json" class="file-hidden" onchange="importDataJSON(event)">
+          <button class="btn-data-action secondary" onclick="document.getElementById('importJsonInput').click()">📁 பேக்கப் கோப்பைத் தேர்ந்தெடு</button>
+        </div>
+
+        <div class="data-section danger-zone">
+          <h4>⚠️ மாதிரி தரவு / தரவு அழிப்பு</h4>
+          <div class="danger-btns-row">
+            <button class="btn-data-danger secondary" onclick="loadSampleDemoData()">🔄 மாதிரி தரவு ஏற்று (Demo Data)</button>
+            <button class="btn-data-danger" onclick="wipeAllData()">🗑️ முழு தரவை அழி (Wipe All)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="app-toast"></div>
+
+  <!-- JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
