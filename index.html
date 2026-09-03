@@ -15,7 +15,16 @@
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
+
+  <!-- Tailwind CSS (utility classes) - loaded before styles.css so our
+       custom rules win the cascade on any overlapping property -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: { preflight: false } // keep existing custom CSS/base styles intact
+    };
+  </script>
+
   <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css">
 </head>
