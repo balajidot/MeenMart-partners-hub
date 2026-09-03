@@ -16,6 +16,7 @@ const DEFAULT_STATE = {
 };
 
 let store = {};
+let fbRef = null;
 
 // Calendar & Filter State
 let currentWeekOffset = 0;
@@ -57,10 +58,52 @@ function loadData() {
     seedInitialDemoData();
     saveData();
   }
+  initFirebaseSync();
 }
 
 function saveData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  if (fbRef) {
+    fbRef.set(store).catch((err) => {
+      console.error('Firebase save failed:', err);
+      showToast('⚠️ Cloud sync பிழை - இணையம் இல்லை, local-ல் மட்டும் சேமிக்கப்பட்டது');
+    });
+  }
+}
+
+// Realtime cross-device sync: mirrors `store` to Firebase Realtime Database
+// and re-renders whenever any device (Balaji/Nagoor/JP) writes new data.
+function initFirebaseSync() {
+  if (typeof firebase === 'undefined') {
+    console.warn('Firebase SDK ஏற்றப்படவில்லை (network/CDN பிரச்சனை) — Local-only (offline) mode.');
+    return;
+  }
+  if (typeof firebaseConfig === 'undefined' || !firebaseConfig.databaseURL || firebaseConfig.databaseURL.includes('PASTE_YOUR')) {
+    console.warn('firebase-config.js-ல் project config இன்னும் நிரப்பப்படவில்லை — Local-only (offline) mode.');
+    return;
+  }
+  try {
+    firebase.initializeApp(firebaseConfig);
+    fbRef = firebase.database().ref('meenmart/' + STORAGE_KEY);
+    fbRef.on('value', (snapshot) => {
+      const remote = snapshot.val();
+      if (remote) {
+        store = remote;
+        if (!store.tasks) store.tasks = [];
+        if (!store.expenses) store.expenses = [];
+        if (!store.capitals) store.capitals = [];
+        if (!store.worklogs) store.worklogs = [];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+        pruneExpiredProofs();
+        renderAll();
+      }
+    }, (err) => {
+      console.error('Firebase sync error:', err);
+      showToast('⚠️ Sync பிழை - இணைய இணைப்பை சரிபார்க்கவும்');
+    });
+  } catch (e) {
+    console.error('Firebase init failed:', e);
+  }
 }
 
 // 48-Hour In-Browser Auto-Expiry Proof Engine
