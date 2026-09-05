@@ -321,7 +321,155 @@ select:focus:not(:focus-visible) { outline: none; }
 /* ═══════════════════════════════════════════════════════════
    HERO & FINTECH CARD
    ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   TASK PERFORMANCE HERO
+   ═══════════════════════════════════════════════════════════ */
 .hero { padding: 14px 16px 0; }
+
+.task-performance-hero-wrap {
+  margin-bottom: 8px;
+}
+.task-hero-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  box-shadow: var(--sh-1);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.task-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2563eb, #38bdf8, #10b981);
+}
+.task-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.task-hero-label-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.task-hero-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.task-hero-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  display: block;
+  line-height: 1.2;
+}
+.task-hero-sublabel {
+  font-size: 10.5px;
+  color: var(--ink-3);
+  font-weight: 500;
+  display: block;
+}
+.task-hero-rate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--balaji);
+  background: var(--balaji-subtle);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-variant-numeric: tabular-nums;
+}
+.task-hero-rate-badge.perfect {
+  color: var(--ok);
+  background: var(--nagoor-soft);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+.task-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-sunken);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.task-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #10b981);
+  border-radius: 99px;
+  transition: width 0.4s var(--ease);
+}
+.task-hero-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.task-stat-tile {
+  background: var(--bg-sunken);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--r-sm);
+  padding: 8px 4px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.task-stat-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.task-stat-num.orange { color: var(--warn); }
+.task-stat-num.green { color: var(--ok); }
+.task-stat-num.blue { color: var(--balaji); }
+.task-stat-lbl {
+  font-size: 9px;
+  font-weight: 550;
+  color: var(--ink-3);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.founder-card-progress {
+  width: 100%;
+  height: 3.5px;
+  background: var(--bg-sunken);
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 5px 0 4px;
+}
+.founder-card-bar {
+  height: 100%;
+  background: var(--balaji);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+.founder-card.nagoor .founder-card-bar { background: var(--nagoor); }
+.founder-card.jp .founder-card-bar { background: var(--jp); }
+
+.founder-status-badge {
+  font-size: 9px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.status-pending-tag {
+  color: var(--warn);
+}
+.status-done-tag {
+  color: var(--ok);
+}
 
 .fintech-hero-card {
   background: var(--bg-card);

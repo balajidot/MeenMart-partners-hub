@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import KpiTicker from './KpiTicker';
 import {
   calcSettlement,
   fmtCurrency,
@@ -65,6 +66,9 @@ export default function FinanceTab({ store, onOpenCapital }) {
 
   return (
     <div className="tab-content">
+      {/* Financial Overview Cards */}
+      <KpiTicker store={store} />
+
       <div className="finance-overview">
         <div className="fin-header">
           <div>

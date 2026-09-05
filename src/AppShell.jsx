@@ -3,8 +3,7 @@ import { useStore } from './store/useStore';
 import { shareDaySummaryWhatsApp } from './utils/calculations';
 
 import Header from './components/Header';
-import KpiTicker from './components/KpiTicker';
-import FoundersSummary from './components/FoundersSummary';
+import TaskPerformanceHero from './components/TaskPerformanceHero';
 import CalendarStrip from './components/CalendarStrip';
 import QuickActions from './components/QuickActions';
 import NavigationTabs from './components/NavigationTabs';
@@ -94,22 +93,25 @@ export default function AppShell({ user, partner, onSignOut }) {
         onShareWA={() => shareDaySummaryWhatsApp(store)}
       />
 
-      <div className="hero">
-        <KpiTicker store={store} />
-        <FoundersSummary
-          store={store}
-          partnerFilter={partnerFilter}
-          setPartnerFilter={setPartnerFilter}
-        />
-      </div>
+      {(activeTab === 'tasks' || activeTab === 'work') && (
+        <>
+          <div className="hero">
+            <TaskPerformanceHero
+              store={store}
+              partnerFilter={partnerFilter}
+              setPartnerFilter={setPartnerFilter}
+            />
+          </div>
 
-      <CalendarStrip
-        store={store}
-        weekOffset={weekOffset}
-        setWeekOffset={setWeekOffset}
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
-      />
+          <CalendarStrip
+            store={store}
+            weekOffset={weekOffset}
+            setWeekOffset={setWeekOffset}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+          />
+        </>
+      )}
 
       <Suspense fallback={<TabLoadingFallback />}>
         {activeTab === 'tasks' && (
