@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { compressImage } from '../../utils/calculations';
+import { PARTNER_NAMES } from '../../config/partners';
 
 const WORK_CATEGORIES = [
   '🐟 மீன் கொள்முதல் (Procurement)',
@@ -10,11 +11,10 @@ const WORK_CATEGORIES = [
   '📋 வணிகத் திட்டம் & கணக்கு (Operations)',
 ];
 
-const PARTNERS = ['Balaji', 'Nagoor', 'JP'];
 const PRESETS = [2, 4, 6, 8];
 
-export default function WorkModal({ isOpen, onClose, onAddWorklog }) {
-  const [partner, setPartner] = useState('Balaji');
+export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartner }) {
+  const partner = currentPartner?.name || PARTNER_NAMES[0];
   const [hours, setHours] = useState(4);
   const [category, setCategory] = useState(WORK_CATEGORIES[0]);
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -93,19 +93,11 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog }) {
 
         <form className="modal-body" onSubmit={handleSubmit} noValidate>
           <div className="form-field">
-            <label>பங்குதாரர் *</label>
-            <div className="pill-group">
-              {PARTNERS.map((p) => (
-                <button
-                  type="button"
-                  key={p}
-                  className={`pill ${partner === p ? `active ${p.toLowerCase()}` : ''}`}
-                  onClick={() => setPartner(p)}
-                >
-                  {p}
-                </button>
-              ))}
+            <label>பங்குதாரர்</label>
+            <div className="locked-partner">
+              {currentPartner?.avatar || '👤'} {partner}
             </div>
+            <div className="locked-partner-hint">உங்கள் கணக்கிலிருந்து auto-set</div>
           </div>
 
           <div className="form-field">

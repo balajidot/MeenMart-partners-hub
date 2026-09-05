@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { PARTNER_NAMES } from '../../config/partners';
 
-const PARTNERS = ['Balaji', 'Nagoor', 'JP'];
-
-export default function CapitalModal({ isOpen, onClose, onAddCapital }) {
-  const [partner, setPartner] = useState('Balaji');
+export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPartner }) {
+  const partner = currentPartner?.name || PARTNER_NAMES[0];
   const [amount, setAmount] = useState('');
   const [amountTouched, setAmountTouched] = useState(false);
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -56,19 +55,11 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital }) {
 
         <form className="modal-body" onSubmit={handleSubmit} noValidate>
           <div className="form-field">
-            <label>முதலீடு செய்தவர் *</label>
-            <div className="pill-group">
-              {PARTNERS.map((p) => (
-                <button
-                  type="button"
-                  key={p}
-                  className={`pill ${partner === p ? `active ${p.toLowerCase()}` : ''}`}
-                  onClick={() => setPartner(p)}
-                >
-                  {p}
-                </button>
-              ))}
+            <label>முதலீடு செய்தவர்</label>
+            <div className="locked-partner">
+              {currentPartner?.avatar || '👤'} {partner}
             </div>
+            <div className="locked-partner-hint">உங்கள் கணக்கிலிருந்து auto-set</div>
           </div>
 
           <div className="form-row">

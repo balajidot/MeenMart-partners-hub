@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { compressImage } from '../../utils/calculations';
+import { PARTNER_NAMES } from '../../config/partners';
 
-const PARTNERS = ['Balaji', 'Nagoor', 'JP'];
 const PRIORITIES = [
   { id: 'normal', label: 'பொதுவானது' },
   { id: 'high',   label: 'முக்கியம்' },
   { id: 'urgent', label: 'அவசரம்' },
 ];
 
-export default function TaskModal({ isOpen, onClose, onAddTask }) {
+export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }) {
+  const from = currentPartner?.name || PARTNER_NAMES[0];
+  const otherPartners = PARTNER_NAMES.filter((p) => p !== from);
+
   const [title, setTitle] = useState('');
   const [titleTouched, setTitleTouched] = useState(false);
-  const [from, setFrom] = useState('Balaji');
-  const [to, setTo] = useState('Nagoor');
+  const [to, setTo] = useState(otherPartners[0] || PARTNER_NAMES[1]);
   const [priority, setPriority] = useState('normal');
   const [dueDateTime, setDueDateTime] = useState('');
   const [proof, setProof] = useState(null);
@@ -29,14 +31,14 @@ export default function TaskModal({ isOpen, onClose, onAddTask }) {
       setProof(null);
       setProofLabel('புகைப்படம் இணைக்க தட்டவும்');
       setLoading(false);
+      setTo(otherPartners[0] || PARTNER_NAMES[1]);
     }
-  }, [isOpen]);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!isOpen) return null;
 
   const titleError = titleTouched && !title.trim() ? 'பணியின் விவரம் தேவை' : '';
-  const sameFromTo = from === to;
-  const canSubmit = title.trim() && !sameFromTo && !proofBusy && !loading;
+  const canSubmit = title.trim() && !proofBusy && !loading;
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -103,32 +105,27 @@ export default function TaskModal({ isOpen, onClose, onAddTask }) {
             {titleError && <div className="form-error">⚠ {titleError}</div>}
           </div>
 
-          <div className="form-row">
-            <div className="form-field">
-              <label htmlFor="task-from">ஒதுக்குபவர் *</label>
-              <select
-                id="task-from"
-                className="form-input"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-              >
-                {PARTNERS.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
+          <div className="form-field">
+            <label>ஒதுக்குபவர் (From)</label>
+            <div className="locked-partner">
+              {currentPartner?.avatar || '👤'} {from}
             </div>
+            <div className="locked-partner-hint">உங்கள் கணக்கிலிருந்து auto-set</div>
+          </div>
 
-            <div className="form-field">
-              <label htmlFor="task-to">யாருக்கு *</label>
-              <select
-                id="task-to"
-                className={`form-input ${sameFromTo ? 'error' : ''}`}
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-              >
-                {PARTNERS.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-              {sameFromTo && (
-                <div className="form-error">⚠ சொந்தமாக ஒதுக்க முடியாது</div>
-              )}
+          <div className="form-field">
+            <label>யாருக்கு (To) *</label>
+            <div className="pill-group">
+              {otherPartners.map((p) => (
+                <button
+                  type="button"
+                  key={p}
+                  className={`pill ${to === p ? `active ${p.toLowerCase()}` : ''}`}
+                  onClick={() => setTo(p)}
+                >
+                  {p}
+                </button>
+              ))}
             </div>
           </div>
 

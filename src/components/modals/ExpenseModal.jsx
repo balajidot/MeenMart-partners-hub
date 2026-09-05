@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { compressImage } from '../../utils/calculations';
+import { PARTNER_NAMES } from '../../config/partners';
 
 const CATEGORIES = [
   '🐟 மீன் கொள்முதல் (Procurement)',
@@ -10,10 +11,8 @@ const CATEGORIES = [
   '📋 இதர செயல்பாட்டுச் செலவு (Misc)',
 ];
 
-const PARTNERS = ['Balaji', 'Nagoor', 'JP'];
-
-export default function ExpenseModal({ isOpen, onClose, onAddExpense }) {
-  const [partner, setPartner] = useState('Nagoor');
+export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPartner }) {
+  const partner = currentPartner?.name || PARTNER_NAMES[0];
   const [amount, setAmount] = useState('');
   const [amountTouched, setAmountTouched] = useState(false);
   const [category, setCategory] = useState(CATEGORIES[0]);
@@ -101,19 +100,11 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense }) {
           </div>
 
           <div className="form-field">
-            <label>செலவு செய்தவர் *</label>
-            <div className="pill-group">
-              {PARTNERS.map((p) => (
-                <button
-                  type="button"
-                  key={p}
-                  className={`pill ${partner === p ? `active ${p.toLowerCase()}` : ''}`}
-                  onClick={() => setPartner(p)}
-                >
-                  {p}
-                </button>
-              ))}
+            <label>செலவு செய்தவர்</label>
+            <div className="locked-partner">
+              {currentPartner?.avatar || '👤'} {partner}
             </div>
+            <div className="locked-partner-hint">உங்கள் கணக்கிலிருந்து auto-set</div>
           </div>
 
           <div className="form-row">

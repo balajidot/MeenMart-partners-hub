@@ -1,7 +1,9 @@
 import React from 'react';
 import { useStore } from './store/useStore';
+import { useAuth } from './hooks/useAuth';
 import { shareDaySummaryWhatsApp } from './utils/calculations';
 
+import AuthGate from './components/AuthGate';
 import Header from './components/Header';
 import KpiTicker from './components/KpiTicker';
 import FoundersSummary from './components/FoundersSummary';
@@ -22,6 +24,8 @@ import LightboxModal from './components/modals/LightboxModal';
 import Toast from './components/Toast';
 
 export default function App() {
+  const { user, partner, status, error, signIn, signOut } = useAuth();
+
   const {
     store,
     activeTab,
@@ -51,6 +55,11 @@ export default function App() {
     importJSON,
   } = useStore();
 
+  // Gate: show sign-in screen until authenticated allowlist member
+  if (status !== 'signed-in') {
+    return <AuthGate status={status} error={error} onSignIn={signIn} />;
+  }
+
   const pendingCount = (store.tasks || []).filter(
     (t) => t.status !== 'completed'
   ).length;
@@ -67,11 +76,13 @@ export default function App() {
   return (
     <div className="app-wrap">
       <Header
+        user={user}
+        partner={partner}
+        onSignOut={signOut}
         onOpenData={() => setActiveModal('data')}
         onShareWA={() => shareDaySummaryWhatsApp(store)}
       />
 
-      {/* Hero — KPIs above, founder chips below, single visual block */}
       <div className="hero">
         <KpiTicker store={store} />
         <FoundersSummary
@@ -125,25 +136,42 @@ export default function App() {
         />
       )}
 
-      {/* Floating action button — task/expense/work */}
       <QuickActions
         onOpenTask={openTask}
         onOpenExpense={openExpense}
         onOpenWork={openWork}
       />
 
-      {/* Bottom fixed nav */}
       <NavigationTabs
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         pendingCount={pendingCount}
       />
 
-      {/* Modals */}
-      <TaskModal isOpen={activeModal === 'task'} onClose={closeModal} onAddTask={addTask} />
-      <ExpenseModal isOpen={activeModal === 'expense'} onClose={closeModal} onAddExpense={addExpense} />
-      <WorkModal isOpen={activeModal === 'work'} onClose={closeModal} onAddWorklog={addWorklog} />
-      <CapitalModal isOpen={activeModal === 'capital'} onClose={closeModal} onAddCapital={addCapital} />
+      <TaskModal
+        isOpen={activeModal === 'task'}
+        onClose={closeModal}
+        onAddTask={addTask}
+        currentPartner={partner}
+      />
+      <ExpenseModal
+        isOpen={activeModal === 'expense'}
+        onClose={closeModal}
+        onAddExpense={addExpense}
+        currentPartner={partner}
+      />
+      <WorkModal
+        isOpen={activeModal === 'work'}
+        onClose={closeModal}
+        onAddWorklog={addWorklog}
+        currentPartner={partner}
+      />
+      <CapitalModal
+        isOpen={activeModal === 'capital'}
+        onClose={closeModal}
+        onAddCapital={addCapital}
+        currentPartner={partner}
+      />
       <DataModal
         isOpen={activeModal === 'data'}
         onClose={closeModal}
