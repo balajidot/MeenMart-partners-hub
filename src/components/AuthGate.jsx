@@ -6,10 +6,8 @@ export default function AuthGate({ status, error, onSignIn }) {
       <div className="auth-screen">
         <div className="auth-card">
           <div className="auth-header">
-            <h1 className="auth-title">
-              MeenMart <span className="hub-pill">OPS HUB</span>
-            </h1>
-            <p className="auth-sub">சரிபார்க்கிறது...</p>
+            <h1 className="auth-title">MeenMart</h1>
+            <p className="auth-sub">Partners Portal</p>
           </div>
           <div className="auth-spinner" aria-hidden="true" />
         </div>
@@ -17,24 +15,30 @@ export default function AuthGate({ status, error, onSignIn }) {
     );
   }
 
+  const isDomainError = error && error.includes('unauthorized-domain');
+
   return (
     <div className="auth-screen">
       <div className="auth-card">
         {/* Brand Header */}
         <div className="auth-header">
-          <h1 className="auth-title">
-            MeenMart <span className="hub-pill">OPS HUB</span>
-          </h1>
-          <p className="auth-sub">
-            பங்குதாரர்கள் தளம் · Partners Portal
-          </p>
+          <h1 className="auth-title">MeenMart</h1>
+          <p className="auth-sub">Partners Portal</p>
         </div>
 
         {/* Error Alert */}
         {error && (
           <div className="auth-error">
             <span className="auth-error-icon">⚠️</span>
-            <div className="auth-error-text">{error}</div>
+            <div className="auth-error-text">
+              {isDomainError ? (
+                <span>
+                  <strong>Firebase Domain Error:</strong> Netlify domain (<code>meenmart-partners-hub.netlify.app</code>) ஐ Firebase Console &gt; Authentication &gt; Settings &gt; Authorized Domains-ல் சேர்க்க வேண்டும்.
+                </span>
+              ) : (
+                error
+              )}
+            </div>
           </div>
         )}
 

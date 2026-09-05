@@ -46,7 +46,7 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
       <div className="brand-area">
         <div>
           <div className="brand-name">
-            MeenMart <span className="hub-pill">OPS HUB</span>
+            MeenMart <span className="hub-pill">PARTNERS PORTAL</span>
           </div>
           <div className="brand-founders">
             <span className="dot dot-b" />Balaji ·{' '}
