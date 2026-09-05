@@ -13,11 +13,13 @@ import Toast from './components/Toast';
 
 // Lazy load secondary tabs to shrink initial bundle size (especially Analytics with Chart.js)
 const WorkTab = lazy(() => import('./components/WorkTab'));
+const ChatTab = lazy(() => import('./components/ChatTab'));
 const AnalyticsTab = lazy(() => import('./components/AnalyticsTab'));
 const FinanceTab = lazy(() => import('./components/FinanceTab'));
 
 // Lazy load modals on demand
 const TaskModal = lazy(() => import('./components/modals/TaskModal'));
+const TaskCompleteModal = lazy(() => import('./components/modals/TaskCompleteModal'));
 const ExpenseModal = lazy(() => import('./components/modals/ExpenseModal'));
 const WorkModal = lazy(() => import('./components/modals/WorkModal'));
 const CapitalModal = lazy(() => import('./components/modals/CapitalModal'));
@@ -51,14 +53,18 @@ export default function AppShell({ user, partner, onSignOut }) {
     setWeekOffset,
     selectedDate,
     setSelectedDate,
+    completingTask,
+    setCompletingTask,
     addTask,
     completeTask,
+    completeTaskWithProof,
     deleteTask,
     addExpense,
     addCapital,
     addWorklog,
     deleteWorklog,
     addProof,
+    sendMessage,
     wipeAll,
     loadDemo,
     exportJSON,
@@ -117,6 +123,7 @@ export default function AppShell({ user, partner, onSignOut }) {
             addProof={addProof}
             onOpenLightbox={handleOpenLightbox}
             onOpenTask={openTask}
+            onOpenCompleteTask={setCompletingTask}
             currentPartner={partner}
           />
         )}
@@ -132,6 +139,15 @@ export default function AppShell({ user, partner, onSignOut }) {
             onOpenLightbox={handleOpenLightbox}
             onOpenWork={openWork}
             currentPartner={partner}
+          />
+        )}
+
+        {activeTab === 'chat' && (
+          <ChatTab
+            store={store}
+            sendMessage={sendMessage}
+            currentPartner={partner}
+            onOpenLightbox={handleOpenLightbox}
           />
         )}
 
@@ -164,6 +180,14 @@ export default function AppShell({ user, partner, onSignOut }) {
             onClose={closeModal}
             onAddTask={addTask}
             currentPartner={partner}
+          />
+        )}
+        {completingTask && (
+          <TaskCompleteModal
+            isOpen={true}
+            task={completingTask}
+            onClose={() => setCompletingTask(null)}
+            onComplete={completeTaskWithProof}
           />
         )}
         {activeModal === 'expense' && (
@@ -212,3 +236,4 @@ export default function AppShell({ user, partner, onSignOut }) {
     </div>
   );
 }
+

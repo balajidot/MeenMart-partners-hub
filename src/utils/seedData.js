@@ -32,6 +32,7 @@ export const DEFAULT_STATE = {
   expenses: [],
   capitals: [],
   worklogs: [],
+  messages: [],
 };
 
 export function generateId() {
@@ -45,19 +46,19 @@ export function getSeedData() {
     tasks: [
       {
         id: generateId(), title: 'காலை மீன் மார்க்கெட் கொள்முதல்',
-        from: 'Nagoor', to: 'Nagoor', priority: 'urgent',
+        from: 'Nagoor', to: 'Nagoor',
         dueAt: now + 2 * 60 * 60 * 1000, status: 'pending',
         createdAt: now - day, proof: null, proofAddedAt: null,
       },
       {
         id: generateId(), title: 'MeenMart App வாடிக்கையாளர் Notification Setup',
-        from: 'Balaji', to: 'Balaji', priority: 'high',
+        from: 'Balaji', to: 'Balaji',
         dueAt: now + day, status: 'pending',
         createdAt: now - 2 * day, proof: null, proofAddedAt: null,
       },
       {
         id: generateId(), title: 'Anna Nagar டெலிவரி Route திட்டம்',
-        from: 'JP', to: 'JP', priority: 'normal',
+        from: 'JP', to: 'JP',
         dueAt: now - 60 * 60 * 1000, status: 'completed',
         createdAt: now - 3 * day, proof: null, proofAddedAt: null,
       },
@@ -91,6 +92,11 @@ export function getSeedData() {
       { id: generateId(), partner: 'Nagoor', hours: 6, category: 'மீன் கொள்முதல்', description: 'காலை 5 மணி மார்க்கெட் — வஞ்சிரம், சங்கரா கொள்முதல் & 12 ஆர்டர்கள் பேக்கிங்', date: new Date(now - day).toISOString().slice(0, 10), createdAt: now - day, proof: null },
       { id: generateId(), partner: 'JP',     hours: 5, category: 'டெலிவரி மேலாண்மை', description: 'T.Nagar, Nungambakkam, Anna Nagar 18 ஆர்டர்கள் டெலிவரி', date: new Date(now - day).toISOString().slice(0, 10), createdAt: now - day, proof: null },
       { id: generateId(), partner: 'Balaji', hours: 8, category: 'ஆப் & டெவலப்மென்ட்', description: 'MeenMart App Firebase Integration & Order Tracking Feature', date: new Date(now - 2 * day).toISOString().slice(0, 10), createdAt: now - 2 * day, proof: null },
+    ],
+    messages: [
+      { id: generateId(), partner: 'Balaji', text: 'வணக்கம் தோழர்களே! MeenMart Partners Hub நேரலைக்கு வந்துவிட்டது 🚀', createdAt: now - 3600000 * 5 },
+      { id: generateId(), partner: 'Nagoor', text: 'சூப்பர் பாலாஜி! காலை காசிமேடு சந்தை நிலவரம் அப்டேட் செய்துள்ளேன் 🐟', createdAt: now - 3600000 * 3 },
+      { id: generateId(), partner: 'JP', text: 'இன்றைய டெலிவரி ரூட்கள் அனைத்தும் தயார் 🛵⚡', createdAt: now - 3600000 },
     ],
   };
 }

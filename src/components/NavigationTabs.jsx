@@ -3,6 +3,7 @@ import React from 'react';
 const TABS = [
   { id: 'tasks',     label: 'பணிகள்',    icon: '📋', hasBadge: true },
   { id: 'work',      label: 'உழைப்பு',   icon: '⏱️' },
+  { id: 'chat',      label: 'அரட்டை',    icon: '💬' },
   { id: 'finance',   label: 'நிதி',      icon: '💳' },
   { id: 'analytics', label: 'பகுப்பாய்வு', icon: '📊' },
 ];

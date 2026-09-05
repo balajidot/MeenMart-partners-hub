@@ -49,4 +49,9 @@ export function isAllowedEmail(email) {
 }
 
 export const PARTNER_NAMES = PARTNERS.map((p) => p.name);
+export const PARTNER_CONFIG = PARTNERS.reduce((acc, p) => {
+  acc[p.name] = p;
+  return acc;
+}, {});
 export const ALLOWED_EMAILS = PARTNERS.flatMap((p) => [p.email, ...(p.aliases || [])]);
+

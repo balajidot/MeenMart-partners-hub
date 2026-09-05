@@ -1,60 +1,28 @@
 import React, { useState } from 'react';
-import { compressImage } from '../../utils/calculations';
-import { PARTNER_NAMES } from '../../config/partners';
-
-const PRIORITIES = [
-  { id: 'normal', label: 'பொதுவானது' },
-  { id: 'high',   label: 'முக்கியம்' },
-  { id: 'urgent', label: 'அவசரம்' },
-];
+import { PARTNER_NAMES, PARTNER_CONFIG } from '../../config/partners';
 
 export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }) {
   const from = currentPartner?.name || PARTNER_NAMES[0];
-  const otherPartners = PARTNER_NAMES.filter((p) => p !== from);
 
   const [title, setTitle] = useState('');
   const [titleTouched, setTitleTouched] = useState(false);
-  const [to, setTo] = useState(otherPartners[0] || PARTNER_NAMES[1]);
-  const [priority, setPriority] = useState('normal');
+  const [to, setTo] = useState(from);
   const [dueDateTime, setDueDateTime] = useState('');
-  const [proof, setProof] = useState(null);
-  const [proofLabel, setProofLabel] = useState('புகைப்படம் இணைக்க தட்டவும்');
-  const [proofBusy, setProofBusy] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleClose = () => {
     setTitle('');
     setTitleTouched(false);
-    setPriority('normal');
     setDueDateTime('');
-    setProof(null);
-    setProofLabel('புகைப்படம் இணைக்க தட்டவும்');
     setLoading(false);
-    setTo(otherPartners[0] || PARTNER_NAMES[1]);
+    setTo(from);
     onClose();
   };
 
   if (!isOpen) return null;
 
   const titleError = titleTouched && !title.trim() ? 'பணியின் விவரம் தேவை' : '';
-  const canSubmit = title.trim() && !proofBusy && !loading;
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setProofBusy(true);
-    setProofLabel('படம் சுருக்கப்படுகிறது...');
-    try {
-      const compressed = await compressImage(file);
-      setProof(compressed);
-      setProofLabel(`✓ இணைக்கப்பட்டது (${file.name.slice(0, 20)})`);
-    } catch (err) {
-      console.error(err);
-      setProofLabel('❌ பிழை — மீண்டும் முயற்சிக்கவும்');
-    } finally {
-      setProofBusy(false);
-    }
-  };
+  const canSubmit = title.trim() && !loading;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -66,10 +34,9 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
       title: title.trim(),
       from,
       to,
-      priority,
       dueDateTime: dueDateTime || new Date().toISOString(),
-      proof,
-      proofAddedAt: proof ? Date.now() : null,
+      proof: null,
+      proofAddedAt: null,
     });
     handleClose();
   };
@@ -82,7 +49,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
             <span aria-hidden="true">📋</span>
             <div>
               <h3>புதிய பணி ஒதுக்கு</h3>
-              <small>Task Delegation & Proof Attachment</small>
+              <small>Assign Task to Partners</small>
             </div>
           </div>
           <button className="modal-close" onClick={handleClose} aria-label="Close">✕</button>
@@ -113,39 +80,26 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
           </div>
 
           <div className="form-field">
-            <label>யாருக்கு (To) *</label>
+            <label>யாருக்கு பணி ஒதுக்குகிறீர்கள் (Assign To) *</label>
             <div className="pill-group">
-              {otherPartners.map((p) => (
-                <button
-                  type="button"
-                  key={p}
-                  className={`pill ${to === p ? `active ${p.toLowerCase()}` : ''}`}
-                  onClick={() => setTo(p)}
-                >
-                  {p}
-                </button>
-              ))}
+              {PARTNER_NAMES.map((p) => {
+                const meta = PARTNER_CONFIG[p];
+                return (
+                  <button
+                    type="button"
+                    key={p}
+                    className={`pill ${to === p ? `active ${p.toLowerCase()}` : ''}`}
+                    onClick={() => setTo(p)}
+                  >
+                    {meta?.avatar || '👤'} {p} {p === from ? '(சுய பணி)' : ''}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           <div className="form-field">
-            <label>முன்னுரிமை</label>
-            <div className="pill-group">
-              {PRIORITIES.map(({ id, label }) => (
-                <button
-                  type="button"
-                  key={id}
-                  className={`pill ${priority === id ? 'active' : ''}`}
-                  onClick={() => setPriority(id)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="task-due">முடிக்க வேண்டிய தேதி & நேரம்</label>
+            <label htmlFor="task-due">முடிக்க வேண்டிய தேதி & நேரம் (Optional)</label>
             <input
               id="task-due"
               type="datetime-local"
@@ -153,21 +107,6 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
               value={dueDateTime}
               onChange={(e) => setDueDateTime(e.target.value)}
             />
-          </div>
-
-          <div className="form-field">
-            <label>📸 பணி சான்று புகைப்படம் (Optional)</label>
-            <label className="file-upload">
-              <div className="file-upload-icon">📷</div>
-              <div className="file-upload-text">{proofLabel}</div>
-              <div className="file-upload-hint">48 மணி நேரத்திற்குப் பிறகு தானாக அழியும்</div>
-              <input
-                type="file"
-                accept="image/*"
-                className="file-hidden"
-                onChange={handleFileChange}
-              />
-            </label>
           </div>
 
           <div className="form-actions">
@@ -183,3 +122,4 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
     </div>
   );
 }
+

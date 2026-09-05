@@ -16,6 +16,7 @@ function applyTheme(mode) {
 export default function Header({ onOpenData, onShareWA, user, partner, onSignOut }) {
   const [theme, setTheme] = useState(readInitialTheme);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -24,11 +25,29 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
   }, [theme]);
 
   useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  useEffect(() => {
     if (!menuOpen) return;
     const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [menuOpen]);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   const cycleTheme = () => {
     setTheme((t) => (t === 'system' ? 'light' : t === 'light' ? 'dark' : 'system'));
@@ -50,6 +69,17 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
       </div>
 
       <div className="header-actions">
+        {deferredPrompt && (
+          <button
+            className="pwa-install-btn"
+            onClick={handleInstallClick}
+            title="ஆப்பை மொபைலில் நிறுவவும் (Install PWA)"
+            aria-label="Install App"
+          >
+            📲 <span className="pwa-install-text">நிறுவு</span>
+          </button>
+        )}
+
         <button
           className="btn-icon"
           onClick={cycleTheme}
@@ -98,6 +128,14 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
                     </div>
                     <div className="user-menu-email">{user.email}</div>
                   </div>
+                  {deferredPrompt && (
+                    <button
+                      className="user-menu-item"
+                      onClick={() => { setMenuOpen(false); handleInstallClick(); }}
+                    >
+                      📲 ஆப்பை நிறுவு (Install App)
+                    </button>
+                  )}
                   <button
                     className="user-menu-item"
                     onClick={() => { setMenuOpen(false); onOpenData(); }}
@@ -128,3 +166,4 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
     </header>
   );
 }
+

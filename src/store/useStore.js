@@ -17,6 +17,7 @@ function loadLocal() {
         expenses: parsed.expenses || [],
         capitals: parsed.capitals || [],
         worklogs: parsed.worklogs || [],
+        messages: parsed.messages || [],
       };
     }
   } catch {
@@ -41,6 +42,7 @@ export function useStore() {
   const [partnerFilter, setPartnerFilter] = useState('all');
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [completingTask, setCompletingTask] = useState(null);
   const toastTimer = useRef(null);
   const fbRef = useRef(null);
   const isMounted = useRef(true);
@@ -61,6 +63,7 @@ export function useStore() {
           expenses: mergeById(prev.expenses, remote.expenses || []),
           capitals: mergeById(prev.capitals, remote.capitals || []),
           worklogs: mergeById(prev.worklogs, remote.worklogs || []),
+          messages: mergeById(prev.messages, remote.messages || []),
         };
         const pruned = pruneExpiredProofs(merged);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
@@ -92,6 +95,7 @@ export function useStore() {
           expenses: pruned.expenses,
           capitals: pruned.capitals,
           worklogs: pruned.worklogs,
+          messages: pruned.messages || [],
           lastUpdated: Date.now(),
         }).catch((e) => console.warn('Firebase write failed (offline):', e.message));
       }
@@ -122,9 +126,28 @@ export function useStore() {
   const completeTask = useCallback((id) => {
     updateStore((prev) => ({
       ...prev,
-      tasks: (prev.tasks || []).map((t) => (t.id === id ? { ...t, status: 'completed' } : t)),
+      tasks: (prev.tasks || []).map((t) => (t.id === id ? { ...t, status: 'completed', completedAt: Date.now() } : t)),
     }));
     showToast('🎉 பணி முடிந்தது!');
+  }, [updateStore, showToast]);
+
+  const completeTaskWithProof = useCallback((id, proof) => {
+    const now = Date.now();
+    updateStore((prev) => ({
+      ...prev,
+      tasks: (prev.tasks || []).map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              status: 'completed',
+              completedAt: now,
+              proof: proof || t.proof || null,
+              proofAddedAt: proof ? now : t.proofAddedAt,
+            }
+          : t
+      ),
+    }));
+    showToast('🎉 பணி வெற்றிகரமாக முடிந்தது!');
   }, [updateStore, showToast]);
 
   const deleteTask = useCallback((id) => {
@@ -192,8 +215,22 @@ export function useStore() {
     showToast('📸 சான்று சேர்க்கப்பட்டது!');
   }, [updateStore, showToast]);
 
+  const sendMessage = useCallback((msg) => {
+    const newMsg = {
+      id: generateId(),
+      partner: msg.partner,
+      text: msg.text || '',
+      proof: msg.proof || null,
+      createdAt: Date.now(),
+    };
+    updateStore((prev) => ({
+      ...prev,
+      messages: [...(prev.messages || []), newMsg],
+    }));
+  }, [updateStore]);
+
   const wipeAll = useCallback(() => {
-    const empty = { ...DEFAULT_STATE, tasks: [], expenses: [], capitals: [], worklogs: [] };
+    const empty = { ...DEFAULT_STATE, tasks: [], expenses: [], capitals: [], worklogs: [], messages: [] };
     saveStore(empty);
     showToast('🗑️ எல்லா தரவும் நீக்கப்பட்டது');
   }, [saveStore, showToast]);
@@ -231,12 +268,13 @@ export function useStore() {
     partnerFilter, setPartnerFilter,
     weekOffset, setWeekOffset,
     selectedDate, setSelectedDate,
+    completingTask, setCompletingTask,
     // Actions
-    addTask, completeTask, deleteTask,
+    addTask, completeTask, completeTaskWithProof, deleteTask,
     addExpense, deleteExpense,
     addCapital,
     addWorklog, deleteWorklog,
-    addProof,
+    addProof, sendMessage,
     wipeAll, loadDemo, exportJSON, importJSON,
   };
 }

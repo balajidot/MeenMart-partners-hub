@@ -1,12 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { fmtDate, compressImage, TAMIL_MONTHS } from '../utils/calculations';
 
-const PRIORITY_LABELS = {
-  urgent: { label: '🔥 அவசரம்', cls: 'urgent' },
-  high:   { label: '⚡ முக்கியம்', cls: 'high' },
-  normal: { label: 'பொதுவானது', cls: 'normal' },
-};
-
 const STATUS_PILLS = [
   { id: 'all',       label: 'அனைத்தும்' },
   { id: 'pending',   label: 'நிலுவை' },
@@ -58,6 +52,7 @@ export default function TasksTab({
   addProof,
   onOpenLightbox,
   onOpenTask,
+  onOpenCompleteTask,
   currentPartner,
 }) {
   const [search, setSearch] = useState('');
@@ -108,6 +103,14 @@ export default function TasksTab({
       addProof('task', taskId, compressed);
     } catch (err) {
       console.error('Proof upload error:', err);
+    }
+  };
+
+  const handleTriggerComplete = (task) => {
+    if (onOpenCompleteTask) {
+      onOpenCompleteTask(task);
+    } else {
+      completeTask(task.id);
     }
   };
 
@@ -174,7 +177,6 @@ export default function TasksTab({
               </div>
               {group.items.map((task) => {
                 const isDone = task.status === 'completed';
-                const prio = PRIORITY_LABELS[task.priority] || PRIORITY_LABELS.normal;
                 const toCls = (task.to || '').toLowerCase();
                 const me = currentPartner?.name;
                 const isAssignee = task.to === me;
@@ -189,7 +191,7 @@ export default function TasksTab({
                     <div className="task-top">
                       <button
                         className={`task-check ${isDone ? 'done' : ''} ${!isAssignee && !isDone ? 'disabled' : ''}`}
-                        onClick={() => !isDone && isAssignee && completeTask(task.id)}
+                        onClick={() => !isDone && isAssignee && handleTriggerComplete(task)}
                         title={isDone ? 'முடிந்தது' : isAssignee ? 'முடிக்க தட்டவும்' : `${task.to} மட்டுமே முடிக்க முடியும்`}
                         aria-label={isDone ? 'Completed' : 'Mark complete'}
                         aria-disabled={!isAssignee && !isDone}
@@ -201,9 +203,8 @@ export default function TasksTab({
                         </div>
 
                         <div className="task-meta">
-                          <span className={`chip ${prio.cls}`}>{prio.label}</span>
                           <span className={`chip ${toCls}`}>
-                            {task.from} → {task.to}
+                            {task.from === task.to ? `${task.to} (சுயம்)` : `${task.from} → ${task.to}`}
                           </span>
                           {task.dueDateTime && (
                             <span className="chip gray">
@@ -235,7 +236,7 @@ export default function TasksTab({
                           {!isDone && isAssignee && (
                             <button
                               className="btn-sm success"
-                              onClick={() => completeTask(task.id)}
+                              onClick={() => handleTriggerComplete(task)}
                             >
                               ✓ முடிந்தது
                             </button>
@@ -280,3 +281,4 @@ export default function TasksTab({
     </div>
   );
 }
+
