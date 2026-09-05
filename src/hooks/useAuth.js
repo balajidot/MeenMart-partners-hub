@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
@@ -12,6 +14,25 @@ export function useAuth() {
   const [partner, setPartner] = useState(null);
   const [status, setStatus] = useState('loading'); // 'loading' | 'signed-in' | 'signed-out' | 'forbidden'
   const [error, setError] = useState(null);
+
+  // On mount: check if we're returning from a redirect sign-in
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          const email = result.user.email || '';
+          if (!isAllowedEmail(email)) {
+            setError(`${email} is not authorized. Contact Balaji.`);
+            signOut(auth).catch(() => {});
+          }
+        }
+      })
+      .catch((err) => {
+        if (err?.code && err.code !== 'auth/no-auth-event') {
+          setError(err?.message || 'Sign-in failed');
+        }
+      });
+  }, []);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
@@ -24,7 +45,6 @@ export function useAuth() {
       const email = fbUser.email || '';
       const matched = partnerFromEmail(email);
       if (!matched) {
-        // Not on allowlist — sign them out and surface a clean error.
         setError(`${email} is not authorized. Contact Balaji.`);
         setStatus('forbidden');
         await signOut(auth).catch(() => {});
@@ -48,15 +68,27 @@ export function useAuth() {
   const signIn = useCallback(async () => {
     setError(null);
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const email = result.user?.email || '';
-      if (!isAllowedEmail(email)) {
-        setError(`${email} is not authorized. Contact Balaji.`);
-        await signOut(auth).catch(() => {});
-      }
+      // Try popup first — snappier UX on desktop
+      await signInWithPopup(auth, googleProvider);
     } catch (err) {
-      // popup-closed-by-user is expected, don't surface it
-      if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') {
+      // Popup blocked / not supported → fall back to full-page redirect
+      const fallbackCodes = [
+        'auth/popup-blocked',
+        'auth/popup-closed-by-user',
+        'auth/operation-not-supported-in-this-environment',
+        'auth/cancelled-popup-request',
+      ];
+      if (fallbackCodes.includes(err?.code)) {
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+          // User dismissed popup — don't auto-redirect, just silently return
+          return;
+        }
+        try {
+          await signInWithRedirect(auth, googleProvider);
+        } catch (redirectErr) {
+          setError(redirectErr?.message || 'Sign-in failed');
+        }
+      } else {
         setError(err?.message || 'Sign-in failed');
       }
     }
