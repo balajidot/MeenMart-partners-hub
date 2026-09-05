@@ -70,6 +70,7 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
   return (
     <header className="app-header">
       <div className="brand-area">
+        <div className="brand-badge" aria-hidden="true">M</div>
         <div className="brand-name">
           MeenMart <span className="brand-portal-pill">Partners</span>
         </div>
@@ -118,7 +119,7 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
               ) : (
                 <span className="user-avatar-fallback" aria-hidden="true">{initial}</span>
               )}
-              <span>{partner?.name || 'User'}</span>
+              <span className="user-chip-name">{partner?.name || 'User'}</span>
             </button>
 
             {menuOpen && (

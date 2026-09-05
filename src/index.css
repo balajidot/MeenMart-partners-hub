@@ -2340,6 +2340,14 @@ textarea.form-input { resize: vertical; min-height: 88px; line-height: 1.6; }
   cursor: not-allowed;
 }
 
+/* Header chrome (badge + wordmark + pill + action icons) is the
+   tightest-fitting row in the app — give it its own room to breathe
+   before the general small-phone rules below kick in. */
+@media (max-width: 430px) {
+  .brand-portal-pill { display: none; }
+  .user-chip-name { display: none; }
+}
+
 @media (max-width: 360px) {
   .form-row { grid-template-columns: 1fr; }
   .brand-name { font-size: 15px; }
@@ -2351,5 +2359,101 @@ textarea.form-input { resize: vertical; min-height: 88px; line-height: 1.6; }
 @media (min-width: 480px) {
   .kpi-grid { grid-template-columns: repeat(4, 1fr); }
   .kpi-val { font-size: 19px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DESKTOP / WIDE VIEWPORT
+   Above ~900px the phone-column layout gives way to a proper
+   web-app shell: fixed left nav rail, centered content column,
+   flat elevated app bar, dialog-style modals.
+   ═══════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+  body { font-size: 15.5px; }
+
+  .app-wrap {
+    max-width: 820px;
+    margin-left: max(240px, calc((100vw - 820px) / 2));
+    margin-right: auto;
+    padding-bottom: 48px;
+  }
+
+  /* ---- App bar: flat + elevated, not a mobile glass sheet ---- */
+  .app-header {
+    background: var(--bg-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: var(--sh-1);
+    padding: 16px 28px;
+  }
+  .brand-name { font-size: 17px; }
+
+  /* ---- Left nav rail replaces the bottom tab bar ---- */
+  .bottom-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 240px;
+    max-width: none;
+    height: 100vh;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 3px;
+    padding: 22px 14px;
+    border-top: none;
+    border-right: 1px solid var(--line-subtle);
+    background: var(--bg-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .bnav-btn {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 13px;
+    padding: 10px 14px;
+    border-radius: var(--r-sm);
+    min-height: var(--tap);
+    font-size: 13.5px;
+  }
+  .bnav-btn:hover { background: var(--bg-sunken); color: var(--ink); }
+  .bnav-btn.active { background: var(--accent-soft); color: var(--accent); }
+  .bnav-icon { font-size: 17px; }
+  .bnav-btn.active .bnav-icon { transform: none; opacity: 1; }
+  .bnav-label { font-size: 13.5px; }
+  .bnav-active-bar { display: none; }
+  .bnav-badge { top: -3px; right: -8px; }
+
+  /* ---- FAB + chat composer: anchor to the viewport, not the old 560px column ---- */
+  .fab-wrap { left: auto; right: 40px; transform: none; bottom: 40px; }
+  .chat-bottom-bar-wrap {
+    left: max(240px, calc((100vw - 820px) / 2));
+    right: auto;
+    transform: none;
+    width: 820px;
+    max-width: 820px;
+    bottom: 24px;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line-subtle);
+    box-shadow: var(--sh-2);
+  }
+  .chat-tab-container { min-height: calc(100vh - 360px); padding-bottom: 110px; }
+
+  /* ---- Modals: centered dialogs, not mobile bottom sheets ---- */
+  .modal-overlay { align-items: center; padding: 24px; }
+  .modal-sheet {
+    max-width: 520px;
+    max-height: 86vh;
+    border-radius: var(--r-xl);
+    transform: translateY(12px) scale(0.98);
+    opacity: 0;
+    transition: transform var(--t-slow) var(--ease-out), opacity var(--t) var(--ease-out);
+    box-shadow: var(--sh-4);
+  }
+  .modal-overlay.open .modal-sheet { transform: none; opacity: 1; }
+  .modal-sheet::before { display: none; }
 }
 
