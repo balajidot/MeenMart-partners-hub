@@ -44,7 +44,6 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
   return (
     <header className="app-header">
       <div className="brand-area">
-        <div className="brand-badge" aria-hidden="true">M</div>
         <div>
           <div className="brand-name">
             MeenMart <span className="hub-pill">OPS HUB</span>

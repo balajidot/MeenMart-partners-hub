@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useStore } from './store/useStore';
 import { shareDaySummaryWhatsApp } from './utils/calculations';
 
@@ -9,17 +9,31 @@ import CalendarStrip from './components/CalendarStrip';
 import QuickActions from './components/QuickActions';
 import NavigationTabs from './components/NavigationTabs';
 import TasksTab from './components/TasksTab';
-import WorkTab from './components/WorkTab';
-import AnalyticsTab from './components/AnalyticsTab';
-import FinanceTab from './components/FinanceTab';
-
-import TaskModal from './components/modals/TaskModal';
-import ExpenseModal from './components/modals/ExpenseModal';
-import WorkModal from './components/modals/WorkModal';
-import CapitalModal from './components/modals/CapitalModal';
-import DataModal from './components/modals/DataModal';
-import LightboxModal from './components/modals/LightboxModal';
 import Toast from './components/Toast';
+
+// Lazy load secondary tabs to shrink initial bundle size (especially Analytics with Chart.js)
+const WorkTab = lazy(() => import('./components/WorkTab'));
+const AnalyticsTab = lazy(() => import('./components/AnalyticsTab'));
+const FinanceTab = lazy(() => import('./components/FinanceTab'));
+
+// Lazy load modals on demand
+const TaskModal = lazy(() => import('./components/modals/TaskModal'));
+const ExpenseModal = lazy(() => import('./components/modals/ExpenseModal'));
+const WorkModal = lazy(() => import('./components/modals/WorkModal'));
+const CapitalModal = lazy(() => import('./components/modals/CapitalModal'));
+const DataModal = lazy(() => import('./components/modals/DataModal'));
+const LightboxModal = lazy(() => import('./components/modals/LightboxModal'));
+
+function TabLoadingFallback() {
+  return (
+    <div className="tab-content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '220px', color: 'var(--text-secondary)' }}>
+      <div style={{ textAlign: 'center', padding: '32px 0' }}>
+        <div style={{ fontSize: '28px', marginBottom: '8px' }}>⏳</div>
+        <div style={{ fontSize: '14px', fontWeight: 500 }}>ஏற்றப்படுகிறது...</div>
+      </div>
+    </div>
+  );
+}
 
 export default function AppShell({ user, partner, onSignOut }) {
   const {
@@ -91,41 +105,45 @@ export default function AppShell({ user, partner, onSignOut }) {
         setSelectedDate={setSelectedDate}
       />
 
-      {activeTab === 'tasks' && (
-        <TasksTab
-          store={store}
-          partnerFilter={partnerFilter}
-          setPartnerFilter={setPartnerFilter}
-          selectedDate={selectedDate}
-          completeTask={completeTask}
-          deleteTask={deleteTask}
-          addProof={addProof}
-          onOpenLightbox={handleOpenLightbox}
-          onOpenTask={openTask}
-        />
-      )}
+      <Suspense fallback={<TabLoadingFallback />}>
+        {activeTab === 'tasks' && (
+          <TasksTab
+            store={store}
+            partnerFilter={partnerFilter}
+            setPartnerFilter={setPartnerFilter}
+            selectedDate={selectedDate}
+            completeTask={completeTask}
+            deleteTask={deleteTask}
+            addProof={addProof}
+            onOpenLightbox={handleOpenLightbox}
+            onOpenTask={openTask}
+            currentPartner={partner}
+          />
+        )}
 
-      {activeTab === 'work' && (
-        <WorkTab
-          store={store}
-          partnerFilter={partnerFilter}
-          setPartnerFilter={setPartnerFilter}
-          selectedDate={selectedDate}
-          deleteWorklog={deleteWorklog}
-          addProof={addProof}
-          onOpenLightbox={handleOpenLightbox}
-          onOpenWork={openWork}
-        />
-      )}
+        {activeTab === 'work' && (
+          <WorkTab
+            store={store}
+            partnerFilter={partnerFilter}
+            setPartnerFilter={setPartnerFilter}
+            selectedDate={selectedDate}
+            deleteWorklog={deleteWorklog}
+            addProof={addProof}
+            onOpenLightbox={handleOpenLightbox}
+            onOpenWork={openWork}
+            currentPartner={partner}
+          />
+        )}
 
-      {activeTab === 'analytics' && <AnalyticsTab store={store} />}
+        {activeTab === 'analytics' && <AnalyticsTab store={store} />}
 
-      {activeTab === 'finance' && (
-        <FinanceTab
-          store={store}
-          onOpenCapital={() => setActiveModal('capital')}
-        />
-      )}
+        {activeTab === 'finance' && (
+          <FinanceTab
+            store={store}
+            onOpenCapital={() => setActiveModal('capital')}
+          />
+        )}
+      </Suspense>
 
       <QuickActions
         onOpenTask={openTask}
@@ -139,40 +157,57 @@ export default function AppShell({ user, partner, onSignOut }) {
         pendingCount={pendingCount}
       />
 
-      <TaskModal
-        isOpen={activeModal === 'task'}
-        onClose={closeModal}
-        onAddTask={addTask}
-        currentPartner={partner}
-      />
-      <ExpenseModal
-        isOpen={activeModal === 'expense'}
-        onClose={closeModal}
-        onAddExpense={addExpense}
-        currentPartner={partner}
-      />
-      <WorkModal
-        isOpen={activeModal === 'work'}
-        onClose={closeModal}
-        onAddWorklog={addWorklog}
-        currentPartner={partner}
-      />
-      <CapitalModal
-        isOpen={activeModal === 'capital'}
-        onClose={closeModal}
-        onAddCapital={addCapital}
-        currentPartner={partner}
-      />
-      <DataModal
-        isOpen={activeModal === 'data'}
-        onClose={closeModal}
-        onExportJSON={exportJSON}
-        onImportJSON={importJSON}
-        onLoadDemo={loadDemo}
-        onWipeAll={wipeAll}
-      />
+      <Suspense fallback={null}>
+        {activeModal === 'task' && (
+          <TaskModal
+            isOpen={true}
+            onClose={closeModal}
+            onAddTask={addTask}
+            currentPartner={partner}
+          />
+        )}
+        {activeModal === 'expense' && (
+          <ExpenseModal
+            isOpen={true}
+            onClose={closeModal}
+            onAddExpense={addExpense}
+            currentPartner={partner}
+          />
+        )}
+        {activeModal === 'work' && (
+          <WorkModal
+            isOpen={true}
+            onClose={closeModal}
+            onAddWorklog={addWorklog}
+            currentPartner={partner}
+          />
+        )}
+        {activeModal === 'capital' && (
+          <CapitalModal
+            isOpen={true}
+            onClose={closeModal}
+            onAddCapital={addCapital}
+            currentPartner={partner}
+          />
+        )}
+        {activeModal === 'data' && (
+          <DataModal
+            isOpen={true}
+            onClose={closeModal}
+            onExportJSON={exportJSON}
+            onImportJSON={importJSON}
+            onLoadDemo={loadDemo}
+            onWipeAll={wipeAll}
+          />
+        )}
+        {lightboxProof && (
+          <LightboxModal
+            proofData={lightboxProof}
+            onClose={() => setLightboxProof(null)}
+          />
+        )}
+      </Suspense>
 
-      <LightboxModal proofData={lightboxProof} onClose={() => setLightboxProof(null)} />
       <Toast toast={toast} />
     </div>
   );

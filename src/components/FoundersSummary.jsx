@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { calcFounderStats } from '../utils/calculations';
 
 const FOUNDERS = [
@@ -7,7 +7,7 @@ const FOUNDERS = [
   { name: 'JP',     role: 'Delivery & Sales',  avatar: '🛵', key: 'jp',     valClass: 'jp-c' },
 ];
 
-export default function FoundersSummary({ store, partnerFilter, setPartnerFilter }) {
+function FoundersSummary({ store, partnerFilter, setPartnerFilter }) {
   const handleSelect = (name) => {
     setPartnerFilter((prev) => (prev === name ? 'all' : name));
   };
@@ -50,3 +50,5 @@ export default function FoundersSummary({ store, partnerFilter, setPartnerFilter
     </section>
   );
 }
+
+export default memo(FoundersSummary);

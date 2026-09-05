@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PARTNER_NAMES } from '../../config/partners';
 
 export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPartner }) {
@@ -9,13 +9,12 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
   const [note, setNote] = useState('கூடுதல் மூலதன முதலீடு');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setAmount('');
-      setAmountTouched(false);
-      setLoading(false);
-    }
-  }, [isOpen]);
+  const handleClose = () => {
+    setAmount('');
+    setAmountTouched(false);
+    setLoading(false);
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -36,11 +35,11 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
       date,
       note: note.trim(),
     });
-    onClose();
+    handleClose();
   };
 
   return (
-    <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}>
+    <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={handleClose}>
       <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title">
@@ -50,7 +49,7 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
               <small>Capital Injection</small>
             </div>
           </div>
-          <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
+          <button className="modal-close" onClick={handleClose} aria-label="Close">✕</button>
         </div>
 
         <form className="modal-body" onSubmit={handleSubmit} noValidate>
@@ -106,7 +105,7 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-cancel" onClick={onClose}>
+            <button type="button" className="btn-cancel" onClick={handleClose}>
               ரத்து
             </button>
             <button type="submit" className="btn-submit" disabled={!canSubmit}>

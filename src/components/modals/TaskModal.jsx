@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { compressImage } from '../../utils/calculations';
 import { PARTNER_NAMES } from '../../config/partners';
 
@@ -22,18 +22,17 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
   const [proofBusy, setProofBusy] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setTitle('');
-      setTitleTouched(false);
-      setPriority('normal');
-      setDueDateTime('');
-      setProof(null);
-      setProofLabel('புகைப்படம் இணைக்க தட்டவும்');
-      setLoading(false);
-      setTo(otherPartners[0] || PARTNER_NAMES[1]);
-    }
-  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  const handleClose = () => {
+    setTitle('');
+    setTitleTouched(false);
+    setPriority('normal');
+    setDueDateTime('');
+    setProof(null);
+    setProofLabel('புகைப்படம் இணைக்க தட்டவும்');
+    setLoading(false);
+    setTo(otherPartners[0] || PARTNER_NAMES[1]);
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -72,11 +71,11 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
       proof,
       proofAddedAt: proof ? Date.now() : null,
     });
-    onClose();
+    handleClose();
   };
 
   return (
-    <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}>
+    <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={handleClose}>
       <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title">
@@ -86,7 +85,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
               <small>Task Delegation & Proof Attachment</small>
             </div>
           </div>
-          <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
+          <button className="modal-close" onClick={handleClose} aria-label="Close">✕</button>
         </div>
 
         <form className="modal-body" onSubmit={handleSubmit} noValidate>
@@ -172,7 +171,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-cancel" onClick={onClose}>
+            <button type="button" className="btn-cancel" onClick={handleClose}>
               ரத்து
             </button>
             <button type="submit" className="btn-submit" disabled={!canSubmit}>

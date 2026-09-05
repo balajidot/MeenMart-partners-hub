@@ -58,6 +58,7 @@ export default function TasksTab({
   addProof,
   onOpenLightbox,
   onOpenTask,
+  currentPartner,
 }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -124,7 +125,7 @@ export default function TasksTab({
           />
         </div>
 
-        <div className="pill-group" role="tablist" aria-label="Task status filter">
+        <div className="pill-group status-group" role="tablist" aria-label="Task status filter">
           {STATUS_PILLS.map(({ id, label }) => (
             <button
               key={id}
@@ -139,7 +140,7 @@ export default function TasksTab({
           ))}
         </div>
 
-        <div className="pill-group" aria-label="Partner filter">
+        <div className="pill-group partner-group" aria-label="Partner filter">
           {PARTNER_PILLS.map(({ id, label, cls }) => (
             <button
               key={id}
@@ -175,6 +176,10 @@ export default function TasksTab({
                 const isDone = task.status === 'completed';
                 const prio = PRIORITY_LABELS[task.priority] || PRIORITY_LABELS.normal;
                 const toCls = (task.to || '').toLowerCase();
+                const me = currentPartner?.name;
+                const isAssignee = task.to === me;
+                const isCreator = task.from === me;
+                const isMine = isAssignee || isCreator;
 
                 return (
                   <div
@@ -183,10 +188,11 @@ export default function TasksTab({
                   >
                     <div className="task-top">
                       <button
-                        className={`task-check ${isDone ? 'done' : ''}`}
-                        onClick={() => !isDone && completeTask(task.id)}
-                        title={isDone ? 'முடிந்தது' : 'முடிக்க தட்டவும்'}
+                        className={`task-check ${isDone ? 'done' : ''} ${!isAssignee && !isDone ? 'disabled' : ''}`}
+                        onClick={() => !isDone && isAssignee && completeTask(task.id)}
+                        title={isDone ? 'முடிந்தது' : isAssignee ? 'முடிக்க தட்டவும்' : `${task.to} மட்டுமே முடிக்க முடியும்`}
                         aria-label={isDone ? 'Completed' : 'Mark complete'}
+                        aria-disabled={!isAssignee && !isDone}
                       />
 
                       <div className="task-body">
@@ -203,6 +209,9 @@ export default function TasksTab({
                             <span className="chip gray">
                               🕒 {fmtDate(task.dueDateTime)}
                             </span>
+                          )}
+                          {!isMine && (
+                            <span className="chip gray">🔒</span>
                           )}
                           {task.proof && (
                             <img
@@ -223,7 +232,7 @@ export default function TasksTab({
                         </div>
 
                         <div className="task-actions">
-                          {!isDone && (
+                          {!isDone && isAssignee && (
                             <button
                               className="btn-sm success"
                               onClick={() => completeTask(task.id)}
@@ -232,28 +241,32 @@ export default function TasksTab({
                             </button>
                           )}
 
-                          <label className="btn-sm">
-                            📷 {task.proof ? 'மாற்று' : 'சான்று'}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="file-hidden"
-                              onChange={(e) => handleFileUpload(task.id, e)}
-                            />
-                          </label>
+                          {isMine && (
+                            <label className="btn-sm">
+                              📷 {task.proof ? 'மாற்று' : 'சான்று'}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="file-hidden"
+                                onChange={(e) => handleFileUpload(task.id, e)}
+                              />
+                            </label>
+                          )}
 
-                          <button
-                            className="btn-sm danger"
-                            onClick={() => {
-                              if (window.confirm('இப்பணியை நீக்க வேண்டுமா?')) {
-                                deleteTask(task.id);
-                              }
-                            }}
-                            title="நீக்கு"
-                            aria-label="Delete task"
-                          >
-                            🗑️
-                          </button>
+                          {isCreator && (
+                            <button
+                              className="btn-sm danger"
+                              onClick={() => {
+                                if (window.confirm('இப்பணியை நீக்க வேண்டுமா?')) {
+                                  deleteTask(task.id);
+                                }
+                              }}
+                              title="நீக்கு"
+                              aria-label="Delete task"
+                            >
+                              🗑️
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>

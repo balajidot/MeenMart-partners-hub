@@ -76,21 +76,32 @@ export function useStore() {
     };
   }, []);
 
-  const saveStore = useCallback((newStore) => {
-    const pruned = pruneExpiredProofs(newStore);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
-    setStore(pruned);
-    // Silent background push to Firebase
-    if (fbRef.current) {
-      set(fbRef.current, {
-        tasks:    pruned.tasks,
-        expenses: pruned.expenses,
-        capitals: pruned.capitals,
-        worklogs: pruned.worklogs,
-        lastUpdated: Date.now(),
-      }).catch((e) => console.warn('Firebase write failed (offline):', e.message));
-    }
+  const updateStore = useCallback((updater) => {
+    setStore((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      const pruned = pruneExpiredProofs(next);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+      } catch (e) {
+        console.warn('Storage save failed:', e);
+      }
+      // Silent background push to Firebase
+      if (fbRef.current) {
+        set(fbRef.current, {
+          tasks:    pruned.tasks,
+          expenses: pruned.expenses,
+          capitals: pruned.capitals,
+          worklogs: pruned.worklogs,
+          lastUpdated: Date.now(),
+        }).catch((e) => console.warn('Firebase write failed (offline):', e.message));
+      }
+      return pruned;
+    });
   }, []);
+
+  const saveStore = useCallback((newStore) => {
+    updateStore(() => newStore);
+  }, [updateStore]);
 
   const showToast = useCallback((msg, type = 'success') => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -98,69 +109,88 @@ export function useStore() {
     toastTimer.current = setTimeout(() => setToast(null), 3000);
   }, []);
 
-  // CRUD helpers
+  // CRUD helpers (stable callback references)
   const addTask = useCallback((task) => {
-    const newStore = { ...store, tasks: [{ id: generateId(), ...task, status: 'pending', createdAt: Date.now(), proof: null, proofAddedAt: null }, ...store.tasks] };
-    saveStore(newStore);
+    const newTask = { id: generateId(), ...task, status: 'pending', createdAt: Date.now(), proof: null, proofAddedAt: null };
+    updateStore((prev) => ({
+      ...prev,
+      tasks: [newTask, ...(prev.tasks || [])],
+    }));
     showToast('✅ பணி சேர்க்கப்பட்டது!');
-  }, [store, saveStore, showToast]);
+  }, [updateStore, showToast]);
 
   const completeTask = useCallback((id) => {
-    const newStore = { ...store, tasks: store.tasks.map((t) => t.id === id ? { ...t, status: 'completed' } : t) };
-    saveStore(newStore);
+    updateStore((prev) => ({
+      ...prev,
+      tasks: (prev.tasks || []).map((t) => (t.id === id ? { ...t, status: 'completed' } : t)),
+    }));
     showToast('🎉 பணி முடிந்தது!');
-  }, [store, saveStore, showToast]);
+  }, [updateStore, showToast]);
 
   const deleteTask = useCallback((id) => {
-    const newStore = { ...store, tasks: store.tasks.filter((t) => t.id !== id) };
-    saveStore(newStore);
+    updateStore((prev) => ({
+      ...prev,
+      tasks: (prev.tasks || []).filter((t) => t.id !== id),
+    }));
     showToast('🗑️ பணி நீக்கப்பட்டது');
-  }, [store, saveStore, showToast]);
+  }, [updateStore, showToast]);
 
   const addExpense = useCallback((expense) => {
     const newExp = { id: generateId(), ...expense, createdAt: Date.now(), proof: null, proofAddedAt: null };
-    const newStore = { ...store, expenses: [newExp, ...store.expenses] };
-    saveStore(newStore);
+    updateStore((prev) => ({
+      ...prev,
+      expenses: [newExp, ...(prev.expenses || [])],
+    }));
     showToast('💰 செலவு பதிவு செய்யப்பட்டது!');
-  }, [store, saveStore, showToast]);
+  }, [updateStore, showToast]);
 
   const deleteExpense = useCallback((id) => {
-    const newStore = { ...store, expenses: store.expenses.filter((e) => e.id !== id) };
-    saveStore(newStore);
+    updateStore((prev) => ({
+      ...prev,
+      expenses: (prev.expenses || []).filter((e) => e.id !== id),
+    }));
     showToast('🗑️ செலவு நீக்கப்பட்டது');
-  }, [store, saveStore, showToast]);
+  }, [updateStore, showToast]);
 
   const addCapital = useCallback((capital) => {
-    const newStore = { ...store, capitals: [{ id: generateId(), ...capital, createdAt: Date.now() }, ...store.capitals] };
-    saveStore(newStore);
+    const newCap = { id: generateId(), ...capital, createdAt: Date.now() };
+    updateStore((prev) => ({
+      ...prev,
+      capitals: [newCap, ...(prev.capitals || [])],
+    }));
     showToast('🏦 மூலதனம் சேர்க்கப்பட்டது!');
-  }, [store, saveStore, showToast]);
+  }, [updateStore, showToast]);
 
   const addWorklog = useCallback((log) => {
-    const newStore = { ...store, worklogs: [{ id: generateId(), ...log, createdAt: Date.now(), proof: null, proofAddedAt: null }, ...store.worklogs] };
-    saveStore(newStore);
+    const newLog = { id: generateId(), ...log, createdAt: Date.now(), proof: null, proofAddedAt: null };
+    updateStore((prev) => ({
+      ...prev,
+      worklogs: [newLog, ...(prev.worklogs || [])],
+    }));
     showToast('⏱️ உழைப்பு பதிவு சேர்க்கப்பட்டது!');
-  }, [store, saveStore, showToast]);
+  }, [updateStore, showToast]);
 
   const deleteWorklog = useCallback((id) => {
-    const newStore = { ...store, worklogs: store.worklogs.filter((w) => w.id !== id) };
-    saveStore(newStore);
-  }, [store, saveStore]);
+    updateStore((prev) => ({
+      ...prev,
+      worklogs: (prev.worklogs || []).filter((w) => w.id !== id),
+    }));
+  }, [updateStore]);
 
   const addProof = useCallback((type, id, dataUrl) => {
     const now = Date.now();
-    const updateList = (list) => list.map((item) =>
-      item.id === id ? { ...item, proof: dataUrl, proofAddedAt: now } : item
-    );
-    const newStore = {
-      ...store,
-      tasks:    type === 'task'    ? updateList(store.tasks)    : store.tasks,
-      expenses: type === 'expense' ? updateList(store.expenses) : store.expenses,
-      worklogs: type === 'work'    ? updateList(store.worklogs) : store.worklogs,
-    };
-    saveStore(newStore);
+    const updateList = (list) =>
+      (list || []).map((item) =>
+        item.id === id ? { ...item, proof: dataUrl, proofAddedAt: now } : item
+      );
+    updateStore((prev) => ({
+      ...prev,
+      tasks:    type === 'task'    ? updateList(prev.tasks)    : prev.tasks,
+      expenses: type === 'expense' ? updateList(prev.expenses) : prev.expenses,
+      worklogs: type === 'work'    ? updateList(prev.worklogs) : prev.worklogs,
+    }));
     showToast('📸 சான்று சேர்க்கப்பட்டது!');
-  }, [store, saveStore, showToast]);
+  }, [updateStore, showToast]);
 
   const wipeAll = useCallback(() => {
     const empty = { ...DEFAULT_STATE, tasks: [], expenses: [], capitals: [], worklogs: [] };

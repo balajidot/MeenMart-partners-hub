@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { compressImage } from '../../utils/calculations';
 import { PARTNER_NAMES } from '../../config/partners';
 
@@ -24,17 +24,16 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
   const [proofBusy, setProofBusy] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setAmount('');
-      setAmountTouched(false);
-      setReason('');
-      setReasonTouched(false);
-      setProof(null);
-      setProofLabel('ரசீது / பில் புகைப்படம் இணைக்க தட்டவும்');
-      setLoading(false);
-    }
-  }, [isOpen]);
+  const handleClose = () => {
+    setAmount('');
+    setAmountTouched(false);
+    setReason('');
+    setReasonTouched(false);
+    setProof(null);
+    setProofLabel('ரசீது / பில் புகைப்படம் இணைக்க தட்டவும்');
+    setLoading(false);
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -77,11 +76,11 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
       proof,
       proofAddedAt: proof ? Date.now() : null,
     });
-    onClose();
+    handleClose();
   };
 
   return (
-    <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}>
+    <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={handleClose}>
       <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title">
@@ -91,7 +90,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
               <small>Business Expense & Auto Capital Credit</small>
             </div>
           </div>
-          <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
+          <button className="modal-close" onClick={handleClose} aria-label="Close">✕</button>
         </div>
 
         <form className="modal-body" onSubmit={handleSubmit} noValidate>
@@ -182,7 +181,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn-cancel" onClick={onClose}>
+            <button type="button" className="btn-cancel" onClick={handleClose}>
               ரத்து
             </button>
             <button type="submit" className="btn-submit" disabled={!canSubmit}>

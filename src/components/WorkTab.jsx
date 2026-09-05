@@ -47,6 +47,7 @@ export default function WorkTab({
   addProof,
   onOpenLightbox,
   onOpenWork,
+  currentPartner,
 }) {
   const [search, setSearch] = useState('');
 
@@ -105,7 +106,7 @@ export default function WorkTab({
           />
         </div>
 
-        <div className="pill-group" aria-label="Partner filter">
+        <div className="pill-group partner-group" aria-label="Partner filter">
           {PARTNER_PILLS.map(({ id, label, cls }) => (
             <button
               key={id}
@@ -151,6 +152,7 @@ export default function WorkTab({
               {group.items.map((log) => {
                 const avatar = AVATARS[log.partner] || '👤';
                 const partnerLower = (log.partner || '').toLowerCase();
+                const isOwner = log.partner === currentPartner?.name;
 
                 return (
                   <div key={log.id} className="worklog-card">
@@ -159,6 +161,7 @@ export default function WorkTab({
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>
                           {log.partner}
+                          {!isOwner && <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.5 }}>🔒</span>}
                         </div>
                         <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                           <span className={`chip ${partnerLower}`}>{log.category}</span>
@@ -196,29 +199,33 @@ export default function WorkTab({
                             title="சான்றைப் பெரிதாக்கிப் பார்க்க தட்டவும்"
                           />
                         )}
-                        <label className="btn-sm">
-                          📷 {log.proof ? 'மாற்று' : 'சான்று'}
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="file-hidden"
-                            onChange={(e) => handleFileUpload(log.id, e)}
-                          />
-                        </label>
+                        {isOwner && (
+                          <label className="btn-sm">
+                            📷 {log.proof ? 'மாற்று' : 'சான்று'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="file-hidden"
+                              onChange={(e) => handleFileUpload(log.id, e)}
+                            />
+                          </label>
+                        )}
                       </div>
 
-                      <button
-                        className="btn-sm danger"
-                        onClick={() => {
-                          if (window.confirm('இப்பதிவை நீக்க வேண்டுமா?')) {
-                            deleteWorklog(log.id);
-                          }
-                        }}
-                        title="நீக்கு"
-                        aria-label="Delete work log"
-                      >
-                        🗑️
-                      </button>
+                      {isOwner && (
+                        <button
+                          className="btn-sm danger"
+                          onClick={() => {
+                            if (window.confirm('இப்பதிவை நீக்க வேண்டுமா?')) {
+                              deleteWorklog(log.id);
+                            }
+                          }}
+                          title="நீக்கு"
+                          aria-label="Delete work log"
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
