@@ -2,8 +2,8 @@
   "rules": {
     "meenmart": {
       "data": {
-        ".read":  "auth != null && (auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'nagoor.meenmart@gmail.com' || auth.token.email == 'jp.meenmart@gmail.com')",
-        ".write": "auth != null && (auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'nagoor.meenmart@gmail.com' || auth.token.email == 'jp.meenmart@gmail.com')"
+        ".read":  "auth != null && (auth.token.email == 'itzbalajir@gmail.com' || auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'nagoor.meenmart@gmail.com' || auth.token.email == 'jp.meenmart@gmail.com')",
+        ".write": "auth != null && (auth.token.email == 'itzbalajir@gmail.com' || auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'nagoor.meenmart@gmail.com' || auth.token.email == 'jp.meenmart@gmail.com')"
       }
     }
   }
