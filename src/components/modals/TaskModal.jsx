@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getLocalDateStr } from '../../utils/calculations';
 import { PARTNER_NAMES, PARTNER_CONFIG } from '../../config/partners';
 
 export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }) {
@@ -34,7 +35,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
       title: title.trim(),
       from,
       to,
-      dueDateTime: dueDateTime || new Date().toISOString(),
+      dueDateTime: dueDateTime || getLocalDateStr(),
       proof: null,
       proofAddedAt: null,
     });

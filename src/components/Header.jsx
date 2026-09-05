@@ -29,8 +29,15 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
       e.preventDefault();
       setDeferredPrompt(e);
     };
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+    };
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
 
   useEffect(() => {

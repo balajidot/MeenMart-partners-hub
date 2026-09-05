@@ -3,7 +3,7 @@ import { calcFounderStats } from '../utils/calculations';
 
 const FOUNDERS = [
   { name: 'Balaji', role: 'Tech & Product',   avatar: '💻', key: 'balaji', valClass: 'balaji-c' },
-  { name: 'Nagoor', role: 'Procure & Pack',   avatar: '🦐', key: 'nagoor', valClass: 'nagoor-c' },
+  { name: 'Nagoor', role: 'Procure & Pack',   avatar: '🐟', key: 'nagoor', valClass: 'nagoor-c' },
   { name: 'JP',     role: 'Delivery & Sales', avatar: '🛵', key: 'jp',     valClass: 'jp-c' },
 ];
 
@@ -11,10 +11,11 @@ function TaskPerformanceHero({ store, partnerFilter, setPartnerFilter }) {
   const allTasks = store.tasks || [];
   const completedTasks = allTasks.filter((t) => t.status === 'completed');
   const pendingTasks = allTasks.filter((t) => t.status !== 'completed');
-  const totalHours = (store.worklogs || []).reduce((s, w) => s + Number(w.hours || 0), 0);
+  const rawHours = (store.worklogs || []).reduce((s, w) => s + Number(w.hours || 0), 0);
+  const totalHours = Number(rawHours.toFixed(1));
 
   const completionRate = useMemo(() => {
-    if (allTasks.length === 0) return 100;
+    if (allTasks.length === 0) return 0;
     return Math.round((completedTasks.length / allTasks.length) * 100);
   }, [allTasks.length, completedTasks.length]);
 
@@ -93,7 +94,7 @@ function TaskPerformanceHero({ store, partnerFilter, setPartnerFilter }) {
             const partnerTasks = allTasks.filter((t) => t.to === name);
             const partnerDone = partnerTasks.filter((t) => t.status === 'completed').length;
             const partnerPending = partnerTasks.length - partnerDone;
-            const partnerRate = partnerTasks.length > 0 ? Math.round((partnerDone / partnerTasks.length) * 100) : 100;
+            const partnerRate = partnerTasks.length > 0 ? Math.round((partnerDone / partnerTasks.length) * 100) : 0;
 
             return (
               <button
@@ -127,7 +128,11 @@ function TaskPerformanceHero({ store, partnerFilter, setPartnerFilter }) {
                 </div>
 
                 <div className="founder-status-badge">
-                  {partnerPending > 0 ? (
+                  {partnerTasks.length === 0 ? (
+                    <span className="status-done-tag" style={{ background: 'var(--card-subtle, #f0f3f8)', color: 'var(--text-muted)' }}>
+                      பணிகள் இல்லை
+                    </span>
+                  ) : partnerPending > 0 ? (
                     <span className="status-pending-tag">{partnerPending} நிலுவை</span>
                   ) : (
                     <span className="status-done-tag">✓ அனைத்தும் முடிந்தது</span>

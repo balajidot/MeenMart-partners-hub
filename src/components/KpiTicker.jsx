@@ -19,7 +19,10 @@ function KpiTicker({ store }) {
         )}
       </div>
 
-      <div className="fhero-main-val">
+      <div
+        className="fhero-main-val"
+        style={kpis.cashBalance < 0 ? { color: 'var(--danger)' } : undefined}
+      >
         {fmtCurrency(kpis.cashBalance)}
       </div>
 

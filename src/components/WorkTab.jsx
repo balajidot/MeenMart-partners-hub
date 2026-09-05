@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { fmtDate, compressImage, TAMIL_MONTHS } from '../utils/calculations';
+import { fmtDate, compressImage, TAMIL_MONTHS, getLocalDateStr } from '../utils/calculations';
 
 const AVATARS = {
   Balaji: '💻',
@@ -16,6 +16,9 @@ const PARTNER_PILLS = [
 
 function groupByDate(logs) {
   const groups = new Map();
+  const todayStr = getLocalDateStr();
+  const yesterdayStr = getLocalDateStr(new Date(Date.now() - 86400000));
+
   logs.forEach((l) => {
     const key = l.date || 'other';
     if (!groups.has(key)) {
@@ -23,10 +26,8 @@ function groupByDate(logs) {
       if (key === 'other') label = 'மற்றவை';
       else {
         const d = new Date(key);
-        const today = new Date().toISOString().slice(0, 10);
-        const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-        if (key === today) label = 'இன்று';
-        else if (key === yesterday) label = 'நேற்று';
+        if (key === todayStr) label = 'இன்று';
+        else if (key === yesterdayStr) label = 'நேற்று';
         else label = `${d.getDate()} ${TAMIL_MONTHS[d.getMonth()]}`;
       }
       groups.set(key, { label, items: [] });
@@ -57,7 +58,7 @@ export default function WorkTab({
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((w) =>
-        (w.desc || '').toLowerCase().includes(q) ||
+        (w.desc || w.description || '').toLowerCase().includes(q) ||
         (w.category || '').toLowerCase().includes(q) ||
         (w.partner || '').toLowerCase().includes(q)
       );
@@ -76,10 +77,10 @@ export default function WorkTab({
 
   const grouped = useMemo(() => groupByDate(filteredLogs), [filteredLogs]);
 
-  const totalHours = useMemo(
-    () => filteredLogs.reduce((s, w) => s + Number(w.hours || 0), 0),
-    [filteredLogs]
-  );
+  const totalHours = useMemo(() => {
+    const raw = filteredLogs.reduce((s, w) => s + Number(w.hours || 0), 0);
+    return Number(raw.toFixed(1));
+  }, [filteredLogs]);
 
   const handleFileUpload = async (logId, e) => {
     const file = e.target.files?.[0];
@@ -173,7 +174,7 @@ export default function WorkTab({
                       </div>
                     </div>
 
-                    <div className="work-desc">{log.desc}</div>
+                    <div className="work-desc">{log.desc || log.description}</div>
 
                     <div style={{
                       display: 'flex',

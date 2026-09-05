@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { TAMIL_DAYS, TAMIL_MONTHS } from '../utils/calculations';
+import { TAMIL_DAYS, TAMIL_MONTHS, getLocalDateStr } from '../utils/calculations';
 
 export default function CalendarStrip({ store, weekOffset, setWeekOffset, selectedDate, setSelectedDate }) {
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const todayStr = useMemo(() => getLocalDateStr(), []);
 
   const days = useMemo(() => {
     const base = new Date();
@@ -15,13 +15,13 @@ export default function CalendarStrip({ store, weekOffset, setWeekOffset, select
     for (let i = 0; i < 7; i++) {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const date = String(d.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${date}`;
+      const dateStr = getLocalDateStr(d);
 
       const hasActivity =
-        (store.tasks || []).some((t) => (t.dueDateTime || '').startsWith(dateStr)) ||
+        (store.tasks || []).some((t) => {
+          const raw = t.dueDateTime || t.dueAt || t.createdAt;
+          return raw ? getLocalDateStr(raw) === dateStr : false;
+        }) ||
         (store.expenses || []).some((e) => e.date === dateStr) ||
         (store.worklogs || []).some((w) => w.date === dateStr);
 

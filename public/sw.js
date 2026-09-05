@@ -33,6 +33,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Skip non-http schemes (e.g. chrome-extension://, data:)
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
   // Skip Firebase RTDB / Google auth / external API requests
   if (
     url.hostname.includes('firebaseio.com') ||

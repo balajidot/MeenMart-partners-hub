@@ -59,7 +59,9 @@ export default function AppShell({ user, partner, onSignOut }) {
     completeTaskWithProof,
     deleteTask,
     addExpense,
+    deleteExpense,
     addCapital,
+    deleteCapital,
     addWorklog,
     deleteWorklog,
     addProof,
@@ -159,6 +161,10 @@ export default function AppShell({ user, partner, onSignOut }) {
           <FinanceTab
             store={store}
             onOpenCapital={() => setActiveModal('capital')}
+            onOpenLightbox={handleOpenLightbox}
+            deleteExpense={deleteExpense}
+            deleteCapital={deleteCapital}
+            currentPartner={partner}
           />
         )}
       </Suspense>

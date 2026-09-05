@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { getLocalDateStr } from '../../utils/calculations';
 import { PARTNER_NAMES } from '../../config/partners';
 
 export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPartner }) {
   const partner = currentPartner?.name || PARTNER_NAMES[0];
   const [amount, setAmount] = useState('');
   const [amountTouched, setAmountTouched] = useState(false);
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => getLocalDateStr());
   const [note, setNote] = useState('கூடுதல் மூலதன முதலீடு');
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +33,7 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
     onAddCapital({
       partner,
       amount: numAmount,
-      date,
+      date: date || getLocalDateStr(),
       note: note.trim(),
     });
     handleClose();

@@ -14,7 +14,14 @@ const PARTNERS = [
   { name: 'JP',     dotCls: 'dot-j', color: 'var(--jp)' },
 ];
 
-export default function FinanceTab({ store, onOpenCapital }) {
+export default function FinanceTab({
+  store,
+  onOpenCapital,
+  onOpenLightbox,
+  deleteExpense,
+  deleteCapital,
+  currentPartner,
+}) {
   const settlement = useMemo(() => calcSettlement(store), [store]);
 
   const partnerContribs = useMemo(() => {
@@ -41,23 +48,30 @@ export default function FinanceTab({ store, onOpenCapital }) {
     (store.capitals || []).forEach((c) => {
       list.push({
         id: `cap-${c.id}`,
+        rawId: c.id,
         type: 'capital',
+        partner: c.partner,
         title: `${c.partner} · மூலதன முதலீடு`,
         sub: `${fmtDate(c.date)} · ${c.note || 'மூலதனம்'}`,
-        amount: c.amount,
+        amount: Number(c.amount || 0),
         isCredit: true,
         date: c.date,
+        proof: null,
       });
     });
     (store.expenses || []).forEach((e) => {
       list.push({
         id: `exp-${e.id}`,
+        rawId: e.id,
         type: 'expense',
+        partner: e.partner,
         title: `${e.partner} · ${e.category}`,
         sub: `${fmtDate(e.date)} · ${e.reason || ''}`,
-        amount: e.amount,
+        amount: Number(e.amount || 0),
         isCredit: false,
         date: e.date,
+        proof: e.proof || null,
+        proofAddedAt: e.proofAddedAt || null,
       });
     });
     list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
@@ -171,8 +185,47 @@ export default function FinanceTab({ store, onOpenCapital }) {
                   <div className="tx-title">{tx.title}</div>
                   <div className="tx-sub">{tx.sub}</div>
                 </div>
-                <div className={`tx-amount mono ${tx.isCredit ? 'capital' : ''}`}>
-                  {tx.isCredit ? '+' : '−'}{fmtCurrency(tx.amount)}
+                {tx.proof && (
+                  <img
+                    src={tx.proof}
+                    alt="Receipt Proof"
+                    className="proof-thumb"
+                    style={{ margin: '0 8px' }}
+                    onClick={() =>
+                      onOpenLightbox?.(
+                        tx.proof,
+                        tx.partner,
+                        'செலவு ரசீது',
+                        tx.proofAddedAt
+                      )
+                    }
+                    title="ரசீதைப் பார்க்க தட்டவும்"
+                  />
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div className={`tx-amount mono ${tx.isCredit ? 'capital' : ''}`}>
+                    {tx.isCredit ? '+' : '−'}{fmtCurrency(tx.amount)}
+                  </div>
+                  {tx.partner === currentPartner?.name && (
+                    <button
+                      className="btn-sm danger"
+                      style={{ padding: '3px 7px', fontSize: 11 }}
+                      onClick={() => {
+                        const typeLabel = tx.isCredit ? 'மூலதனப் பதிவை' : 'செலவுப் பதிவை';
+                        if (window.confirm(`இப் ${typeLabel} நீக்க வேண்டுமா?`)) {
+                          if (tx.isCredit) {
+                            deleteCapital?.(tx.rawId);
+                          } else {
+                            deleteExpense?.(tx.rawId);
+                          }
+                        }
+                      }}
+                      title="நீக்கு"
+                      aria-label="Delete transaction"
+                    >
+                      🗑️
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

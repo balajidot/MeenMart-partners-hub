@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { fmtDate, compressImage, TAMIL_MONTHS } from '../utils/calculations';
+import { fmtDate, compressImage, TAMIL_MONTHS, getLocalDateStr } from '../utils/calculations';
 
 const STATUS_PILLS = [
   { id: 'all',       label: 'அனைத்தும்' },
@@ -16,23 +16,24 @@ const PARTNER_PILLS = [
 
 function groupByDate(tasks) {
   const groups = new Map();
+  const todayStr = getLocalDateStr();
+  const yesterdayStr = getLocalDateStr(new Date(Date.now() - 86400000));
+  const tomorrowStr = getLocalDateStr(new Date(Date.now() + 86400000));
+
   tasks.forEach((t) => {
-    const raw = t.dueDateTime || t.createdAt || '';
-    const d = raw ? new Date(raw) : null;
-    if (!d || isNaN(d)) {
-      const key = 'other';
-      if (!groups.has(key)) groups.set(key, { label: 'மற்றவை', items: [] });
-      groups.get(key).items.push(t);
+    const raw = t.dueDateTime || t.dueAt || t.createdAt || '';
+    const key = raw ? getLocalDateStr(raw) : '';
+    if (!key) {
+      const fallbackKey = 'other';
+      if (!groups.has(fallbackKey)) groups.set(fallbackKey, { label: 'மற்றவை', items: [] });
+      groups.get(fallbackKey).items.push(t);
       return;
     }
-    const key = d.toISOString().slice(0, 10);
-    const today = new Date();
-    const tomorrow = new Date(today.getTime() + 86400000);
-    const yesterday = new Date(today.getTime() - 86400000);
+    const d = new Date(raw);
     let label;
-    if (key === today.toISOString().slice(0, 10)) label = 'இன்று';
-    else if (key === tomorrow.toISOString().slice(0, 10)) label = 'நாளை';
-    else if (key === yesterday.toISOString().slice(0, 10)) label = 'நேற்று';
+    if (key === todayStr) label = 'இன்று';
+    else if (key === tomorrowStr) label = 'நாளை';
+    else if (key === yesterdayStr) label = 'நேற்று';
     else label = `${d.getDate()} ${TAMIL_MONTHS[d.getMonth()]}`;
     if (!groups.has(key)) groups.set(key, { label, items: [] });
     groups.get(key).items.push(t);
@@ -87,7 +88,10 @@ export default function TasksTab({
     }
 
     if (selectedDate) {
-      list = list.filter((t) => (t.dueDateTime || '').startsWith(selectedDate));
+      list = list.filter((t) => {
+        const raw = t.dueDateTime || t.dueAt || t.createdAt;
+        return raw ? getLocalDateStr(raw) === selectedDate : false;
+      });
     }
 
     return list;
@@ -182,6 +186,7 @@ export default function TasksTab({
                 const isAssignee = task.to === me;
                 const isCreator = task.from === me;
                 const isMine = isAssignee || isCreator;
+                const canComplete = isAssignee || isCreator;
 
                 return (
                   <div
@@ -190,11 +195,11 @@ export default function TasksTab({
                   >
                     <div className="task-top">
                       <button
-                        className={`task-check ${isDone ? 'done' : ''} ${!isAssignee && !isDone ? 'disabled' : ''}`}
-                        onClick={() => !isDone && isAssignee && handleTriggerComplete(task)}
-                        title={isDone ? 'முடிந்தது' : isAssignee ? 'முடிக்க தட்டவும்' : `${task.to} மட்டுமே முடிக்க முடியும்`}
+                        className={`task-check ${isDone ? 'done' : ''} ${!canComplete && !isDone ? 'disabled' : ''}`}
+                        onClick={() => !isDone && canComplete && handleTriggerComplete(task)}
+                        title={isDone ? 'முடிந்தது' : canComplete ? 'முடிக்க தட்டவும்' : `${task.to} அல்லது உருவாக்கியவர் மட்டுமே முடிக்க முடியும்`}
                         aria-label={isDone ? 'Completed' : 'Mark complete'}
-                        aria-disabled={!isAssignee && !isDone}
+                        aria-disabled={!canComplete && !isDone}
                       />
 
                       <div className="task-body">
@@ -206,9 +211,9 @@ export default function TasksTab({
                           <span className={`chip ${toCls}`}>
                             {task.from === task.to ? `${task.to} (சுயம்)` : `${task.from} → ${task.to}`}
                           </span>
-                          {task.dueDateTime && (
+                          {(task.dueDateTime || task.dueAt) && (
                             <span className="chip gray">
-                              🕒 {fmtDate(task.dueDateTime)}
+                              🕒 {fmtDate(task.dueDateTime || task.dueAt)}
                             </span>
                           )}
                           {!isMine && (
@@ -233,7 +238,7 @@ export default function TasksTab({
                         </div>
 
                         <div className="task-actions">
-                          {!isDone && isAssignee && (
+                          {!isDone && canComplete && (
                             <button
                               className="btn-sm success"
                               onClick={() => handleTriggerComplete(task)}

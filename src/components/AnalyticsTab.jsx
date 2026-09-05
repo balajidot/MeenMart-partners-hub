@@ -53,7 +53,11 @@ export default function AnalyticsTab({ store }) {
       labels: PARTNERS,
       datasets: [{
         label: 'மணிநேரம்',
-        data: [hours.Balaji, hours.Nagoor, hours.JP],
+        data: [
+          Number(hours.Balaji.toFixed(1)),
+          Number(hours.Nagoor.toFixed(1)),
+          Number(hours.JP.toFixed(1)),
+        ],
         backgroundColor: ['#3d6fe0', '#17a674', '#d19207'],
         borderRadius: 8,
         borderSkipped: false,
@@ -64,11 +68,12 @@ export default function AnalyticsTab({ store }) {
   const taskData = useMemo(() => {
     const completed = (store.tasks || []).filter((t) => t.status === 'completed').length;
     const pending = (store.tasks || []).filter((t) => t.status !== 'completed').length;
+    const hasAny = completed > 0 || pending > 0;
     return {
-      labels: ['முடிந்தது', 'நிலுவை'],
+      labels: hasAny ? ['முடிந்தது', 'நிலுவை'] : ['பணிகள் இல்லை'],
       datasets: [{
-        data: [completed || (pending === 0 ? 1 : 0), pending],
-        backgroundColor: ['#17a674', '#d94848'],
+        data: hasAny ? [completed, pending] : [1],
+        backgroundColor: hasAny ? ['#17a674', '#d94848'] : ['rgba(255,255,255,0.08)'],
         borderColor: cardBg,
         borderWidth: 3,
       }],
@@ -85,10 +90,10 @@ export default function AnalyticsTab({ store }) {
     });
     const hasAny = totals.Balaji > 0 || totals.Nagoor > 0 || totals.JP > 0;
     return {
-      labels: PARTNERS,
+      labels: hasAny ? PARTNERS : ['நிதிப் பதிவுகள் இல்லை'],
       datasets: [{
-        data: hasAny ? [totals.Balaji, totals.Nagoor, totals.JP] : [1, 1, 1],
-        backgroundColor: ['#3d6fe0', '#17a674', '#d19207'],
+        data: hasAny ? [totals.Balaji, totals.Nagoor, totals.JP] : [1],
+        backgroundColor: hasAny ? ['#3d6fe0', '#17a674', '#d19207'] : ['rgba(255,255,255,0.08)'],
         borderColor: cardBg,
         borderWidth: 3,
       }],
@@ -119,7 +124,8 @@ export default function AnalyticsTab({ store }) {
   }, [store.expenses, cardBg]);
 
   const summary = useMemo(() => {
-    const totalHours = (store.worklogs || []).reduce((s, w) => s + Number(w.hours || 0), 0);
+    const rawHours = (store.worklogs || []).reduce((s, w) => s + Number(w.hours || 0), 0);
+    const totalHours = Number(rawHours.toFixed(1));
     const completedTasks = (store.tasks || []).filter((t) => t.status === 'completed').length;
     const totalTasks = (store.tasks || []).length;
     const totalSpent = (store.expenses || []).reduce((s, e) => s + Number(e.amount || 0), 0);

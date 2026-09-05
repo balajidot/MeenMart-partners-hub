@@ -42,24 +42,38 @@ export function generateId() {
 export function getSeedData() {
   const now = Date.now();
   const day = 86400000;
+  const toLocalYMD = (ts) => {
+    const d = new Date(ts);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const date = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${date}`;
+  };
+
   return {
     tasks: [
       {
         id: generateId(), title: 'காலை மீன் மார்க்கெட் கொள்முதல்',
         from: 'Nagoor', to: 'Nagoor',
-        dueAt: now + 2 * 60 * 60 * 1000, status: 'pending',
+        dueAt: now + 2 * 60 * 60 * 1000,
+        dueDateTime: new Date(now + 2 * 60 * 60 * 1000).toISOString(),
+        status: 'pending',
         createdAt: now - day, proof: null, proofAddedAt: null,
       },
       {
         id: generateId(), title: 'MeenMart App வாடிக்கையாளர் Notification Setup',
         from: 'Balaji', to: 'Balaji',
-        dueAt: now + day, status: 'pending',
+        dueAt: now + day,
+        dueDateTime: new Date(now + day).toISOString(),
+        status: 'pending',
         createdAt: now - 2 * day, proof: null, proofAddedAt: null,
       },
       {
         id: generateId(), title: 'Anna Nagar டெலிவரி Route திட்டம்',
         from: 'JP', to: 'JP',
-        dueAt: now - 60 * 60 * 1000, status: 'completed',
+        dueAt: now - 60 * 60 * 1000,
+        dueDateTime: new Date(now - 60 * 60 * 1000).toISOString(),
+        status: 'completed',
         createdAt: now - 3 * day, proof: null, proofAddedAt: null,
       },
     ],
@@ -67,31 +81,31 @@ export function getSeedData() {
       {
         id: generateId(), partner: 'Nagoor', amount: 4500,
         category: 'மீன் கொள்முதல்', reason: 'காசிமேடு சந்தை வஞ்சிரம் & இறால்',
-        date: new Date(now - day).toISOString().slice(0, 10),
+        date: toLocalYMD(now - day),
         createdAt: now - day, proof: null, proofAddedAt: null,
       },
       {
         id: generateId(), partner: 'JP', amount: 800,
         category: 'டெலிவரி & பெட்ரோல்', reason: 'டெலிவரி பெட்ரோல் & பைக் சர்வீஸ்',
-        date: new Date(now - 2 * day).toISOString().slice(0, 10),
+        date: toLocalYMD(now - 2 * day),
         createdAt: now - 2 * day, proof: null, proofAddedAt: null,
       },
       {
         id: generateId(), partner: 'Balaji', amount: 1200,
         category: 'ஆப் & சர்வர்', reason: 'Firebase Blaze Plan மாத கட்டணம்',
-        date: new Date(now - 3 * day).toISOString().slice(0, 10),
+        date: toLocalYMD(now - 3 * day),
         createdAt: now - 3 * day, proof: null, proofAddedAt: null,
       },
     ],
     capitals: [
-      { id: generateId(), partner: 'Balaji', amount: 20000, note: 'ஆரம்ப முதலீடு', date: new Date(now - 10 * day).toISOString().slice(0, 10), createdAt: now - 10 * day },
-      { id: generateId(), partner: 'Nagoor', amount: 20000, note: 'ஆரம்ப முதலீடு', date: new Date(now - 10 * day).toISOString().slice(0, 10), createdAt: now - 10 * day },
-      { id: generateId(), partner: 'JP',     amount: 10000, note: 'ஆரம்ப முதலீடு', date: new Date(now - 10 * day).toISOString().slice(0, 10), createdAt: now - 10 * day },
+      { id: generateId(), partner: 'Balaji', amount: 20000, note: 'ஆரம்ப முதலீடு', date: toLocalYMD(now - 10 * day), createdAt: now - 10 * day },
+      { id: generateId(), partner: 'Nagoor', amount: 20000, note: 'ஆரம்ப முதலீடு', date: toLocalYMD(now - 10 * day), createdAt: now - 10 * day },
+      { id: generateId(), partner: 'JP',     amount: 10000, note: 'ஆரம்ப முதலீடு', date: toLocalYMD(now - 10 * day), createdAt: now - 10 * day },
     ],
     worklogs: [
-      { id: generateId(), partner: 'Nagoor', hours: 6, category: 'மீன் கொள்முதல்', description: 'காலை 5 மணி மார்க்கெட் — வஞ்சிரம், சங்கரா கொள்முதல் & 12 ஆர்டர்கள் பேக்கிங்', date: new Date(now - day).toISOString().slice(0, 10), createdAt: now - day, proof: null },
-      { id: generateId(), partner: 'JP',     hours: 5, category: 'டெலிவரி மேலாண்மை', description: 'T.Nagar, Nungambakkam, Anna Nagar 18 ஆர்டர்கள் டெலிவரி', date: new Date(now - day).toISOString().slice(0, 10), createdAt: now - day, proof: null },
-      { id: generateId(), partner: 'Balaji', hours: 8, category: 'ஆப் & டெவலப்மென்ட்', description: 'MeenMart App Firebase Integration & Order Tracking Feature', date: new Date(now - 2 * day).toISOString().slice(0, 10), createdAt: now - 2 * day, proof: null },
+      { id: generateId(), partner: 'Nagoor', hours: 6, category: 'மீன் கொள்முதல்', desc: 'காலை 5 மணி மார்க்கெட் — வஞ்சிரம், சங்கரா கொள்முதல் & 12 ஆர்டர்கள் பேக்கிங்', description: 'காலை 5 மணி மார்க்கெட் — வஞ்சிரம், சங்கரா கொள்முதல் & 12 ஆர்டர்கள் பேக்கிங்', date: toLocalYMD(now - day), createdAt: now - day, proof: null },
+      { id: generateId(), partner: 'JP',     hours: 5, category: 'டெலிவரி மேலாண்மை', desc: 'T.Nagar, Nungambakkam, Anna Nagar 18 ஆர்டர்கள் டெலிவரி', description: 'T.Nagar, Nungambakkam, Anna Nagar 18 ஆர்டர்கள் டெலிவரி', date: toLocalYMD(now - day), createdAt: now - day, proof: null },
+      { id: generateId(), partner: 'Balaji', hours: 8, category: 'ஆப் & டெவலப்மென்ட்', desc: 'MeenMart App Firebase Integration & Order Tracking Feature', description: 'MeenMart App Firebase Integration & Order Tracking Feature', date: toLocalYMD(now - 2 * day), createdAt: now - 2 * day, proof: null },
     ],
     messages: [
       { id: generateId(), partner: 'Balaji', text: 'வணக்கம் தோழர்களே! MeenMart Partners Hub நேரலைக்கு வந்துவிட்டது 🚀', createdAt: now - 3600000 * 5 },

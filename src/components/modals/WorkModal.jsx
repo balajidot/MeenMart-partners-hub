@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { compressImage } from '../../utils/calculations';
+import { compressImage, getLocalDateStr } from '../../utils/calculations';
 import { PARTNER_NAMES } from '../../config/partners';
 
 const WORK_CATEGORIES = [
@@ -17,7 +17,7 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartne
   const partner = currentPartner?.name || PARTNER_NAMES[0];
   const [hours, setHours] = useState(4);
   const [category, setCategory] = useState(WORK_CATEGORIES[0]);
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => getLocalDateStr());
   const [desc, setDesc] = useState('');
   const [descTouched, setDescTouched] = useState(false);
   const [proof, setProof] = useState(null);
@@ -68,7 +68,7 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartne
       partner,
       hours: numHours,
       category,
-      date,
+      date: date || getLocalDateStr(),
       desc: desc.trim(),
       proof,
       proofAddedAt: proof ? Date.now() : null,

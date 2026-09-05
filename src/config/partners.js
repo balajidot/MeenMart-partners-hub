@@ -41,7 +41,7 @@ const EMAIL_TO_PARTNER = PARTNERS.reduce((acc, p) => {
 
 export function partnerFromEmail(email) {
   if (!email) return null;
-  return EMAIL_TO_PARTNER[email.toLowerCase()] || null;
+  return EMAIL_TO_PARTNER[email.trim().toLowerCase()] || null;
 }
 
 export function isAllowedEmail(email) {

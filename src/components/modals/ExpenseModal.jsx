@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { compressImage } from '../../utils/calculations';
+import { compressImage, getLocalDateStr } from '../../utils/calculations';
 import { PARTNER_NAMES } from '../../config/partners';
 
 const CATEGORIES = [
@@ -18,7 +18,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [reason, setReason] = useState('');
   const [reasonTouched, setReasonTouched] = useState(false);
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => getLocalDateStr());
   const [proof, setProof] = useState(null);
   const [proofLabel, setProofLabel] = useState('ரசீது / பில் புகைப்படம் இணைக்க தட்டவும்');
   const [proofBusy, setProofBusy] = useState(false);
@@ -72,7 +72,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
       amount: numAmount,
       category,
       reason: reason.trim(),
-      date,
+      date: date || getLocalDateStr(),
       proof,
       proofAddedAt: proof ? Date.now() : null,
     });
