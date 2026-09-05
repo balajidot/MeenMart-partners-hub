@@ -5,7 +5,7 @@ export default function AuthGate({ status, error, onSignIn }) {
     return (
       <div className="auth-screen">
         <div className="auth-card">
-          <div className="auth-logo" aria-hidden="true">🐟</div>
+          <div className="auth-logo" aria-hidden="true">M</div>
           <div className="auth-title">MeenMart</div>
           <div className="auth-sub">Loading...</div>
           <div className="auth-spinner" aria-hidden="true" />
@@ -17,7 +17,7 @@ export default function AuthGate({ status, error, onSignIn }) {
   return (
     <div className="auth-screen">
       <div className="auth-card">
-        <div className="auth-logo" aria-hidden="true">🐟</div>
+        <div className="auth-logo" aria-hidden="true">M</div>
         <div className="auth-title">MeenMart <span className="hub-pill">OPS HUB</span></div>
         <div className="auth-sub">
           உள்நுழைய Google account use pannunga
