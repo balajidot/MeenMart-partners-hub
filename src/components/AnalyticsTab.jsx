@@ -37,7 +37,7 @@ export default function AnalyticsTab({ store }) {
   const legend = {
     labels: {
       color: tickColor,
-      font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' },
+      font: { family: 'Inter', size: 11, weight: '600' },
       padding: 12,
       boxWidth: 12,
       boxHeight: 12,
