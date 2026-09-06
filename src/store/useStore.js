@@ -13,18 +13,30 @@ function toArray(val) {
   return [];
 }
 
+export function dedupeById(list) {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  return list.filter((item) => {
+    if (!item) return false;
+    const key = item.id || (item.title && item.createdAt) || (item.reason && item.createdAt) || JSON.stringify(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function loadLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       return {
-        tasks:    toArray(parsed.tasks),
-        expenses: toArray(parsed.expenses).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
-        revenues: toArray(parsed.revenues).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
-        capitals: toArray(parsed.capitals).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
-        worklogs: toArray(parsed.worklogs).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
-        messages: toArray(parsed.messages),
+        tasks:    dedupeById(toArray(parsed.tasks)),
+        expenses: dedupeById(toArray(parsed.expenses)).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
+        revenues: dedupeById(toArray(parsed.revenues)).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
+        capitals: dedupeById(toArray(parsed.capitals)).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
+        worklogs: dedupeById(toArray(parsed.worklogs)).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
+        messages: dedupeById(toArray(parsed.messages)),
       };
     }
   } catch {
@@ -66,12 +78,12 @@ export function useStore() {
       // Remote Firebase state is canonical; prevents reviving deleted items
       setStore(() => {
         const canonical = {
-          tasks:    toArray(remote.tasks),
-          expenses: toArray(remote.expenses).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
-          revenues: toArray(remote.revenues).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
-          capitals: toArray(remote.capitals).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
-          worklogs: toArray(remote.worklogs).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
-          messages: toArray(remote.messages),
+          tasks:    dedupeById(toArray(remote.tasks)),
+          expenses: dedupeById(toArray(remote.expenses)).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
+          revenues: dedupeById(toArray(remote.revenues)).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
+          capitals: dedupeById(toArray(remote.capitals)).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
+          worklogs: dedupeById(toArray(remote.worklogs)).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
+          messages: dedupeById(toArray(remote.messages)),
         };
         const pruned = pruneExpiredProofs(canonical);
         try {
@@ -94,24 +106,37 @@ export function useStore() {
   const updateStore = useCallback((updater) => {
     setStore((prev) => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
-      const pruned = pruneExpiredProofs(next);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
-      } catch (e) {
-        console.warn('Storage save failed:', e);
-      }
-      // Silent background push to Firebase
-      if (fbRef.current) {
-        set(fbRef.current, {
-          tasks:    pruned.tasks,
-          expenses: pruned.expenses,
-          revenues: pruned.revenues || [],
-          capitals: pruned.capitals,
-          worklogs: pruned.worklogs,
-          messages: pruned.messages || [],
-          lastUpdated: Date.now(),
-        }).catch((e) => console.warn('Firebase write failed (offline):', e.message));
-      }
+      const deduplicated = {
+        ...next,
+        tasks:    dedupeById(next.tasks),
+        expenses: dedupeById(next.expenses),
+        revenues: dedupeById(next.revenues),
+        capitals: dedupeById(next.capitals),
+        worklogs: dedupeById(next.worklogs),
+        messages: dedupeById(next.messages),
+      };
+      const pruned = pruneExpiredProofs(deduplicated);
+
+      // Asynchronously persist out of React state calculation
+      queueMicrotask(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+        } catch (e) {
+          console.warn('Storage save failed:', e);
+        }
+        if (fbRef.current) {
+          set(fbRef.current, {
+            tasks:    pruned.tasks || [],
+            expenses: pruned.expenses || [],
+            revenues: pruned.revenues || [],
+            capitals: pruned.capitals || [],
+            worklogs: pruned.worklogs || [],
+            messages: pruned.messages || [],
+            lastUpdated: Date.now(),
+          }).catch((e) => console.warn('Firebase write failed (offline):', e.message));
+        }
+      });
+
       return pruned;
     });
   }, []);
@@ -139,7 +164,7 @@ export function useStore() {
     };
     updateStore((prev) => ({
       ...prev,
-      tasks: [newTask, ...(prev.tasks || [])],
+      tasks: [newTask, ...(prev.tasks || []).filter((t) => t.id !== newTask.id)],
     }));
     showToast('✅ பணி சேர்க்கப்பட்டது!');
   }, [updateStore, showToast]);
@@ -192,7 +217,7 @@ export function useStore() {
     };
     updateStore((prev) => ({
       ...prev,
-      expenses: [newExp, ...(prev.expenses || [])],
+      expenses: [newExp, ...(prev.expenses || []).filter((e) => e.id !== newExp.id)],
     }));
     showToast('💰 செலவு பதிவு செய்யப்பட்டது!');
   }, [updateStore, showToast]);
@@ -215,7 +240,7 @@ export function useStore() {
     };
     updateStore((prev) => ({
       ...prev,
-      revenues: [newRev, ...(prev.revenues || [])],
+      revenues: [newRev, ...(prev.revenues || []).filter((r) => r.id !== newRev.id)],
     }));
     showToast('💚 வருவாய் பதிவு செய்யப்பட்டது!');
   }, [updateStore, showToast]);
@@ -237,7 +262,7 @@ export function useStore() {
     };
     updateStore((prev) => ({
       ...prev,
-      capitals: [newCap, ...(prev.capitals || [])],
+      capitals: [newCap, ...(prev.capitals || []).filter((c) => c.id !== newCap.id)],
     }));
     showToast('🏦 மூலதனம் சேர்க்கப்பட்டது!');
   }, [updateStore, showToast]);
@@ -262,7 +287,7 @@ export function useStore() {
     };
     updateStore((prev) => ({
       ...prev,
-      worklogs: [newLog, ...(prev.worklogs || [])],
+      worklogs: [newLog, ...(prev.worklogs || []).filter((w) => w.id !== newLog.id)],
     }));
     showToast('⏱️ உழைப்பு பதிவு சேர்க்கப்பட்டது!');
   }, [updateStore, showToast]);
@@ -302,7 +327,7 @@ export function useStore() {
     };
     updateStore((prev) => ({
       ...prev,
-      messages: [...(prev.messages || []), newMsg],
+      messages: [...(prev.messages || []).filter((m) => m.id !== newMsg.id), newMsg],
     }));
   }, [updateStore]);
 

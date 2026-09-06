@@ -43,75 +43,87 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
   };
 
   return (
-    <div className="modal-overlay open" onClick={handleClose}>
-      <div className="modal-sheet task-complete-sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <div className="modal-title">
-            <span aria-hidden="true">🎉</span>
-            <div>
-              <h3>பணியை முடிக்கவும்</h3>
-              <small>Complete Task & Attach Proof</small>
+    <>
+      <div className="sheet-overlay" onClick={handleClose} />
+      <div className="bottom-sheet">
+        <div className="sheet-handle" />
+        <div className="sheet-title">பணியை முடிக்கவும்</div>
+
+        {/* Task summary info */}
+        <div className="sheet-assignee-box" style={{ marginBottom: '16px' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--teal-dark)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '3px' }}>
+              {task.to ? `${task.to} அவர்களின் பணி` : 'அனைவருக்கும் பொதுப் பணி'}
             </div>
-          </div>
-          <button className="modal-close" onClick={handleClose} aria-label="Close">✕</button>
-        </div>
-
-        <div className="modal-body">
-          <div className="task-complete-summary">
-            <div className="task-complete-pill">{task.to} அவர்களின் பணி</div>
-            <div className="task-complete-title">{task.title}</div>
-            <div className="task-complete-sub">
-              {task.from !== task.to && <span>ஒதுக்கியவர்: <strong>{task.from}</strong> • </span>}
-              <span>நிலை: <strong>முடிக்கப்படுகிறது</strong></span>
+            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--navy)', lineHeight: 1.3 }}>
+              {task.title}
             </div>
-          </div>
-
-          <div className="form-field" style={{ marginTop: '14px' }}>
-            <label>📸 பணி முடிந்ததற்கான சான்று (Proof Photo)</label>
-            <label className="file-upload">
-              <div className="file-upload-icon">{proof ? '🖼️' : '📷'}</div>
-              <div className="file-upload-text">{proofLabel}</div>
-              <div className="file-upload-hint">48 மணி நேரத்திற்குப் பிறகு தானாக அழியும்</div>
-              <input
-                type="file"
-                accept="image/*"
-                className="file-hidden"
-                onChange={handleFileChange}
-              />
-            </label>
-
-            {proof && (
-              <div className="task-complete-preview">
-                <img src={proof} alt="Proof preview" className="task-complete-preview-img" />
-                <button
-                  type="button"
-                  className="btn-text-danger"
-                  onClick={() => {
-                    setProof(null);
-                    setProofLabel('பணி முடிந்ததற்கான புகைப்படம் இணைக்கலாம் (Optional)');
-                  }}
-                >
-                  ✕ படத்தை நீக்கு
-                </button>
+            {task.from && task.from !== task.to && (
+              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                ஒதுக்கியவர்: <strong>{task.from}</strong>
               </div>
             )}
           </div>
-
-          <div className="form-actions" style={{ marginTop: '20px' }}>
-            <button type="button" className="btn-cancel" onClick={handleClose}>
-              ரத்து
-            </button>
-            <button
-              type="button"
-              className="btn-submit"
-              onClick={handleComplete}
-              disabled={proofBusy || loading}
-            >
-              {loading ? '⏳ சேமிக்கிறது...' : '✓ முடிந்தது என சேமி'}
-            </button>
-          </div>
         </div>
+
+        {/* Proof Photo Upload */}
+        <div style={{ marginBottom: '22px' }}>
+          <div className="sheet-field-label">📸 சான்றுப் படம் (Proof Photo - Optional)</div>
+
+          {proof ? (
+            <div className="sheet-photo-preview" style={{ marginBottom: '8px' }}>
+              <img
+                src={proof}
+                alt="Proof Preview"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <button
+                type="button"
+                className="sheet-photo-remove"
+                onClick={() => {
+                  setProof(null);
+                  setProofLabel('பணி முடிந்ததற்கான புகைப்படம் இணைக்கலாம் (Optional)');
+                }}
+                aria-label="Remove photo"
+              >
+                <span style={{ color: '#fff', fontSize: '12px', lineHeight: 1 }}>✕</span>
+              </button>
+            </div>
+          ) : (
+            <label className="sheet-photo-zone" style={{ display: 'flex', cursor: 'pointer' }}>
+              <span style={{ fontSize: '20px' }}>📷</span>
+              <span className="sheet-photo-label">{proofLabel}</span>
+              <span style={{ fontSize: '10px', color: 'var(--text-faint)' }}>48 மணி நேரத்திற்குப் பிறகு தானாக அழியும்</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+            </label>
+          )}
+        </div>
+
+        {/* Buttons */}
+        <button
+          type="button"
+          className="sheet-submit-btn teal"
+          onClick={handleComplete}
+          disabled={proofBusy || loading}
+          style={{ marginBottom: '8px' }}
+        >
+          {loading ? 'சேமிக்கப்படுகிறது...' : '✓ முடிந்தது என உறுதிப்படுத்து'}
+        </button>
+
+        <button
+          type="button"
+          className="sheet-submit-btn"
+          onClick={handleClose}
+          style={{ background: 'transparent', color: 'var(--text-sec)', padding: '10px' }}
+        >
+          ரத்து (Cancel)
+        </button>
       </div>
-    </div>
+    </>
   );
 }

@@ -2,17 +2,22 @@ import React, { useState } from 'react';
 import { getLocalDateStr } from '../../utils/calculations';
 import { PARTNER_NAMES } from '../../config/partners';
 
+const PARTNER_CHIPS = [
+  { label: 'Balaji', value: 'Balaji', activeClass: 'active-balaji' },
+  { label: 'Nagoor', value: 'Nagoor', activeClass: 'active-nagoor' },
+  { label: 'JP',     value: 'JP',     activeClass: 'active-jp'     },
+];
+
 export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPartner }) {
-  const partner = currentPartner?.name || PARTNER_NAMES[0];
+  const defaultPartner = currentPartner?.name || PARTNER_NAMES[0];
+  const [partner, setPartner] = useState(defaultPartner);
   const [amount, setAmount] = useState('');
-  const [amountTouched, setAmountTouched] = useState(false);
-  const [date, setDate] = useState(() => getLocalDateStr());
   const [note, setNote] = useState('கூடுதல் மூலதன முதலீடு');
   const [loading, setLoading] = useState(false);
 
   const handleClose = () => {
     setAmount('');
-    setAmountTouched(false);
+    setNote('கூடுதல் மூலதன முதலீடு');
     setLoading(false);
     onClose();
   };
@@ -21,100 +26,89 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
 
   const numAmount = parseFloat(amount);
   const amountValid = !isNaN(numAmount) && numAmount > 0;
-  const amountError = amountTouched && !amountValid ? 'சரியான தொகை கொடுக்கவும்' : '';
   const canSubmit = amountValid && !loading;
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    setAmountTouched(true);
+    e?.preventDefault?.();
     if (!canSubmit) return;
 
     setLoading(true);
     onAddCapital({
       partner,
       amount: numAmount,
-      date: date || getLocalDateStr(),
-      note: note.trim(),
+      date: getLocalDateStr(),
+      note: note.trim() || 'மூலதன முதலீடு',
     });
     handleClose();
   };
 
   return (
-    <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={handleClose}>
-      <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <div className="modal-title">
-            <span aria-hidden="true">🏦</span>
-            <div>
-              <h3>மூலதன முதலீடு</h3>
-              <small>Capital Injection</small>
-            </div>
-          </div>
-          <button className="modal-close" onClick={handleClose} aria-label="Close">✕</button>
+    <>
+      <div className="sheet-overlay" onClick={handleClose} />
+      <div className="bottom-sheet">
+        <div className="sheet-handle" />
+        <div className="sheet-title">மூலதன முதலீடு (Capital Injection)</div>
+
+        {/* Amount Input */}
+        <div className="sheet-amount-wrap" style={{ marginBottom: '16px' }}>
+          <span className="sheet-amount-symbol">₹</span>
+          <input
+            className="sheet-amount-input"
+            type="number"
+            inputMode="numeric"
+            placeholder="0"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
+            autoFocus
+          />
         </div>
 
-        <form className="modal-body" onSubmit={handleSubmit} noValidate>
-          <div className="form-field">
-            <label>முதலீடு செய்தவர்</label>
-            <div className="locked-partner">
-              {currentPartner?.avatar || '👤'} {partner}
-            </div>
-            <div className="locked-partner-hint">உங்கள் கணக்கிலிருந்து auto-set</div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-field">
-              <label htmlFor="cap-amount">முதலீட்டுத் தொகை (₹) *</label>
-              <input
-                id="cap-amount"
-                type="number"
-                min="1"
-                step="100"
-                placeholder="எ.கா: 30000"
-                className={`form-input mono ${amountError ? 'error' : ''}`}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                onBlur={() => setAmountTouched(true)}
-                autoFocus
-              />
-              {amountError && <div className="form-error">⚠ {amountError}</div>}
-            </div>
-
-            <div className="form-field">
-              <label htmlFor="cap-date">தேதி *</label>
-              <input
-                id="cap-date"
-                type="date"
-                className="form-input"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="cap-note">குறிப்பு</label>
-            <input
-              id="cap-note"
-              type="text"
-              className="form-input"
-              placeholder="எ.கா: ஆரம்ப முதலீடு"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </div>
-
-          <div className="form-actions">
-            <button type="button" className="btn-cancel" onClick={handleClose}>
-              ரத்து
+        {/* Partner Selection */}
+        <div className="sheet-field-label">முதலீடு செய்த பங்குதாரர்</div>
+        <div className="sheet-option-chips" style={{ marginBottom: '16px' }}>
+          {PARTNER_CHIPS.map((chip) => (
+            <button
+              key={chip.value}
+              type="button"
+              className={`sheet-option-chip${partner === chip.value ? ` ${chip.activeClass}` : ''}`}
+              onClick={() => setPartner(chip.value)}
+            >
+              {chip.label}
             </button>
-            <button type="submit" className="btn-submit" disabled={!canSubmit}>
-              {loading ? '⏳ சேமிக்கிறது...' : '💾 மூலதனம் பதிவு'}
-            </button>
-          </div>
-        </form>
+          ))}
+        </div>
+
+        {/* Note */}
+        <div className="sheet-field-label">குறிப்பு (Note)</div>
+        <input
+          className="sheet-input"
+          type="text"
+          placeholder="குறிப்பு..."
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          style={{ marginBottom: '22px' }}
+        />
+
+        {/* Submit */}
+        <button
+          type="button"
+          className="sheet-submit-btn teal"
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          style={{ marginBottom: '8px' }}
+        >
+          {loading ? 'சேமிக்கப்படுகிறது...' : 'மூலதனம் பதிவு செய்'}
+        </button>
+
+        <button
+          type="button"
+          className="sheet-submit-btn"
+          onClick={handleClose}
+          style={{ background: 'transparent', color: 'var(--text-sec)', padding: '10px' }}
+        >
+          ரத்து (Cancel)
+        </button>
       </div>
-    </div>
+    </>
   );
 }

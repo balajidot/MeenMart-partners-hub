@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { getLocalDateStr } from '../../utils/calculations';
 import { PARTNER_NAMES } from '../../config/partners';
 
@@ -22,12 +22,14 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
   const [assignTo, setAssignTo] = useState(from);
   const [priority, setPriority] = useState('normal');
   const [loading, setLoading] = useState(false);
+  const isSubmitting = useRef(false);
 
   const handleClose = () => {
     setTitle('');
     setAssignTo(from);
     setPriority('normal');
     setLoading(false);
+    isSubmitting.current = false;
     onClose();
   };
 
@@ -35,8 +37,13 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
 
   const canSubmit = title.trim() && !loading;
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
+  const handleSubmit = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!canSubmit || isSubmitting.current) return;
+    isSubmitting.current = true;
     setLoading(true);
     onAddTask({
       title: title.trim(),
@@ -65,7 +72,12 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
           placeholder="What needs doing?"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSubmit(e);
+            }
+          }}
           autoFocus
           style={{ marginBottom: '18px' }}
         />
