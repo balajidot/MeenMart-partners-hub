@@ -190,8 +190,8 @@ export default function TasksTab({
           <h2 className="tasks-date-title">{headerDateLabel}</h2>
           <div className="tasks-date-sub">
             {dateTasks.length === 0
-              ? 'No tasks scheduled'
-              : `${dateTasks.length} ${dateTasks.length === 1 ? 'task' : 'tasks'} · ${completed.length} completed`}
+              ? 'Endha velaiyum scheduled illa'
+              : `${dateTasks.length} ${dateTasks.length === 1 ? 'task' : 'tasks'} · ${completed.length} mudinjidhu`}
           </div>
         </div>
         {activeDateStr !== today && (
@@ -203,7 +203,7 @@ export default function TasksTab({
               setSelectedDate(today);
             }}
           >
-            Jump to Today
+            Innaiku Vaanga
           </button>
         )}
       </div>
@@ -218,11 +218,13 @@ export default function TasksTab({
             <button
               key={dateStr}
               type="button"
-              className={`cal-day-pill${isActive ? ' active' : ''}${isToday ? ' is-today' : ''}`}
+              className={`cal-day-pill${isActive ? ' active' : ''}${isToday ? ' today' : ''}`}
               onClick={() => {
                 triggerHaptic('light');
                 setSelectedDate(dateStr);
               }}
+              aria-label={`${dow} ${dom}${isToday ? ' (Today)' : ''}${hasTasks ? ' - has tasks' : ''}`}
+              aria-pressed={isActive}
             >
               <span className="cal-day-dow">{dow}</span>
               <span className="cal-day-dom">{dom}</span>
@@ -244,13 +246,14 @@ export default function TasksTab({
       {dateTasks.length === 0 && (
         <div className="empty-state">
           <CalendarSVG />
-          <p className="empty-state-text">
-            {activeDateStr === today
-              ? 'No tasks scheduled for today.'
-              : `No tasks scheduled for this day.`}
+          <h3>Indha date-la vela yedhum illa!</h3>
+          <p>
+            {partnerFilter !== 'all'
+              ? `${partnerFilter}-ku endha task-um assign aagala.`
+              : `Indha date-la tasks yedhum scheduled illa.`}
           </p>
           <button className="empty-state-action" type="button" onClick={onOpenTask}>
-            + Add a task for this day
+            + Pudhu Task Podu
           </button>
         </div>
       )}
@@ -259,7 +262,7 @@ export default function TasksTab({
       {inProgress.length > 0 && (
         <div className="section-group">
           <div className="section-label-row">
-            <span className="section-label teal">In Progress</span>
+            <span className="section-label teal">Ippo Nadakudhu</span>
             <span className="section-count-badge teal">{inProgress.length}</span>
             <div className="section-divider" />
           </div>
@@ -286,7 +289,7 @@ export default function TasksTab({
       {pending.length > 0 && (
         <div className="section-group">
           <div className="section-label-row">
-            <span className="section-label slate">Pending</span>
+            <span className="section-label slate">Pending Velaiga</span>
             <span className="section-count-badge">{pending.length}</span>
             <div className="section-divider" />
           </div>
@@ -313,7 +316,7 @@ export default function TasksTab({
       {completed.length > 0 && (
         <div className="section-group">
           <div className="section-label-row">
-            <span className="section-label slate">Completed</span>
+            <span className="section-label slate">Mudinjadhu</span>
             <span className="section-count-badge success">{completed.length}</span>
             <div className="section-divider" />
           </div>
@@ -346,7 +349,7 @@ export default function TasksTab({
           }}
         >
           <PlusSVG />
-          <span>Add task for {activeDateStr === today ? 'today' : activeDateStr}</span>
+          <span>+ {activeDateStr === today ? 'Innaiku' : activeDateStr}-ku Task Podu</span>
         </button>
       )}
 

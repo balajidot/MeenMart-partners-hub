@@ -110,7 +110,7 @@ export default function FinanceTab({
             setScope('day');
           }}
         >
-          Today
+          Innaiku (Today)
         </button>
         <button
           type="button"
@@ -126,7 +126,7 @@ export default function FinanceTab({
 
       {/* Net Profit Hero Card */}
       <div className="ledger-hero">
-        <div className="ledger-hero-label">Net profit · {scopeLabel}</div>
+        <div className="ledger-hero-label">Net Labam · {scopeLabel}</div>
         <div
           className="ledger-hero-amount"
           style={{ color: filteredData.net >= 0 ? '#54D6C4' : '#FF8A80' }}
@@ -136,13 +136,13 @@ export default function FinanceTab({
         </div>
         <div className="ledger-hero-cards">
           <div className="ledger-hero-card">
-            <div className="ledger-hero-card-label">Revenue</div>
+            <div className="ledger-hero-card-label">Varavu (In)</div>
             <div className="ledger-hero-card-val" style={{ color: '#54D6C4' }}>
               {fmtCurrency(filteredData.totalRev)}
             </div>
           </div>
           <div className="ledger-hero-card">
-            <div className="ledger-hero-card-label">Expenses</div>
+            <div className="ledger-hero-card-label">Selavu (Out)</div>
             <div className="ledger-hero-card-val" style={{ color: '#FFB299' }}>
               {fmtCurrency(filteredData.totalExp)}
             </div>
@@ -160,7 +160,7 @@ export default function FinanceTab({
             onOpenExpense();
           }}
         >
-          + Expense
+          + Selavu (Expense)
         </button>
         <button
           type="button"
@@ -170,7 +170,7 @@ export default function FinanceTab({
             onOpenRevenue();
           }}
         >
-          + Revenue
+          + Varavu (Revenue)
         </button>
       </div>
 
@@ -183,7 +183,7 @@ export default function FinanceTab({
 
         {filteredData.entries.length === 0 ? (
           <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-            No entries recorded for this period yet.
+            Indha period-ku innum entries podala.
           </div>
         ) : (
           filteredData.entries.map((entry) => (
@@ -252,7 +252,7 @@ export default function FinanceTab({
       {/* Founder Capital Section */}
       <div className="section-card">
         <div className="section-card-header">
-          <div className="section-card-title">Founder Capital</div>
+          <div className="section-card-title">Founders Mooladhanam (Capital)</div>
           <div className="section-card-meta" style={{ color: 'var(--teal-dark)', fontWeight: 600 }}>
             {fmtCurrency(capitalData.total)} total
           </div>
@@ -290,7 +290,7 @@ export default function FinanceTab({
             onClick={onOpenCapital}
             style={{ fontWeight: 600 }}
           >
-            + Add Capital
+            + Capital Podu
           </button>
           <span style={{ color: 'var(--card-border)' }}>|</span>
           <button
@@ -298,7 +298,7 @@ export default function FinanceTab({
             className="section-card-link"
             onClick={() => shareSettlementWhatsApp(settlement)}
           >
-            Share Settlement (WhatsApp)
+            Kanakku WhatsApp-la Anupu
           </button>
           <span style={{ color: 'var(--card-border)' }}>|</span>
           <button

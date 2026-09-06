@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { useStore } from './store/useStore';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -93,6 +93,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
   const openRevenue = () => setActiveModal('revenue');
   const openWork = () => setActiveModal('work');
   const closeModal = () => setActiveModal(null);
+  const [isChatTyping, setIsChatTyping] = useState(false);
 
   // Cycle user filter or avatar
   const handleCycleUser = () => {
@@ -107,28 +108,28 @@ export default function AppShell({ _user, partner, onSignOut }) {
     switch (activeTab) {
       case 'home':
         return {
-          kicker: 'Operations Hub',
-          title: `Welcome, ${partner?.name || 'Partner'}`,
+          kicker: 'MeenMart Hub',
+          title: `Vanakkam, ${partner?.name || 'Partner'}!`,
         };
       case 'tasks':
         return {
-          kicker: 'Task agenda',
-          title: 'Tasks',
+          kicker: 'Innaiku Velaiga',
+          title: "Today's Tasks",
         };
       case 'hours':
         return {
-          kicker: 'Shift & workload',
-          title: 'Shifts',
+          kicker: 'Shift & Hours',
+          title: 'Partner Shifts',
         };
       case 'ledger':
         return {
-          kicker: 'Cashflow & capital',
-          title: 'Ledger',
+          kicker: 'Varavu & Selavu',
+          title: 'Cashflow Ledger',
         };
       case 'chat':
         return {
-          kicker: '3 partners · MeenMart',
-          title: 'Partner Stream',
+          kicker: '3 Partners Live',
+          title: 'Partner Chat',
         };
       default:
         return {
@@ -140,12 +141,17 @@ export default function AppShell({ _user, partner, onSignOut }) {
 
   const { kicker, title } = getHeaderInfo();
 
+  const handleSelectTab = (tab) => {
+    setIsChatTyping(false);
+    setActiveTab(tab);
+  };
+
   return (
     <div className="app-shell-layout">
       {/* Desktop Sidebar (hidden on mobile) */}
       <Sidebar
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleSelectTab}
         pendingCount={pendingCount}
         partner={partner}
         onSignOut={onSignOut}
@@ -166,7 +172,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
         />
 
         {/* Workspace Body */}
-        <main className="workspace-body">
+        <main className={`workspace-body${activeTab === 'chat' ? ' chat-tab-active' : ''}`}>
           <Suspense fallback={<TabLoadingFallback />}>
             {activeTab === 'home' && (
               <HomeTab
@@ -174,9 +180,9 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 partnerFilter={partnerFilter}
                 setPartnerFilter={setPartnerFilter}
                 onOpenTask={openTask}
-                onGoToTasks={() => setActiveTab('tasks')}
-                onGoToHours={() => setActiveTab('hours')}
-                onGoToLedger={() => setActiveTab('ledger')}
+                onGoToTasks={() => handleSelectTab('tasks')}
+                onGoToHours={() => handleSelectTab('hours')}
+                onGoToLedger={() => handleSelectTab('ledger')}
               />
             )}
 
@@ -231,6 +237,8 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 sendMessage={sendMessage}
                 currentPartner={partner}
                 onOpenLightbox={handleOpenLightbox}
+                isChatTyping={isChatTyping}
+                setIsChatTyping={setIsChatTyping}
               />
             )}
           </Suspense>
@@ -259,11 +267,12 @@ export default function AppShell({ _user, partner, onSignOut }) {
           </button>
         )}
 
-        {/* Mobile Bottom Bar (hidden on desktop) */}
+        {/* Mobile Bottom Bar (hidden on desktop or when keyboard typing in chat) */}
         <NavigationTabs
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleSelectTab}
           pendingCount={pendingCount}
+          hideBar={activeTab === 'chat' && isChatTyping}
         />
       </div>
 

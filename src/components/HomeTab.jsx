@@ -135,7 +135,7 @@ export default function HomeTab({
           title="Go to Tasks"
         >
           <div className="kpi-label-row">
-            <span className="kpi-label">Pending tasks</span>
+            <span className="kpi-label">Pending Velaiga</span>
             <span className="kpi-icon-hint">📋</span>
           </div>
           <div className="kpi-value-row">
@@ -159,7 +159,7 @@ export default function HomeTab({
           title="Go to Shifts"
         >
           <div className="kpi-label-row">
-            <span className="kpi-label">Hours today</span>
+            <span className="kpi-label">Innaiku Shift</span>
             <span className="kpi-icon-hint">⏱️</span>
           </div>
           <div className="kpi-value-row">
@@ -179,7 +179,7 @@ export default function HomeTab({
           title="Go to Ledger"
         >
           <div className="kpi-label-row">
-            <span className="kpi-label">Net today</span>
+            <span className="kpi-label">Innaiku Net</span>
             <span className="kpi-icon-hint">💰</span>
           </div>
           <div
@@ -204,7 +204,7 @@ export default function HomeTab({
           title="View completion"
         >
           <div className="kpi-label-row">
-            <span className="kpi-label">Completion</span>
+            <span className="kpi-label">Work Done</span>
             <span className="kpi-icon-hint">🎯</span>
           </div>
           <div className="kpi-value-row">
@@ -216,7 +216,7 @@ export default function HomeTab({
       {/* Today cashflow */}
       <div className="section-card">
         <div className="section-card-header">
-          <span className="section-card-title">Today's cashflow</span>
+          <span className="section-card-title">Innaiku Cashflow</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span className="section-card-meta">{fmtDDMon(today)}</span>
             {onGoToLedger && (
@@ -233,7 +233,7 @@ export default function HomeTab({
         <div className="cashflow-rows">
           <div className="cashflow-row">
             <div className="cashflow-row-head">
-              <span className="cashflow-label">Revenue in</span>
+              <span className="cashflow-label">Varavu (In)</span>
               <span className="cashflow-amount" style={{ color: '#0F9E8E' }}>
                 {fmtCurrency(todayRevenue)}
               </span>
@@ -250,7 +250,7 @@ export default function HomeTab({
           </div>
           <div className="cashflow-row">
             <div className="cashflow-row-head">
-              <span className="cashflow-label">Expenses out</span>
+              <span className="cashflow-label">Selavu (Out)</span>
               <span className="cashflow-amount" style={{ color: '#E08A0B' }}>
                 {fmtCurrency(todayExpenses)}
               </span>
@@ -271,7 +271,7 @@ export default function HomeTab({
       {/* Workload balance */}
       <div className="section-card">
         <div className="section-card-header">
-          <span className="section-card-title">Workload balance · this week</span>
+          <span className="section-card-title">Workload Balance · Indha Vaaram</span>
           {onGoToHours && (
             <button
               type="button"
@@ -339,18 +339,18 @@ export default function HomeTab({
       {/* Up next */}
       <div className="section-card">
         <div className="section-card-header">
-          <span className="section-card-title">Up next</span>
+          <span className="section-card-title">Next Enna Vela? (Up Next)</span>
           <button
             className="section-card-link"
             onClick={onGoToTasks || onOpenTask}
             type="button"
           >
-            All tasks →
+            Ella Tasks →
           </button>
         </div>
         {upNextTasks.length === 0 ? (
           <div style={{ padding: '0 16px 18px', color: 'var(--text-muted)', fontSize: 13 }}>
-            No pending tasks{partnerFilter !== 'all' ? ` for ${partnerFilter}` : ''}.
+            Pending vela yedhum illa{partnerFilter !== 'all' ? ` (${partnerFilter}-ku)` : ''}.
           </div>
         ) : (
           upNextTasks.map((task) => {

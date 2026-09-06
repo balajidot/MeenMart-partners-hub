@@ -63,13 +63,13 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
       <div className="sheet-overlay" onClick={handleClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">New task</div>
+        <div className="sheet-title">Pudhu Task</div>
 
         {/* Task title */}
         <input
           className="sheet-input"
           type="text"
-          placeholder="What needs doing?"
+          placeholder="Enna vela pannanum?"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={(e) => {
@@ -83,7 +83,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
         />
 
         {/* Assign to */}
-        <div className="sheet-field-label">Assign to</div>
+        <div className="sheet-field-label">Yaaruku assign?</div>
         <div className="sheet-option-chips" style={{ marginBottom: '18px' }}>
           {PARTNER_CHIPS.map((chip) => (
             <button
@@ -118,7 +118,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
           onClick={handleSubmit}
           disabled={!canSubmit}
         >
-          {loading ? 'Saving...' : 'Add task'}
+          {loading ? 'Saving...' : 'Task Add Pannu'}
         </button>
       </div>
     </>

@@ -171,7 +171,7 @@ export default function WorkTab({
         <div className="shift-card-top">
           <div className="shift-card-left">
             <span className="shift-kicker">
-              {clockedIn ? 'On shift now' : 'Shift closed'}
+              {clockedIn ? 'Ippo Shift-la Irrukeenga' : 'Shift Start Aagala'}
             </span>
             <ShiftClockDisplay
               clockInTime={clockInTime}
@@ -189,7 +189,7 @@ export default function WorkTab({
           className={`shift-btn ${clockedIn ? 'check-out' : 'check-in'}`}
           onClick={handleClockToggle}
         >
-          {clockedIn ? 'Check out' : 'Check in'}
+          {clockedIn ? 'Shift Mudichiko (Check out)' : 'Shift Start Pannu (Check in)'}
         </button>
       </div>
 
@@ -212,7 +212,7 @@ export default function WorkTab({
         >
           <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#0F9E8E', boxShadow: '0 0 8px #0F9E8E' }} />
           <span>
-            Also on shift now:{' '}
+            Ippo Shift-la irukavanga:{' '}
             <strong>
               {Object.entries(store.activeShifts || {})
                 .filter(([p, ts]) => ts && p !== partnerName)
@@ -226,9 +226,9 @@ export default function WorkTab({
       {/* 2 ── Activity log today ──────────────────────────── */}
       <div className="section-card">
         <div className="section-card-header">
-          <span className="section-card-title">Activity log · today</span>
+          <span className="section-card-title">Innaiku Work Activity</span>
           <button type="button" className="section-card-link" onClick={onOpenWork}>
-            + Log activity
+            + Activity Log Pannu
           </button>
         </div>
 
@@ -237,9 +237,9 @@ export default function WorkTab({
             className="empty-state"
             style={{ margin: '0 16px 16px', borderRadius: 12 }}
           >
-            <p className="empty-state-text">No activity logged for today yet.</p>
+            <p className="empty-state-text">Innaiku innum activity yedhum log aagala.</p>
             <button type="button" className="empty-state-action" onClick={onOpenWork}>
-              + Log activity
+              + Activity Log Pannu
             </button>
           </div>
         ) : (
@@ -305,7 +305,7 @@ export default function WorkTab({
       {/* 3 ── Hours this week ────────────────────────────── */}
       <div className="section-card">
         <div className="section-card-header">
-          <span className="section-card-title">Hours this week</span>
+          <span className="section-card-title">Indha Vaaram Shift Hours</span>
         </div>
         <div style={{ padding: '0 16px 16px' }}>
           <div className="week-bars">
@@ -335,7 +335,7 @@ export default function WorkTab({
                 {weekHours.reduce((top, p) => (p.hrs > top.hrs ? p : top), weekHours[0]).name} leads this week.
               </>
             ) : (
-              'No hours logged this week yet. Check in to track shifts.'
+              'Indha vaaram innum shift hours log aagala. Check in panni track pannunga.'
             )}
           </div>
         </div>
@@ -344,7 +344,7 @@ export default function WorkTab({
       {/* 4 ── Partner performance today ──────────────────── */}
       <div className="section-card" style={{ overflow: 'visible' }}>
         <div className="section-card-header">
-          <span className="section-card-title">Partner performance · today</span>
+          <span className="section-card-title">Innaiku Partner Performance</span>
         </div>
         <div style={{ padding: '0 16px 16px' }}>
           {todayPerf.map((p) => {

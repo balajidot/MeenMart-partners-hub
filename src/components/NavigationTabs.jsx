@@ -72,9 +72,9 @@ const TABS = [
   },
 ];
 
-export default function NavigationTabs({ activeTab, setActiveTab, pendingCount }) {
+export default function NavigationTabs({ activeTab, setActiveTab, pendingCount, hideBar = false }) {
   return (
-    <nav className="mobile-bottom-bar">
+    <nav className={`mobile-bottom-bar${hideBar ? ' hide-keyboard' : ''}`}>
       {TABS.map((tab) => (
         <button
           key={tab.id}

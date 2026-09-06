@@ -47,20 +47,20 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
       <div className="sheet-overlay" onClick={handleClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">Complete Task</div>
+        <div className="sheet-title">Vela Mudinjidha?</div>
 
         {/* Task summary info */}
         <div className="sheet-assignee-box" style={{ marginBottom: '16px' }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--teal-dark)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '3px' }}>
-              {task.to ? `Assigned to ${task.to}` : 'Shared task for all'}
+              {task.to ? `${task.to}-ku assign pannadhu` : 'Ellarukum podhuvaana task'}
             </div>
             <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--navy)', lineHeight: 1.3 }}>
               {task.title}
             </div>
             {task.from && task.from !== task.to && (
               <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                Assigned by: <strong>{task.from}</strong>
+                Assign pannavaru: <strong>{task.from}</strong>
               </div>
             )}
           </div>
@@ -68,7 +68,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
 
         {/* Proof Photo Upload */}
         <div style={{ marginBottom: '22px' }}>
-          <div className="sheet-field-label">📸 Proof Photo (Optional)</div>
+          <div className="sheet-field-label">📸 Proof Photo (Thevaippattaal)</div>
 
           {proof ? (
             <div className="sheet-photo-preview" style={{ marginBottom: '8px' }}>
@@ -93,7 +93,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
             <label className="sheet-photo-zone" style={{ display: 'flex', cursor: 'pointer' }}>
               <span style={{ fontSize: '20px' }}>📷</span>
               <span className="sheet-photo-label">{proofLabel}</span>
-              <span style={{ fontSize: '10px', color: 'var(--text-faint)' }}>Auto-expires after 48 hours</span>
+              <span style={{ fontSize: '10px', color: 'var(--text-faint)' }}>48 hours-la auto expire aagidum</span>
               <input
                 type="file"
                 accept="image/*"
@@ -112,7 +112,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
           disabled={proofBusy || loading}
           style={{ marginBottom: '8px' }}
         >
-          {loading ? 'Saving...' : '✓ Confirm Completed'}
+          {loading ? 'Saving...' : '✓ Vela Mudinjidhu (Confirm)'}
         </button>
 
         <button
@@ -121,7 +121,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
           onClick={handleClose}
           style={{ background: 'transparent', color: 'var(--text-sec)', padding: '10px' }}
         >
-          Cancel
+          Illa, Ippo Vendaam
         </button>
       </div>
     </>

@@ -56,13 +56,13 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartne
       <div className="sheet-overlay" onClick={handleClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">Log activity</div>
+        <div className="sheet-title">Work Activity Log</div>
 
         {/* Activity description */}
         <input
           className="sheet-input"
           type="text"
-          placeholder="What did you do?"
+          placeholder="Enna vela paartheenga?"
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
           autoFocus
@@ -70,7 +70,7 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartne
         />
 
         {/* Hours */}
-        <div className="sheet-field-label">Hours worked</div>
+        <div className="sheet-field-label">Yevvalavu neram? (Hours)</div>
         <div className="sheet-amount-wrap" style={{ marginBottom: '18px' }}>
           <input
             className="sheet-amount-input"
@@ -91,7 +91,7 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartne
         </div>
 
         {/* Assign to */}
-        <div className="sheet-field-label">Assign to</div>
+        <div className="sheet-field-label">Yaaroda shift?</div>
         <div className="sheet-option-chips" style={{ marginBottom: '24px' }}>
           {PARTNER_CHIPS.map((chip) => (
             <button
@@ -111,7 +111,7 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartne
           onClick={handleSubmit}
           disabled={!canSubmit}
         >
-          {loading ? 'Saving...' : 'Save activity'}
+          {loading ? 'Saving...' : 'Activity Save Pannu'}
         </button>
       </div>
     </>

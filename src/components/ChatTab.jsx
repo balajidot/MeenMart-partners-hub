@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { compressImage } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
 
@@ -13,6 +13,20 @@ const PARTNER_INITIALS = {
   Nagoor: 'NA',
   JP:     'JP',
 };
+
+const PARTNER_ROLES = {
+  Balaji: 'Tech & Product',
+  Nagoor: 'Procure & Pack',
+  JP:     'Delivery & Sales',
+};
+
+const QUICK_OPS_CHIPS = [
+  { label: '🐟 Pazhaverkaadu Stock', text: '🐟 Pazhaverkaadu: Fresh meen stock eduthaachu.' },
+  { label: '📦 Packing Finished', text: '📦 Pack & Clean: Orders clean panni, weigh panni, ice box-la pack aachu.' },
+  { label: '🛵 Delivery Kelambiyaachu', text: '🛵 Delivery: Customer slots-ku delivery kelambiyaachu.' },
+  { label: '💵 Kaasu Vandhuduchu', text: '💵 Finance: Customer payment vandhuduchu, cash tally aachu.' },
+  { label: '⚠️ Stock Alert', text: '⚠️ Stock Alert: Mukkiyamaana items stock romba kamiya irukku.' },
+];
 
 function formatChatTime(ts) {
   if (!ts) return '';
@@ -30,48 +44,77 @@ const ChatMessageItem = React.memo(function ChatMessageItem({ msg, myName, onOpe
   const partnerColor = PARTNER_COLORS[msg.partner] || '#5A6480';
   const partnerInitials = PARTNER_INITIALS[msg.partner] || (msg.partner ? msg.partner.slice(0, 2).toUpperCase() : '??');
   const timeStr = formatChatTime(msg.createdAt);
+  const hasProof = !!msg.proof;
+  const hasText = msg.text && msg.text.trim() && msg.text !== '📸 Photo attachment';
 
   return (
-    <div className={`chat-msg-row ${isMine ? 'me' : ''}`}>
+    <div className={`chat-msg-row ${isMine ? 'me' : 'them'}`}>
       {!isMine && (
         <div
           className="chat-msg-avatar"
           style={{ backgroundColor: partnerColor }}
-          title={msg.partner}
+          title={`${msg.partner} (${PARTNER_ROLES[msg.partner] || 'Partner'})`}
         >
           {partnerInitials}
         </div>
       )}
-      <div className={`chat-msg-content ${isMine ? 'me' : ''}`}>
-        <div className={`chat-bubble ${isMine ? 'me' : 'them'}`}>
-          {msg.text}
-          {msg.proof && (
-            <div style={{ marginTop: '6px' }}>
+
+      <div className={`chat-msg-content ${isMine ? 'me' : 'them'}`}>
+        {!isMine && (
+          <span className="chat-msg-sender-name" style={{ color: partnerColor }}>
+            {msg.partner}
+          </span>
+        )}
+
+        <div className={`chat-bubble ${isMine ? 'me' : 'them'} ${hasProof ? 'has-media' : ''}`}>
+          {hasProof && (
+            <div
+              className="chat-media-card"
+              onClick={() => onOpenLightbox?.(msg.proof, msg.partner, msg.text || 'Photo Attachment', msg.createdAt)}
+              title="Tap to view full screen"
+            >
               <img
                 src={msg.proof}
                 alt="Attachment"
-                style={{
-                  maxWidth: '200px',
-                  maxHeight: '160px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  display: 'block',
-                }}
-                onClick={() => onOpenLightbox?.(msg.proof)}
+                className="chat-media-img"
+                loading="lazy"
               />
+              <div className="chat-media-overlay">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="7" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  <line x1="11" y1="8" x2="11" y2="14" />
+                  <line x1="8" y1="11" x2="14" y2="11" />
+                </svg>
+                <span>Full view</span>
+              </div>
             </div>
           )}
-        </div>
-        <div className="chat-msg-meta">
-          <span className="who">{isMine ? 'You' : msg.partner}</span>
-          {timeStr && <span className="at">&middot; {timeStr}</span>}
+
+          {hasText && <div className="chat-bubble-text">{msg.text}</div>}
+
+          <div className="chat-bubble-meta">
+            <span className="chat-time">{timeStr}</span>
+            {isMine && (
+              <span className="chat-ticks" aria-label="Delivered" title="Delivered">
+                ✓✓
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 });
 
-export default function ChatTab({ store, sendMessage, currentPartner, onOpenLightbox }) {
+export default function ChatTab({
+  store,
+  sendMessage,
+  currentPartner,
+  onOpenLightbox,
+  isChatTyping,
+  setIsChatTyping,
+}) {
   const [draft, setDraft] = useState('');
   const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef(null);
@@ -81,15 +124,34 @@ export default function ChatTab({ store, sendMessage, currentPartner, onOpenLigh
   const messages = store?.messages || [];
   const myName = currentPartner?.name || 'Balaji';
 
-  // Auto-scroll to bottom on mount
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+  const scrollToBottom = useCallback((smooth = true) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
+    }
   }, []);
 
-  // Auto-scroll to bottom on new messages
+  // Initial scroll to bottom on mount
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length]);
+    scrollToBottom(false);
+  }, [scrollToBottom]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    scrollToBottom(true);
+  }, [messages.length, scrollToBottom]);
+
+  const handleInputFocus = () => {
+    setIsChatTyping?.(true);
+    // Give mobile browser a tick to adjust keyboard viewport before scrolling
+    setTimeout(() => scrollToBottom(true), 250);
+  };
+
+  const handleInputBlur = () => {
+    // Delay slightly so tapping Send doesn't cancel click event
+    setTimeout(() => {
+      setIsChatTyping?.(false);
+    }, 180);
+  };
 
   const handleSend = () => {
     const trimmed = draft.trim();
@@ -98,6 +160,7 @@ export default function ChatTab({ store, sendMessage, currentPartner, onOpenLigh
     sendMessage({ partner: myName, text: trimmed });
     setDraft('');
     inputRef.current?.focus();
+    setTimeout(() => scrollToBottom(true), 100);
   };
 
   const handleKeyDown = (e) => {
@@ -111,6 +174,7 @@ export default function ChatTab({ store, sendMessage, currentPartner, onOpenLigh
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    triggerHaptic('light');
     try {
       const compressed = await compressImage(file);
       sendMessage({
@@ -119,59 +183,113 @@ export default function ChatTab({ store, sendMessage, currentPartner, onOpenLigh
         proof: compressed,
       });
       setDraft('');
+      triggerHaptic('success');
+      setTimeout(() => scrollToBottom(true), 150);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to compress/send image:', err);
+      triggerHaptic('warning');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  return (
-    <div className="tab-content">
-      <div className="chat-date-header">Today &middot; {formatTodayDate()}</div>
+  const handleQuickChip = (text) => {
+    triggerHaptic('light');
+    setDraft(text);
+    inputRef.current?.focus();
+    setIsChatTyping?.(true);
+  };
 
-      {/* Scrollable messages */}
-      <div className="chat-messages" style={{ paddingBottom: '80px' }}>
+  return (
+    <div className={`chat-workspace ${isChatTyping ? 'keyboard-active' : ''}`}>
+      {/* Pinned Channel Bar */}
+      <div className="chat-channel-bar">
+        <div className="chat-channel-left">
+          <div className="chat-channel-title">
+            <span className="chat-channel-dot" />
+            <span className="chat-channel-name">MeenMart Co-Founders</span>
+          </div>
+          <div className="chat-channel-sub">Balaji • Nagoor • JP · Realtime Ops</div>
+        </div>
+        <div className="chat-channel-avatars">
+          {['Balaji', 'Nagoor', 'JP'].map((pName) => (
+            <span
+              key={pName}
+              className={`chat-channel-avatar-pill ${pName === myName ? 'is-me' : ''}`}
+              style={{ backgroundColor: PARTNER_COLORS[pName] }}
+              title={`${pName}: ${PARTNER_ROLES[pName]}`}
+            >
+              {PARTNER_INITIALS[pName]}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick Operational Status Chips */}
+      <div className="chat-quick-chips">
+        {QUICK_OPS_CHIPS.map((chip, idx) => (
+          <button
+            key={idx}
+            type="button"
+            className="chat-chip-btn"
+            onClick={() => handleQuickChip(chip.text)}
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Scrollable Messages Stream */}
+      <div className="chat-messages-container">
+        <div className="chat-date-header">Today &middot; {formatTodayDate()}</div>
+
         {messages.length === 0 && (
-          <div className="empty-state" style={{ paddingTop: '40px' }}>
+          <div className="empty-state" style={{ paddingTop: '32px' }}>
             <div className="empty-icon">💬</div>
-            <h3>Start the conversation</h3>
-            <p>Share quick operational updates, market rates, or delivery notes with partners below.</p>
+            <h3>Operations Chat Ready</h3>
+            <p>Market rates, packing status, delivery updates inga share pannunga.</p>
           </div>
         )}
 
-        {messages.map((msg) => (
-          <ChatMessageItem
-            key={msg.id}
-            msg={msg}
-            myName={myName}
-            onOpenLightbox={onOpenLightbox}
-          />
-        ))}
-
-        <div ref={messagesEndRef} />
+        <div className="chat-messages-list">
+          {messages.map((msg) => (
+            <ChatMessageItem
+              key={msg.id}
+              msg={msg}
+              myName={myName}
+              onOpenLightbox={onOpenLightbox}
+            />
+          ))}
+          <div ref={messagesEndRef} style={{ height: '8px' }} />
+        </div>
       </div>
 
-      {/* Fixed input bar */}
-      <div className="chat-input-bar">
+      {/* Sticky Bottom Input Bar */}
+      <div className={`chat-input-bar ${isChatTyping ? 'focused' : ''}`}>
+        {/* Photo Attachment Button */}
         <label
-          style={{
-            cursor: uploading ? 'wait' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            background: 'var(--input-bg)',
-            color: 'var(--text-sec)',
-            fontSize: '16px',
-            flexShrink: 0,
-          }}
-          title="Attach photo"
+          className={`chat-attach-btn ${uploading ? 'uploading' : ''}`}
+          title="Attach photo from gallery or camera"
         >
-          📷
+          {uploading ? (
+            <span className="chat-attach-spinner" />
+          ) : (
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+          )}
           <input
             ref={fileInputRef}
             type="file"
@@ -181,15 +299,22 @@ export default function ChatTab({ store, sendMessage, currentPartner, onOpenLigh
             onChange={handlePhotoUpload}
           />
         </label>
+
+        {/* Text Input */}
         <input
           ref={inputRef}
           type="text"
           className="chat-input"
-          placeholder={`Message as ${myName}...`}
+          placeholder={`${myName}, update sollunga...`}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          autoComplete="off"
         />
+
+        {/* Send Button */}
         <button
           type="button"
           className="chat-send-btn"
@@ -198,12 +323,18 @@ export default function ChatTab({ store, sendMessage, currentPartner, onOpenLigh
           aria-label="Send message"
         >
           <svg
-            width="16"
-            height="16"
+            width="17"
+            height="17"
             viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             aria-hidden="true"
           >
-            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#fff" />
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" />
           </svg>
         </button>
       </div>

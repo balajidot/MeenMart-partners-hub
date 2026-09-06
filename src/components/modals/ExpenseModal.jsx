@@ -68,7 +68,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
       <div className="bottom-sheet">
         <div className="sheet-handle" />
         <div className="sheet-title">
-          {isRevenue ? 'Log revenue' : 'Log an expense'}
+          {isRevenue ? 'Varavu Entry Podu' : 'Selavu Entry Podu'}
         </div>
 
         {/* Amount */}
@@ -90,7 +90,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
         <input
           className="sheet-input"
           type="text"
-          placeholder={isRevenue ? 'Revenue description...' : 'Expense description...'}
+          placeholder={isRevenue ? 'Enna sales varavu?' : 'Edhuku selavu pannaachu?'}
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           style={{ marginBottom: '18px' }}
@@ -114,7 +114,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
         </div>
 
         {/* Assign to */}
-        <div className="sheet-field-label">Assign to</div>
+        <div className="sheet-field-label">Yaaru kaasu? (Partner)</div>
         <div className="sheet-option-chips" style={{ marginBottom: '24px' }}>
           {PARTNER_CHIPS.map((chip) => (
             <button
@@ -134,7 +134,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
           onClick={handleSubmit}
           disabled={!canSubmit}
         >
-          {loading ? 'Saving...' : (isRevenue ? 'Log revenue' : 'Log expense')}
+          {loading ? 'Saving...' : (isRevenue ? 'Varavu Save Pannu' : 'Selavu Save Pannu')}
         </button>
       </div>
     </>
