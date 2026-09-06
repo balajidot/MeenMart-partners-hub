@@ -15,7 +15,7 @@ const PRIORITY_CHIPS = [
   { label: 'Normal', value: 'normal', activeClass: 'active-navy'   },
 ];
 
-export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }) {
+export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, defaultDate }) {
   const from = currentPartner?.name || PARTNER_NAMES[0];
 
   const [title, setTitle] = useState('');
@@ -51,7 +51,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner }
       to: assignTo === 'Shared' ? null : assignTo,
       assignedTo: assignTo,
       priority,
-      dueDateTime: getLocalDateStr(),
+      dueDateTime: defaultDate || getLocalDateStr(),
       proof: null,
       proofAddedAt: null,
     });

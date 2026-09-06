@@ -16,29 +16,89 @@ export default function LightboxModal({ proofData, onClose }) {
   };
 
   return (
-    <div className={`lightbox-overlay ${proofData ? 'open' : ''}`} onClick={onClose}>
-      <div className="lightbox-card" onClick={(e) => e.stopPropagation()}>
+    <>
+      <div className="sheet-overlay" onClick={onClose} style={{ zIndex: 100 }} />
+      <div
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '90%',
+          maxWidth: '460px',
+          background: '#fff',
+          borderRadius: '20px',
+          padding: '16px',
+          zIndex: 105,
+          boxShadow: '0 12px 48px rgba(22, 34, 74, 0.25)',
+          maxHeight: '88vh',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <span className="chip normal">{title || 'சான்று'}</span>
-            <span style={{ fontSize: 12, marginLeft: 8, color: 'var(--text-secondary)' }}>
-              பதிவு: {partner}
+            <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--navy)' }}>
+              {title || 'Proof Photo'}
+            </span>
+            <span style={{ fontSize: '12px', marginLeft: '8px', color: 'var(--text-muted)' }}>
+              &middot; {partner}
             </span>
           </div>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close lightbox"
+            style={{
+              background: 'var(--input-bg)',
+              border: 'none',
+              borderRadius: '8px',
+              width: '28px',
+              height: '28px',
+              cursor: 'pointer',
+              color: 'var(--text-sec)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            ✕
+          </button>
         </div>
 
-        <img src={imgUrl} alt="Proof Full" className="lightbox-img" />
+        <div
+          style={{
+            borderRadius: '12px',
+            overflow: 'hidden',
+            background: '#000',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '200px',
+          }}
+        >
+          <img
+            src={imgUrl}
+            alt="Proof"
+            style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain' }}
+          />
+        </div>
 
-        <div className="lightbox-footer">
-          <span className="expiry-badge">
-            ⏳ {expiryText ? `${expiryText} அழியும்` : '48 மணி நேரத்தில் அழியும்'}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '4px' }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+            ⏳ {expiryText ? `Expires in ${expiryText}` : 'Expires in 48 hours'}
           </span>
-          <button className="btn-sm" onClick={handleDownload}>
-            📥 சேமி
+          <button
+            type="button"
+            className="sheet-submit-btn navy"
+            onClick={handleDownload}
+            style={{ width: 'auto', padding: '6px 14px', fontSize: '12px' }}
+          >
+            📥 Download
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

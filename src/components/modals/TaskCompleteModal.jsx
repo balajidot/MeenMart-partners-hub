@@ -3,7 +3,7 @@ import { compressImage } from '../../utils/calculations';
 
 export default function TaskCompleteModal({ isOpen, task, onClose, onComplete }) {
   const [proof, setProof] = useState(null);
-  const [proofLabel, setProofLabel] = useState('பணி முடிந்ததற்கான புகைப்படம் இணைக்கலாம் (Optional)');
+  const [proofLabel, setProofLabel] = useState('Attach completion proof photo (Optional)');
   const [proofBusy, setProofBusy] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -11,7 +11,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
 
   const handleClose = () => {
     setProof(null);
-    setProofLabel('பணி முடிந்ததற்கான புகைப்படம் இணைக்கலாம் (Optional)');
+    setProofLabel('Attach completion proof photo (Optional)');
     setProofBusy(false);
     setLoading(false);
     onClose();
@@ -21,14 +21,14 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
     const file = e.target.files?.[0];
     if (!file) return;
     setProofBusy(true);
-    setProofLabel('படம் சுருக்கப்படுகிறது...');
+    setProofLabel('Compressing photo...');
     try {
       const compressed = await compressImage(file);
       setProof(compressed);
-      setProofLabel(`✓ படம் இணைக்கப்பட்டது (${file.name.slice(0, 20)})`);
+      setProofLabel(`✓ Photo attached (${file.name.slice(0, 20)})`);
     } catch (err) {
       console.error(err);
-      setProofLabel('❌ பிழை — மீண்டும் முயற்சிக்கவும்');
+      setProofLabel('❌ Error — please try again');
     } finally {
       setProofBusy(false);
     }
@@ -47,20 +47,20 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
       <div className="sheet-overlay" onClick={handleClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">பணியை முடிக்கவும்</div>
+        <div className="sheet-title">Complete Task</div>
 
         {/* Task summary info */}
         <div className="sheet-assignee-box" style={{ marginBottom: '16px' }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--teal-dark)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '3px' }}>
-              {task.to ? `${task.to} அவர்களின் பணி` : 'அனைவருக்கும் பொதுப் பணி'}
+              {task.to ? `Assigned to ${task.to}` : 'Shared task for all'}
             </div>
             <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--navy)', lineHeight: 1.3 }}>
               {task.title}
             </div>
             {task.from && task.from !== task.to && (
               <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                ஒதுக்கியவர்: <strong>{task.from}</strong>
+                Assigned by: <strong>{task.from}</strong>
               </div>
             )}
           </div>
@@ -68,7 +68,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
 
         {/* Proof Photo Upload */}
         <div style={{ marginBottom: '22px' }}>
-          <div className="sheet-field-label">📸 சான்றுப் படம் (Proof Photo - Optional)</div>
+          <div className="sheet-field-label">📸 Proof Photo (Optional)</div>
 
           {proof ? (
             <div className="sheet-photo-preview" style={{ marginBottom: '8px' }}>
@@ -82,7 +82,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
                 className="sheet-photo-remove"
                 onClick={() => {
                   setProof(null);
-                  setProofLabel('பணி முடிந்ததற்கான புகைப்படம் இணைக்கலாம் (Optional)');
+                  setProofLabel('Attach completion proof photo (Optional)');
                 }}
                 aria-label="Remove photo"
               >
@@ -93,7 +93,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
             <label className="sheet-photo-zone" style={{ display: 'flex', cursor: 'pointer' }}>
               <span style={{ fontSize: '20px' }}>📷</span>
               <span className="sheet-photo-label">{proofLabel}</span>
-              <span style={{ fontSize: '10px', color: 'var(--text-faint)' }}>48 மணி நேரத்திற்குப் பிறகு தானாக அழியும்</span>
+              <span style={{ fontSize: '10px', color: 'var(--text-faint)' }}>Auto-expires after 48 hours</span>
               <input
                 type="file"
                 accept="image/*"
@@ -112,7 +112,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
           disabled={proofBusy || loading}
           style={{ marginBottom: '8px' }}
         >
-          {loading ? 'சேமிக்கப்படுகிறது...' : '✓ முடிந்தது என உறுதிப்படுத்து'}
+          {loading ? 'Saving...' : '✓ Confirm Completed'}
         </button>
 
         <button
@@ -121,7 +121,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
           onClick={handleClose}
           style={{ background: 'transparent', color: 'var(--text-sec)', padding: '10px' }}
         >
-          ரத்து (Cancel)
+          Cancel
         </button>
       </div>
     </>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { getLocalDateStr } from '../../utils/calculations';
 import { PARTNER_NAMES } from '../../config/partners';
 
@@ -12,13 +12,15 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
   const defaultPartner = currentPartner?.name || PARTNER_NAMES[0];
   const [partner, setPartner] = useState(defaultPartner);
   const [amount, setAmount] = useState('');
-  const [note, setNote] = useState('கூடுதல் மூலதன முதலீடு');
+  const [note, setNote] = useState('Additional capital contribution');
   const [loading, setLoading] = useState(false);
+  const isSubmitting = useRef(false);
 
   const handleClose = () => {
     setAmount('');
-    setNote('கூடுதல் மூலதன முதலீடு');
+    setNote('Additional capital contribution');
     setLoading(false);
+    isSubmitting.current = false;
     onClose();
   };
 
@@ -29,15 +31,18 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
   const canSubmit = amountValid && !loading;
 
   const handleSubmit = (e) => {
-    e?.preventDefault?.();
-    if (!canSubmit) return;
-
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!canSubmit || isSubmitting.current) return;
+    isSubmitting.current = true;
     setLoading(true);
     onAddCapital({
       partner,
       amount: numAmount,
       date: getLocalDateStr(),
-      note: note.trim() || 'மூலதன முதலீடு',
+      note: note.trim() || 'Capital Contribution',
     });
     handleClose();
   };
@@ -47,7 +52,7 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
       <div className="sheet-overlay" onClick={handleClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">மூலதன முதலீடு (Capital Injection)</div>
+        <div className="sheet-title">Add Founder Capital</div>
 
         {/* Amount Input */}
         <div className="sheet-amount-wrap" style={{ marginBottom: '16px' }}>
@@ -64,7 +69,7 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
         </div>
 
         {/* Partner Selection */}
-        <div className="sheet-field-label">முதலீடு செய்த பங்குதாரர்</div>
+        <div className="sheet-field-label">Contributed by</div>
         <div className="sheet-option-chips" style={{ marginBottom: '16px' }}>
           {PARTNER_CHIPS.map((chip) => (
             <button
@@ -79,11 +84,11 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
         </div>
 
         {/* Note */}
-        <div className="sheet-field-label">குறிப்பு (Note)</div>
+        <div className="sheet-field-label">Note / Description</div>
         <input
           className="sheet-input"
           type="text"
-          placeholder="குறிப்பு..."
+          placeholder="e.g. Working capital injection"
           value={note}
           onChange={(e) => setNote(e.target.value)}
           style={{ marginBottom: '22px' }}
@@ -97,7 +102,7 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
           disabled={!canSubmit}
           style={{ marginBottom: '8px' }}
         >
-          {loading ? 'சேமிக்கப்படுகிறது...' : 'மூலதனம் பதிவு செய்'}
+          {loading ? 'Saving...' : 'Add Capital'}
         </button>
 
         <button
@@ -106,7 +111,7 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
           onClick={handleClose}
           style={{ background: 'transparent', color: 'var(--text-sec)', padding: '10px' }}
         >
-          ரத்து (Cancel)
+          Cancel
         </button>
       </div>
     </>

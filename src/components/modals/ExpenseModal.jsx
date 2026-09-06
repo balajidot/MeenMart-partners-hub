@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { getLocalDateStr } from '../../utils/calculations';
 
 const EXPENSE_CATEGORIES = ['Fish', 'Ice', 'Packing', 'Transport'];
@@ -22,6 +22,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
   const [category, setCategory] = useState(categories[0]);
   const [assignTo, setAssignTo] = useState(partner);
   const [loading, setLoading] = useState(false);
+  const isSubmitting = useRef(false);
 
   const handleClose = () => {
     setAmount('');
@@ -29,6 +30,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
     setCategory(categories[0]);
     setAssignTo(partner);
     setLoading(false);
+    isSubmitting.current = false;
     onClose();
   };
 
@@ -38,14 +40,20 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
   const amountValid = !isNaN(numAmount) && numAmount > 0;
   const canSubmit = amountValid && !loading;
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
+  const handleSubmit = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!canSubmit || isSubmitting.current) return;
+    isSubmitting.current = true;
     setLoading(true);
     onAddExpense({
       partner: assignTo === 'Shared' ? partner : assignTo,
       amount: numAmount,
       category,
       reason: label.trim() || category,
+      label: label.trim() || category,
       date: getLocalDateStr(),
       proof: null,
       proofAddedAt: null,

@@ -1,4 +1,5 @@
 import React from 'react';
+import { triggerHaptic } from '../utils/haptics';
 
 const TABS = [
   {
@@ -78,7 +79,10 @@ export default function NavigationTabs({ activeTab, setActiveTab, pendingCount }
         <button
           key={tab.id}
           className={`bottom-nav-btn${activeTab === tab.id ? ' active' : ''}`}
-          onClick={() => setActiveTab(tab.id)}
+          onClick={() => {
+            triggerHaptic('light');
+            setActiveTab(tab.id);
+          }}
           aria-label={tab.label}
           aria-current={activeTab === tab.id ? 'page' : undefined}
         >

@@ -1,4 +1,5 @@
 import React from 'react';
+import BrandLogo from './BrandLogo';
 
 const PARTNER_COLORS = {
   Balaji: '#1B2A5B',
@@ -106,7 +107,7 @@ export default function Sidebar({ activeTab, setActiveTab, pendingCount, partner
     <aside className="desktop-sidebar">
       {/* Brand */}
       <div className="sidebar-brand">
-        <span className="sidebar-brand-icon" aria-hidden="true">🐟</span>
+        <BrandLogo size={28} />
         <span className="sidebar-brand-name">MeenMart</span>
         <span className="sidebar-brand-pill">Partners</span>
       </div>

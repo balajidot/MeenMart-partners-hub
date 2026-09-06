@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { getLocalDateStr } from '../utils/calculations';
+import React, { useState, useEffect, useMemo } from 'react';
+import { fmtCurrency, getLocalDateStr } from '../utils/calculations';
+import { triggerHaptic } from '../utils/haptics';
 
 /* ── Partner config ─────────────────────────────────────── */
 const PARTNERS = [
@@ -37,85 +38,127 @@ function hoursToHM(hours) {
   return `${h}:${String(m).padStart(2, '0')}`;
 }
 
+function ShiftClockDisplay({ clockInTime, clockedIn, fallbackText = '0:00' }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!clockedIn || !clockInTime) return;
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [clockedIn, clockInTime]);
+
+  if (!clockedIn || !clockInTime) {
+    return <span className="shift-elapsed">{fallbackText}</span>;
+  }
+
+  return <span className="shift-elapsed">{fmtHMS(Math.max(0, now - clockInTime))}</span>;
+}
+
 /* ── Component ───────────────────────────────────────────── */
 export default function WorkTab({
   store,
   partnerFilter,
+  deleteWorklog,
   onOpenWork,
+  currentPartner,
+  toggleShift,
 }) {
-  const [clockedIn, setClockedIn]     = useState(false);
-  const [clockInTime, setClockInTime] = useState(null);
-  const [now, setNow]                 = useState(() => Date.now());
-  const intervalRef                   = useRef(null);
+  const partnerName = currentPartner?.name || 'Balaji';
 
-  /* Tick every second while clocked in */
-  useEffect(() => {
-    if (clockedIn) {
-      intervalRef.current = setInterval(() => setNow(Date.now()), 1000);
-    } else {
-      clearInterval(intervalRef.current);
+  // Read shift time from realtime cloud store or fallback to local storage
+  const cloudShiftTime = store.activeShifts?.[partnerName];
+  const localShiftTime = (() => {
+    try {
+      const s = localStorage.getItem('meenmart_shift_in');
+      return s ? Number(s) : null;
+    } catch {
+      return null;
     }
-    return () => clearInterval(intervalRef.current);
-  }, [clockedIn]);
+  })();
+
+  const clockInTime = cloudShiftTime || localShiftTime;
+  const clockedIn = !!clockInTime;
 
   const todayStr = getLocalDateStr();
 
-  /* ── Derived data ───────────────────────────────────────── */
-  const todayLogs = (store.worklogs || []).filter((w) => {
-    const matchDate    = w.date === todayStr;
-    const matchPartner = partnerFilter === 'all' || w.partner === partnerFilter;
-    return matchDate && matchPartner;
-  });
+  /* ── Derived data (Memoized to avoid re-renders) ────────── */
+  const todayLogs = useMemo(() => {
+    return (store.worklogs || []).filter((w) => {
+      const matchDate    = w.date === todayStr;
+      const matchPartner = partnerFilter === 'all' || w.partner === partnerFilter;
+      return matchDate && matchPartner;
+    });
+  }, [store.worklogs, todayStr, partnerFilter]);
 
-  /* Elapsed display */
-  const elapsedDisplay = clockedIn
-    ? fmtHMS(now - clockInTime)
-    : (() => {
-        const lastLog = (store.worklogs || [])
-          .filter((w) => partnerFilter === 'all' || w.partner === partnerFilter)
-          .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
-        return lastLog ? hoursToHM(lastLog.hours) : '0:00';
-      })();
+  /* Fallback text when not clocked in */
+  const fallbackHours = useMemo(() => {
+    const lastLog = (store.worklogs || [])
+      .filter((w) => partnerFilter === 'all' || w.partner === partnerFilter)
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
+    return lastLog ? hoursToHM(lastLog.hours) : '0:00';
+  }, [store.worklogs, partnerFilter]);
 
   /* Week hours per partner */
-  const weekStart = new Date();
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Sunday
-  const weekStartStr = getLocalDateStr(weekStart);
+  const { weekHours, maxWeekHrs, totalWeekHrs } = useMemo(() => {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+    const weekStartStr = getLocalDateStr(weekStart);
 
-  const weekHours = PARTNERS.map((p) => {
-    const hrs = (store.worklogs || [])
-      .filter((w) => w.partner === p.name && w.date >= weekStartStr)
-      .reduce((s, w) => s + Number(w.hours || 0), 0);
-    return { ...p, hrs: Number(hrs.toFixed(1)) };
-  });
-  const maxWeekHrs = Math.max(...weekHours.map((p) => p.hrs), 1);
-  const totalWeekHrs = weekHours.reduce((s, p) => s + p.hrs, 0);
+    const hoursList = PARTNERS.map((p) => {
+      const hrs = (store.worklogs || [])
+        .filter((w) => w.partner === p.name && w.date >= weekStartStr)
+        .reduce((s, w) => s + Number(w.hours || 0), 0);
+      return { ...p, hrs: Number(hrs.toFixed(1)) };
+    });
+    const max = Math.max(...hoursList.map((p) => p.hrs), 1);
+    const total = hoursList.reduce((s, p) => s + p.hrs, 0);
+
+    return { weekHours: hoursList, maxWeekHrs: max, totalWeekHrs: total };
+  }, [store.worklogs]);
 
   /* Today per-partner performance */
-  const todayPerf = PARTNERS.map((p) => {
-    const logs     = (store.worklogs || []).filter((w) => w.partner === p.name && w.date === todayStr);
-    const hrs      = logs.reduce((s, w) => s + Number(w.hours || 0), 0);
-    const allTasks = (store.tasks || []).filter((t) => t.to === p.name);
-    const doneTasks = allTasks.filter((t) => t.status === 'completed').length;
-    const cap = (store.capitals || [])
-      .filter((c) => c.partner === p.name)
-      .reduce((s, c) => s + Number(c.amount || 0), 0);
-    const exp = (store.expenses || [])
-      .filter((e) => e.partner === p.name)
-      .reduce((s, e) => s + Number(e.amount || 0), 0);
-    return { ...p, hrs: Number(hrs.toFixed(1)), doneTasks, allTasks: allTasks.length, net: cap - exp };
-  });
-  const maxPerfHrs = Math.max(...todayPerf.map((p) => p.hrs), 1);
+  const todayPerf = useMemo(() => {
+    return PARTNERS.map((p) => {
+      const logs      = (store.worklogs || []).filter((w) => w.partner === p.name && (w.date || getLocalDateStr(w.createdAt)) === todayStr);
+      const hrs       = logs.reduce((s, w) => s + Number(w.hours || 0), 0);
+      const allTasks  = (store.tasks || []).filter((t) => t.to === p.name);
+      const doneTasks = allTasks.filter((t) => t.status === 'completed' || t.s === 'done').length;
+      const rev       = (store.revenues || [])
+        .filter((r) => r.partner === p.name && (r.date || getLocalDateStr(r.createdAt)) === todayStr)
+        .reduce((s, r) => s + Number(r.amount || 0), 0);
+      const exp       = (store.expenses || [])
+        .filter((e) => e.partner === p.name && (e.date || getLocalDateStr(e.createdAt)) === todayStr)
+        .reduce((s, e) => s + Number(e.amount || 0), 0);
+      return { ...p, hrs: Number(hrs.toFixed(1)), doneTasks, allTasks: allTasks.length, net: rev - exp };
+    });
+  }, [store.worklogs, store.tasks, store.revenues, store.expenses, todayStr]);
+
+  const maxPerfHrs = useMemo(() => {
+    return Math.max(...todayPerf.map((p) => p.hrs), 1);
+  }, [todayPerf]);
 
   function handleClockToggle() {
+    triggerHaptic('success');
     if (clockedIn) {
-      setClockedIn(false);
-      setClockInTime(null);
+      try {
+        localStorage.removeItem('meenmart_shift_in');
+      } catch (e) {
+        console.warn(e);
+      }
+      toggleShift?.(partnerName, false);
+      if (onOpenWork) {
+        onOpenWork();
+      }
     } else {
       const ts = Date.now();
-      setClockedIn(true);
-      setClockInTime(ts);
-      setNow(ts);
+      try {
+        localStorage.setItem('meenmart_shift_in', String(ts));
+      } catch (e) {
+        console.warn(e);
+      }
+      toggleShift?.(partnerName, true);
     }
   }
 
@@ -130,7 +173,11 @@ export default function WorkTab({
             <span className="shift-kicker">
               {clockedIn ? 'On shift now' : 'Shift closed'}
             </span>
-            <span className="shift-elapsed">{elapsedDisplay}</span>
+            <ShiftClockDisplay
+              clockInTime={clockInTime}
+              clockedIn={clockedIn}
+              fallbackText={fallbackHours}
+            />
           </div>
           <div className="shift-card-right">
             <span className="shift-in-label">In</span>
@@ -146,6 +193,36 @@ export default function WorkTab({
         </button>
       </div>
 
+      {/* Active partners on shift badge */}
+      {Object.entries(store.activeShifts || {}).filter(([p, ts]) => ts && p !== partnerName).length > 0 && (
+        <div
+          style={{
+            margin: '0 16px 12px',
+            padding: '8px 12px',
+            background: 'rgba(15, 158, 142, 0.08)',
+            border: '1px solid rgba(15, 158, 142, 0.2)',
+            borderRadius: '10px',
+            fontSize: '12px',
+            color: 'var(--teal-dark)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontWeight: 500,
+          }}
+        >
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#0F9E8E', boxShadow: '0 0 8px #0F9E8E' }} />
+          <span>
+            Also on shift now:{' '}
+            <strong>
+              {Object.entries(store.activeShifts || {})
+                .filter(([p, ts]) => ts && p !== partnerName)
+                .map(([p]) => p)
+                .join(', ')}
+            </strong>
+          </span>
+        </div>
+      )}
+
       {/* 2 ── Activity log today ──────────────────────────── */}
       <div className="section-card">
         <div className="section-card-header">
@@ -160,7 +237,7 @@ export default function WorkTab({
             className="empty-state"
             style={{ margin: '0 16px 16px', borderRadius: 12 }}
           >
-            <p className="empty-state-text">இன்று எந்த செயல்பாடும் பதியவில்லை</p>
+            <p className="empty-state-text">No activity logged for today yet.</p>
             <button type="button" className="empty-state-action" onClick={onOpenWork}>
               + Log activity
             </button>
@@ -195,6 +272,30 @@ export default function WorkTab({
                     <span className="activity-dur">{log.hours}h</span>
                   </div>
                 </div>
+                {deleteWorklog && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to delete this activity log?')) {
+                        deleteWorklog(log.id);
+                      }
+                    }}
+                    title="Delete"
+                    aria-label="Delete worklog"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      padding: '4px 6px',
+                      opacity: 0.5,
+                      alignSelf: 'center',
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             );
           })
@@ -228,8 +329,14 @@ export default function WorkTab({
             })}
           </div>
           <div className="week-note">
-            இந்த வாரம் மொத்தம் <strong>{totalWeekHrs.toFixed(1)}h</strong> உழைப்பு பதிவு செய்யப்பட்டது.{' '}
-            {weekHours.reduce((top, p) => (p.hrs > top.hrs ? p : top), weekHours[0]).name} leads this week.
+            {totalWeekHrs > 0 ? (
+              <>
+                Total <strong>{totalWeekHrs.toFixed(1)}h</strong> logged this week.{' '}
+                {weekHours.reduce((top, p) => (p.hrs > top.hrs ? p : top), weekHours[0]).name} leads this week.
+              </>
+            ) : (
+              'No hours logged this week yet. Check in to track shifts.'
+            )}
           </div>
         </div>
       </div>
@@ -242,7 +349,7 @@ export default function WorkTab({
         <div style={{ padding: '0 16px 16px' }}>
           {todayPerf.map((p) => {
             const barPct = maxPerfHrs > 0 ? Math.round((p.hrs / maxPerfHrs) * 100) : 0;
-            const netStr = `₹${Math.abs(Math.round(p.net)).toLocaleString('en-IN')}`;
+            const netStr = p.net > 0 ? `+${fmtCurrency(p.net)}` : p.net < 0 ? fmtCurrency(p.net) : '₹0';
             return (
               <div key={p.name} className="perf-row">
                 <div className={`partner-monogram partner-monogram-lg ${p.cls}`}>

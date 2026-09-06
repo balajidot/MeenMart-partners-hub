@@ -1,13 +1,22 @@
 import React from 'react';
+import BrandLogo from './BrandLogo';
 
 export default function AuthGate({ status, error, onSignIn }) {
   if (status === 'loading') {
     return (
       <div className="auth-gate">
         <div className="auth-card">
-          <div className="auth-logo-mark">🐟</div>
-          <h1 className="auth-title">MeenMart</h1>
-          <p className="auth-sub">Loading…</p>
+          <div className="auth-logo-wrap">
+            <BrandLogo size={56} />
+          </div>
+          <div>
+            <h1 className="auth-title">MeenMart</h1>
+            <p className="auth-sub" style={{ marginTop: 4 }}>
+              Partners Hub
+            </p>
+          </div>
+          <div className="auth-spinner" />
+          <span className="auth-loading-text">Loading operations hub…</span>
         </div>
       </div>
     );
@@ -18,7 +27,9 @@ export default function AuthGate({ status, error, onSignIn }) {
   return (
     <div className="auth-gate">
       <div className="auth-card">
-        <div className="auth-logo-mark">🐟</div>
+        <div className="auth-logo-wrap">
+          <BrandLogo size={56} />
+        </div>
 
         <div>
           <h1 className="auth-title">MeenMart</h1>
@@ -30,7 +41,7 @@ export default function AuthGate({ status, error, onSignIn }) {
         {error && (
           <div className="auth-error">
             {isDomainError
-              ? 'Domain Error: Netlify domain ஐ Firebase Authorized Domains-ல் சேர்க்க வேண்டும்.'
+              ? 'Domain Error: Please add this domain to Firebase Authorized Domains in Firebase Console.'
               : error}
           </div>
         )}

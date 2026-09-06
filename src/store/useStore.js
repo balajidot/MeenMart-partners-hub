@@ -3,6 +3,7 @@ import { ref, onValue, set } from 'firebase/database';
 import { db } from '../firebase';
 import { DEFAULT_STATE, generateId, getSeedData } from '../utils/seedData';
 import { pruneExpiredProofs } from '../utils/calculations';
+import { triggerHaptic } from '../utils/haptics';
 
 const STORAGE_KEY = 'meenmart_react_v1';
 const DB_PATH = 'meenmart/data';
@@ -85,11 +86,33 @@ export function useStore() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState(null);
   const [completingTask, setCompletingTask] = useState(null);
+  const [isOnline, setIsOnline] = useState(true);
+  const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
   const toastTimer = useRef(null);
   const fbRef = useRef(null);
   const isMounted = useRef(true);
 
-  // Silent Firebase sync
+  // Monitor Firebase Realtime Database connection status
+  useEffect(() => {
+    const connectedRef = ref(db, '.info/connected');
+    const unsubConn = onValue(connectedRef, (snap) => {
+      const connected = snap.val() === true;
+      setIsOnline(connected && navigator.onLine);
+    });
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      unsubConn();
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Realtime Firebase two-way sync
   useEffect(() => {
     isMounted.current = true;
     const dbRef = ref(db, DB_PATH);
@@ -98,15 +121,17 @@ export function useStore() {
     const unsub = onValue(dbRef, (snapshot) => {
       const remote = snapshot.val();
       if (!remote || !isMounted.current) return;
+      setLastSyncedAt(Date.now());
       // Remote Firebase state is canonical; prevents reviving deleted items
       setStore(() => {
         const canonical = stripDemoData({
-          tasks:    dedupeById(toArray(remote.tasks)),
-          expenses: dedupeById(toArray(remote.expenses)).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
-          revenues: dedupeById(toArray(remote.revenues)).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
-          capitals: dedupeById(toArray(remote.capitals)).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
-          worklogs: dedupeById(toArray(remote.worklogs)).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
-          messages: dedupeById(toArray(remote.messages)),
+          tasks:        dedupeById(toArray(remote.tasks)),
+          expenses:     dedupeById(toArray(remote.expenses)).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
+          revenues:     dedupeById(toArray(remote.revenues)).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
+          capitals:     dedupeById(toArray(remote.capitals)).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
+          worklogs:     dedupeById(toArray(remote.worklogs)).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
+          messages:     dedupeById(toArray(remote.messages)),
+          activeShifts: remote.activeShifts || {},
         });
         const pruned = pruneExpiredProofs(canonical);
         try {
@@ -118,6 +143,7 @@ export function useStore() {
       });
     }, (err) => {
       console.warn('Firebase sync error (offline fallback):', err.message);
+      setIsOnline(false);
     });
 
     return () => {
@@ -131,12 +157,13 @@ export function useStore() {
       const next = typeof updater === 'function' ? updater(prev) : updater;
       const deduplicated = {
         ...next,
-        tasks:    dedupeById(next.tasks),
-        expenses: dedupeById(next.expenses),
-        revenues: dedupeById(next.revenues),
-        capitals: dedupeById(next.capitals),
-        worklogs: dedupeById(next.worklogs),
-        messages: dedupeById(next.messages),
+        tasks:        dedupeById(next.tasks),
+        expenses:     dedupeById(next.expenses),
+        revenues:     dedupeById(next.revenues),
+        capitals:     dedupeById(next.capitals),
+        worklogs:     dedupeById(next.worklogs),
+        messages:     dedupeById(next.messages),
+        activeShifts: next.activeShifts || {},
       };
       const pruned = pruneExpiredProofs(deduplicated);
 
@@ -149,14 +176,20 @@ export function useStore() {
         }
         if (fbRef.current) {
           set(fbRef.current, {
-            tasks:    pruned.tasks || [],
-            expenses: pruned.expenses || [],
-            revenues: pruned.revenues || [],
-            capitals: pruned.capitals || [],
-            worklogs: pruned.worklogs || [],
-            messages: pruned.messages || [],
-            lastUpdated: Date.now(),
-          }).catch((e) => console.warn('Firebase write failed (offline):', e.message));
+            tasks:        pruned.tasks || [],
+            expenses:     pruned.expenses || [],
+            revenues:     pruned.revenues || [],
+            capitals:     pruned.capitals || [],
+            worklogs:     pruned.worklogs || [],
+            messages:     pruned.messages || [],
+            activeShifts: pruned.activeShifts || {},
+            lastUpdated:  Date.now(),
+          })
+            .then(() => setLastSyncedAt(Date.now()))
+            .catch((e) => {
+              console.warn('Firebase write failed (offline):', e.message);
+              setIsOnline(false);
+            });
         }
       });
 
@@ -169,6 +202,11 @@ export function useStore() {
   }, [updateStore]);
 
   const showToast = useCallback((msg, type = 'success') => {
+    if (type === 'warn' || type === 'error') {
+      triggerHaptic('warning');
+    } else {
+      triggerHaptic('success');
+    }
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ msg, type });
     toastTimer.current = setTimeout(() => setToast(null), 3000);
@@ -189,15 +227,23 @@ export function useStore() {
       ...prev,
       tasks: [newTask, ...(prev.tasks || []).filter((t) => t.id !== newTask.id)],
     }));
-    showToast('✅ பணி சேர்க்கப்பட்டது!');
+    showToast('✅ Task added!');
   }, [updateStore, showToast]);
 
-  const completeTask = useCallback((id) => {
+  const completeTask = useCallback((id, status = 'completed') => {
     updateStore((prev) => ({
       ...prev,
-      tasks: (prev.tasks || []).map((t) => (t.id === id ? { ...t, status: 'completed', completedAt: Date.now() } : t)),
+      tasks: (prev.tasks || []).map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              status,
+              completedAt: status === 'completed' ? Date.now() : null,
+            }
+          : t
+      ),
     }));
-    showToast('🎉 பணி முடிந்தது!');
+    showToast(status === 'completed' ? '🎉 Task completed!' : '↩️ Task marked pending');
   }, [updateStore, showToast]);
 
   const completeTaskWithProof = useCallback((id, proof) => {
@@ -216,16 +262,34 @@ export function useStore() {
           : t
       ),
     }));
-    showToast('🎉 பணி வெற்றிகரமாக முடிந்தது!');
+    showToast('🎉 Task completed with proof!');
   }, [updateStore, showToast]);
 
-  const deleteTask = useCallback((id) => {
-    updateStore((prev) => ({
-      ...prev,
-      tasks: (prev.tasks || []).filter((t) => t.id !== id),
-    }));
+  const deleteTask = useCallback((id, requesterName = null) => {
+    let allowed = true;
+    let assignerName = '';
+    updateStore((prev) => {
+      const target = (prev.tasks || []).find((t) => t.id === id);
+      if (target && requesterName) {
+        const assigner = target.from || target.createdBy;
+        if (assigner && assigner !== requesterName) {
+          allowed = false;
+          assignerName = assigner;
+          return prev;
+        }
+      }
+      return {
+        ...prev,
+        tasks: (prev.tasks || []).filter((t) => t.id !== id),
+      };
+    });
+    if (!allowed) {
+      showToast(`⚠️ Only ${assignerName} (who assigned this) can delete this task!`, 'warn');
+      return false;
+    }
     setCompletingTask((prev) => (prev?.id === id ? null : prev));
-    showToast('🗑️ பணி நீக்கப்பட்டது');
+    showToast('🗑️ Task deleted');
+    return true;
   }, [updateStore, showToast]);
 
   const addExpense = useCallback((expense) => {
@@ -242,7 +306,7 @@ export function useStore() {
       ...prev,
       expenses: [newExp, ...(prev.expenses || []).filter((e) => e.id !== newExp.id)],
     }));
-    showToast('💰 செலவு பதிவு செய்யப்பட்டது!');
+    showToast('💰 Expense logged!');
   }, [updateStore, showToast]);
 
   const deleteExpense = useCallback((id) => {
@@ -250,7 +314,7 @@ export function useStore() {
       ...prev,
       expenses: (prev.expenses || []).filter((e) => e.id !== id),
     }));
-    showToast('🗑️ செலவு நீக்கப்பட்டது');
+    showToast('🗑️ Expense deleted');
   }, [updateStore, showToast]);
 
   const addRevenue = useCallback((revenue) => {
@@ -265,7 +329,7 @@ export function useStore() {
       ...prev,
       revenues: [newRev, ...(prev.revenues || []).filter((r) => r.id !== newRev.id)],
     }));
-    showToast('💚 வருவாய் பதிவு செய்யப்பட்டது!');
+    showToast('💚 Revenue recorded!');
   }, [updateStore, showToast]);
 
   const deleteRevenue = useCallback((id) => {
@@ -273,7 +337,7 @@ export function useStore() {
       ...prev,
       revenues: (prev.revenues || []).filter((r) => r.id !== id),
     }));
-    showToast('🗑️ வருவாய் பதிவு நீக்கப்பட்டது');
+    showToast('🗑️ Revenue deleted');
   }, [updateStore, showToast]);
 
   const addCapital = useCallback((capital) => {
@@ -287,7 +351,7 @@ export function useStore() {
       ...prev,
       capitals: [newCap, ...(prev.capitals || []).filter((c) => c.id !== newCap.id)],
     }));
-    showToast('🏦 மூலதனம் சேர்க்கப்பட்டது!');
+    showToast('🏦 Capital added!');
   }, [updateStore, showToast]);
 
   const deleteCapital = useCallback((id) => {
@@ -295,7 +359,7 @@ export function useStore() {
       ...prev,
       capitals: (prev.capitals || []).filter((c) => c.id !== id),
     }));
-    showToast('🗑️ மூலதன பதிவு நீக்கப்பட்டது');
+    showToast('🗑️ Capital record deleted');
   }, [updateStore, showToast]);
 
   const addWorklog = useCallback((log) => {
@@ -312,7 +376,7 @@ export function useStore() {
       ...prev,
       worklogs: [newLog, ...(prev.worklogs || []).filter((w) => w.id !== newLog.id)],
     }));
-    showToast('⏱️ உழைப்பு பதிவு சேர்க்கப்பட்டது!');
+    showToast('⏱️ Shift log saved!');
   }, [updateStore, showToast]);
 
   const deleteWorklog = useCallback((id) => {
@@ -320,7 +384,7 @@ export function useStore() {
       ...prev,
       worklogs: (prev.worklogs || []).filter((w) => w.id !== id),
     }));
-    showToast('🗑️ உழைப்பு பதிவு நீக்கப்பட்டது');
+    showToast('🗑️ Shift log deleted');
   }, [updateStore, showToast]);
 
   const addProof = useCallback((type, id, dataUrl) => {
@@ -335,7 +399,7 @@ export function useStore() {
       expenses: type === 'expense' ? updateList(prev.expenses) : prev.expenses,
       worklogs: type === 'work'    ? updateList(prev.worklogs) : prev.worklogs,
     }));
-    showToast('📸 சான்று சேர்க்கப்பட்டது!');
+    showToast('📸 Proof photo attached!');
   }, [updateStore, showToast]);
 
   const sendMessage = useCallback((msg) => {
@@ -354,48 +418,27 @@ export function useStore() {
     }));
   }, [updateStore]);
 
-  const wipeAll = useCallback(() => {
-    const empty = { ...DEFAULT_STATE, tasks: [], expenses: [], capitals: [], worklogs: [], messages: [] };
-    saveStore(empty);
-    showToast('🗑️ எல்லா தரவும் நீக்கப்பட்டது');
-  }, [saveStore, showToast]);
-
-  const loadDemo = useCallback(() => {
-    saveStore(getSeedData());
-    showToast('🔄 மாதிரி தரவு ஏற்றப்பட்டது');
-  }, [saveStore, showToast]);
-
-  const exportJSON = useCallback(() => {
-    const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `meenmart-backup-${Date.now()}.json`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }, [store]);
-
-  const importJSON = useCallback((file) => {
-    const reader = new FileReader();
-    reader.onerror = () => showToast('❌ கோப்பை வாசிக்க முடியவில்லை', 'error');
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target.result);
-        if (!data || typeof data !== 'object') throw new Error('Invalid format');
-        const sanitized = {
-          tasks:    toArray(data.tasks),
-          expenses: toArray(data.expenses).map((exp) => ({ ...exp, amount: Number(exp.amount || 0) })),
-          capitals: toArray(data.capitals).map((cap) => ({ ...cap, amount: Number(cap.amount || 0) })),
-          worklogs: toArray(data.worklogs).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
-          messages: toArray(data.messages),
-        };
-        saveStore(sanitized);
-        showToast('📥 தரவு இறக்குமதி வெற்றி!');
-      } catch {
-        showToast('❌ தவறான கோப்பு', 'error');
+  const toggleShift = useCallback((partnerName, forceIn = null) => {
+    updateStore((prev) => {
+      const currentShifts = { ...(prev.activeShifts || {}) };
+      const isCurrentlyIn = !!currentShifts[partnerName];
+      const willBeIn = forceIn !== null ? forceIn : !isCurrentlyIn;
+      if (willBeIn) {
+        currentShifts[partnerName] = Date.now();
+      } else {
+        delete currentShifts[partnerName];
       }
-    };
-    reader.readAsText(file);
+      return {
+        ...prev,
+        activeShifts: currentShifts,
+      };
+    });
+  }, [updateStore]);
+
+  const wipeAll = useCallback(() => {
+    const empty = { ...DEFAULT_STATE, tasks: [], expenses: [], capitals: [], worklogs: [], messages: [], activeShifts: {} };
+    saveStore(empty);
+    showToast('🗑️ All data cleared');
   }, [saveStore, showToast]);
 
   return {
@@ -407,6 +450,7 @@ export function useStore() {
     weekOffset, setWeekOffset,
     selectedDate, setSelectedDate,
     completingTask, setCompletingTask,
+    isOnline, lastSyncedAt,
     // Actions
     addTask, completeTask, completeTaskWithProof, deleteTask,
     addExpense, deleteExpense,
@@ -414,6 +458,6 @@ export function useStore() {
     addCapital, deleteCapital,
     addWorklog, deleteWorklog,
     addProof, sendMessage,
-    wipeAll, loadDemo, exportJSON, importJSON,
+    toggleShift, wipeAll,
   };
 }

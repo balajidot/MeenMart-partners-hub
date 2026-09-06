@@ -1,4 +1,6 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { compressImage } from '../utils/calculations';
+import { triggerHaptic } from '../utils/haptics';
 
 const PARTNER_COLORS = {
   Balaji: '#1B2A5B',
@@ -23,10 +25,58 @@ function formatTodayDate() {
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
+const ChatMessageItem = React.memo(function ChatMessageItem({ msg, myName, onOpenLightbox }) {
+  const isMine = msg.partner === myName;
+  const partnerColor = PARTNER_COLORS[msg.partner] || '#5A6480';
+  const partnerInitials = PARTNER_INITIALS[msg.partner] || (msg.partner ? msg.partner.slice(0, 2).toUpperCase() : '??');
+  const timeStr = formatChatTime(msg.createdAt);
+
+  return (
+    <div className={`chat-msg-row ${isMine ? 'me' : ''}`}>
+      {!isMine && (
+        <div
+          className="chat-msg-avatar"
+          style={{ backgroundColor: partnerColor }}
+          title={msg.partner}
+        >
+          {partnerInitials}
+        </div>
+      )}
+      <div className={`chat-msg-content ${isMine ? 'me' : ''}`}>
+        <div className={`chat-bubble ${isMine ? 'me' : 'them'}`}>
+          {msg.text}
+          {msg.proof && (
+            <div style={{ marginTop: '6px' }}>
+              <img
+                src={msg.proof}
+                alt="Attachment"
+                style={{
+                  maxWidth: '200px',
+                  maxHeight: '160px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'block',
+                }}
+                onClick={() => onOpenLightbox?.(msg.proof)}
+              />
+            </div>
+          )}
+        </div>
+        <div className="chat-msg-meta">
+          <span className="who">{isMine ? 'You' : msg.partner}</span>
+          {timeStr && <span className="at">&middot; {timeStr}</span>}
+        </div>
+      </div>
+    </div>
+  );
+});
+
 export default function ChatTab({ store, sendMessage, currentPartner, onOpenLightbox }) {
   const [draft, setDraft] = useState('');
+  const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const messages = store?.messages || [];
   const myName = currentPartner?.name || 'Balaji';
@@ -44,6 +94,7 @@ export default function ChatTab({ store, sendMessage, currentPartner, onOpenLigh
   const handleSend = () => {
     const trimmed = draft.trim();
     if (!trimmed) return;
+    triggerHaptic('medium');
     sendMessage({ partner: myName, text: trimmed });
     setDraft('');
     inputRef.current?.focus();
@@ -56,74 +107,85 @@ export default function ChatTab({ store, sendMessage, currentPartner, onOpenLigh
     }
   };
 
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const compressed = await compressImage(file);
+      sendMessage({
+        partner: myName,
+        text: draft.trim() || '📸 Photo attachment',
+        proof: compressed,
+      });
+      setDraft('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="tab-content">
       <div className="chat-date-header">Today &middot; {formatTodayDate()}</div>
 
-      {/* Scrollable messages — padded so fixed input bar does not overlap */}
+      {/* Scrollable messages */}
       <div className="chat-messages" style={{ paddingBottom: '80px' }}>
         {messages.length === 0 && (
           <div className="empty-state" style={{ paddingTop: '40px' }}>
-            <div className="empty-icon">&#128172;</div>
-            <h3>&#2909;&#2992;&#3016;&#2991;&#3006;&#2975;&#2994;&#3016;&#2980;&#3021; &#2980;&#3018;&#2975;&#2969;&#3021;&#2965;&#3009;&#2969;&#3021;&#2965;&#2995;&#3021;</h3>
-            <p>&#2986;&#2919;&#3021;&#2965;&#3009;&#2980;&#3006;&#2992;&#2992;&#3021;&#2965;&#2995;&#3009;&#2975;&#2985;&#3021; &#2909;&#2975;&#2985;&#3016;&#2980;&#3021; &#2980;&#2965;&#2997;&#2994;&#3021;&#2965;&#2995;&#3016;&#2986;&#3021; &#2986;&#2965;&#2991;&#2992; &#2965;&#3008;&#2996;&#3014; &#2989;&#2995;&#3021;&#2995; &#2989;&#2995;&#3021;&#2995;&#3008;&#2975;&#3021;&#2975;&#3009;&#2986;&#3021; &#2986;&#2975;&#3021;&#2975;&#3007;&#2991;&#3016;&#2986;&#3021; &#2986;&#2991;&#2985;&#3021;&#2986;&#2975;&#3009;&#2980;&#3021;&#2980;&#2997;&#3009;&#2990;&#3021;.</p>
+            <div className="empty-icon">💬</div>
+            <h3>Start the conversation</h3>
+            <p>Share quick operational updates, market rates, or delivery notes with partners below.</p>
           </div>
         )}
 
-        {messages.map((msg) => {
-          const isMe = msg.partner === myName;
-          const color = PARTNER_COLORS[msg.partner] || '#5A6480';
-          const initials = PARTNER_INITIALS[msg.partner] || (msg.partner || '?').slice(0, 2).toUpperCase();
-
-          return (
-            <div key={msg.id} className={`chat-msg-row${isMe ? ' me' : ''}`}>
-              <div
-                className="chat-msg-avatar"
-                style={{ background: color }}
-                aria-label={msg.partner}
-              >
-                {initials}
-              </div>
-
-              <div className={`chat-msg-content${isMe ? ' me' : ''}`}>
-                <div className={`chat-bubble${isMe ? ' me' : ' them'}`}>
-                  {msg.proof && (
-                    <img
-                      src={msg.proof}
-                      alt="Attachment"
-                      style={{
-                        width: '100%',
-                        borderRadius: '10px',
-                        marginBottom: msg.text ? '8px' : 0,
-                        cursor: 'pointer',
-                        display: 'block',
-                      }}
-                      onClick={() =>
-                        onOpenLightbox?.(msg.proof, msg.partner, 'அரட்டை படம்', msg.createdAt)
-                      }
-                    />
-                  )}
-                  {msg.text}
-                </div>
-                <div className="chat-msg-meta">
-                  <span className="who">{isMe ? 'You' : msg.partner}</span>
-                  <span className="at">{formatChatTime(msg.createdAt)}</span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {messages.map((msg) => (
+          <ChatMessageItem
+            key={msg.id}
+            msg={msg}
+            myName={myName}
+            onOpenLightbox={onOpenLightbox}
+          />
+        ))}
 
         <div ref={messagesEndRef} />
       </div>
 
       {/* Fixed input bar */}
       <div className="chat-input-bar">
+        <label
+          style={{
+            cursor: uploading ? 'wait' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: 'var(--input-bg)',
+            color: 'var(--text-sec)',
+            fontSize: '16px',
+            flexShrink: 0,
+          }}
+          title="Attach photo"
+        >
+          📷
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            disabled={uploading}
+            onChange={handlePhotoUpload}
+          />
+        </label>
         <input
           ref={inputRef}
           type="text"
           className="chat-input"
-          placeholder={`${myName} ஆக செய்தி அனுப்புங்கள்...`}
+          placeholder={`Message as ${myName}...`}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -132,7 +194,7 @@ export default function ChatTab({ store, sendMessage, currentPartner, onOpenLigh
           type="button"
           className="chat-send-btn"
           onClick={handleSend}
-          disabled={!draft.trim()}
+          disabled={!draft.trim() || uploading}
           aria-label="Send message"
         >
           <svg

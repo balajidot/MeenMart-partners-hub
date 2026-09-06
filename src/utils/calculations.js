@@ -173,31 +173,31 @@ export function fmtDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return String(dateStr);
-  return d.toLocaleDateString('ta-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 export function fmtRelativeTime(ts) {
   if (!ts) return '';
   const diff = Date.now() - ts;
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'இப்போதுதான்';
-  if (mins < 60) return `${mins} நிமிடம் முன்பு`;
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs} மணி முன்பு`;
-  return `${Math.floor(hrs / 24)} நாள் முன்பு`;
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
 }
 
 export function getProofExpiryText(addedAt) {
   if (!addedAt) return '';
   const remaining = PROOF_EXPIRY_MS - (Date.now() - addedAt);
-  if (remaining <= 0) return 'காலாவதி';
+  if (remaining <= 0) return 'Expired';
   const hrs = Math.floor(remaining / 3600000);
-  if (hrs < 1) return '< 1 மணி நேரம் உள்ளது';
-  return `${hrs} மணி நேரம் உள்ளது`;
+  if (hrs < 1) return '< 1 hour left';
+  return `${hrs} hours left`;
 }
 
-export const TAMIL_DAYS = ['ஞா', 'திங்', 'செவ்', 'புத', 'வியா', 'வெள்', 'சன'];
-export const TAMIL_MONTHS = ['ஜனவரி','பிப்ரவரி','மார்ச்','ஏப்ரல்','மே','ஜூன்','ஜூலை','ஆகஸ்ட்','செப்டம்பர்','அக்டோபர்','நவம்பர்','டிசம்பர்'];
+export const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 export function shareDaySummaryWhatsApp(store) {
   const todayStr = getLocalDateStr();
@@ -225,19 +225,19 @@ export function shareDaySummaryWhatsApp(store) {
   const nHours = Number(hours.Nagoor.toFixed(1));
   const jHours = Number(hours.JP.toFixed(1));
 
-  const text = `🐟 *MeenMart Daily Operations Summary (${todayStr})*\n\n📋 *இன்றைய பணிகள்:* ${todayDone} முடிந்தது | ${todayPending} நிலுவை (மொத்த நிலுவை: ${totalPendingLifetime})\n💰 *இன்றைய செலவு:* ₹${todaySpent.toLocaleString('en-IN')}\n\n⏱️ *இன்றைய உழைப்பு நேரம்:*\n• Balaji: ${bHours}h\n• Nagoor: ${nHours}h\n• JP: ${jHours}h\n\nMeenMart Operations Hub`;
+  const text = `🐟 *MeenMart Daily Operations Summary (${todayStr})*\n\n📋 *Today's Tasks:* ${todayDone} done | ${todayPending} pending (Total pending: ${totalPendingLifetime})\n💰 *Today's Expenses:* ₹${todaySpent.toLocaleString('en-IN')}\n\n⏱️ *Today's Shift Hours:*\n• Balaji: ${bHours}h\n• Nagoor: ${nHours}h\n• JP: ${jHours}h\n\nMeenMart Operations Hub`;
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
 export function shareSettlementWhatsApp(settlement) {
   if (!settlement || !settlement.transactions || settlement.transactions.length === 0) {
-    const text = `🐟 *MeenMart கணக்கு தீர்வு (Fair Settlement)*\n\nஅனைத்துப் பங்குதாரர்களின் நிதிப் பங்களிப்பும் சமமாக உள்ளன! கூடுதல் பாக்கி ஏதுமில்லை. ✅`;
+    const text = `🐟 *MeenMart Fair Settlement*\n\nAll partner financial contributions are currently balanced! No pending settlements. ✅`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     return;
   }
-  let text = `🐟 *MeenMart கணக்கு தீர்வு (Fair Settlement)*\n\nமொத்த நிதிப் பங்களிப்பு (மூலதனம் + செலவுகள்): ₹${settlement.total.toLocaleString('en-IN')}\nதனிநபர் சமபங்கு (33.3%): ₹${settlement.fair.toLocaleString('en-IN')}\n\n*பணம் மாற்ற வேண்டிய விவரம்:*\n`;
+  let text = `🐟 *MeenMart Fair Settlement*\n\nTotal Contribution (Capital + Expenses): ₹${settlement.total.toLocaleString('en-IN')}\nPer-partner Equal Share (33.3%): ₹${settlement.fair.toLocaleString('en-IN')}\n\n*Settlement Transfers:*\n`;
   settlement.transactions.forEach((t) => {
-    text += `👉 *${t.from}* என்பவர் *${t.to}*-க்கு செலுத்த வேண்டியது: ₹${t.amount.toLocaleString('en-IN')}\n`;
+    text += `👉 *${t.from}* pays *${t.to}*: ₹${t.amount.toLocaleString('en-IN')}\n`;
   });
   text += `\nMeenMart Operations Hub`;
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
@@ -246,7 +246,7 @@ export function shareSettlementWhatsApp(settlement) {
 export function exportLedgerCSV(store) {
   const allTx = [];
   (store.capitals || []).forEach((c) => {
-    allTx.push({ Date: c.date, Partner: c.partner, Type: 'Capital', Category: 'மூலதனம்', Amount: c.amount, Notes: c.note || '' });
+    allTx.push({ Date: c.date, Partner: c.partner, Type: 'Capital', Category: 'Capital', Amount: c.amount, Notes: c.note || '' });
   });
   (store.expenses || []).forEach((e) => {
     allTx.push({ Date: e.date, Partner: e.partner, Type: 'Expense', Category: e.category, Amount: e.amount, Notes: e.reason || '' });

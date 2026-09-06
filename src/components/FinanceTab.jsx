@@ -7,6 +7,7 @@ import {
   exportLedgerCSV,
   getLocalDateStr,
 } from '../utils/calculations';
+import { triggerHaptic } from '../utils/haptics';
 
 const PARTNERS = [
   { name: 'Balaji', initial: 'BA', cls: 'balaji', color: '#1B2A5B' },
@@ -20,8 +21,8 @@ export default function FinanceTab({
   onOpenExpense,
   onOpenRevenue,
   onOpenLightbox,
-  _deleteExpense,
-  _deleteRevenue,
+  deleteExpense,
+  deleteRevenue,
   _deleteCapital,
   _currentPartner,
 }) {
@@ -59,8 +60,8 @@ export default function FinanceTab({
         kind: 'rev',
         sign: '+',
         amount: Number(r.amount || 0),
-        label: r.label || r.source || r.category || 'வருவாய்',
-        category: r.category || 'பொது',
+        label: r.label || r.source || r.category || 'Revenue',
+        category: r.category || 'General',
         date: r.date || getLocalDateStr(r.createdAt),
       })),
       ...expList.map((e) => ({
@@ -68,8 +69,8 @@ export default function FinanceTab({
         kind: 'exp',
         sign: '−',
         amount: Number(e.amount || 0),
-        label: e.reason || e.category || 'செலவு',
-        category: e.category || 'பொது',
+        label: e.reason || e.category || 'Expense',
+        category: e.category || 'General',
         date: e.date || getLocalDateStr(e.createdAt),
       })),
     ].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -95,7 +96,7 @@ export default function FinanceTab({
 
   const settlement = useMemo(() => calcSettlement(store), [store]);
 
-  const scopeLabel = scope === 'day' ? 'இன்று (Today)' : `${currentMonth}`;
+  const scopeLabel = scope === 'day' ? 'Today' : `${currentMonth}`;
 
   return (
     <div className="tab-content">
@@ -104,14 +105,20 @@ export default function FinanceTab({
         <button
           type="button"
           className={`ledger-scope-tab ${scope === 'day' ? 'active' : ''}`}
-          onClick={() => setScope('day')}
+          onClick={() => {
+            triggerHaptic('light');
+            setScope('day');
+          }}
         >
-          இன்று (Today)
+          Today
         </button>
         <button
           type="button"
           className={`ledger-scope-tab ${scope === 'month' ? 'active' : ''}`}
-          onClick={() => setScope('month')}
+          onClick={() => {
+            triggerHaptic('light');
+            setScope('month');
+          }}
         >
           {currentMonth}
         </button>
@@ -124,18 +131,18 @@ export default function FinanceTab({
           className="ledger-hero-amount"
           style={{ color: filteredData.net >= 0 ? '#54D6C4' : '#FF8A80' }}
         >
-          {filteredData.net >= 0 ? '+' : '−'}
-          {fmtCurrency(Math.abs(filteredData.net))}
+          {filteredData.net > 0 ? '+' : ''}
+          {fmtCurrency(filteredData.net)}
         </div>
         <div className="ledger-hero-cards">
           <div className="ledger-hero-card">
-            <div className="ledger-hero-card-label">வருவாய் (Revenue)</div>
+            <div className="ledger-hero-card-label">Revenue</div>
             <div className="ledger-hero-card-val" style={{ color: '#54D6C4' }}>
               {fmtCurrency(filteredData.totalRev)}
             </div>
           </div>
           <div className="ledger-hero-card">
-            <div className="ledger-hero-card-label">செலவு (Expenses)</div>
+            <div className="ledger-hero-card-label">Expenses</div>
             <div className="ledger-hero-card-val" style={{ color: '#FFB299' }}>
               {fmtCurrency(filteredData.totalExp)}
             </div>
@@ -148,29 +155,35 @@ export default function FinanceTab({
         <button
           type="button"
           className="ledger-btn expense-btn"
-          onClick={onOpenExpense}
+          onClick={() => {
+            triggerHaptic('medium');
+            onOpenExpense();
+          }}
         >
-          + செலவு (Expense)
+          + Expense
         </button>
         <button
           type="button"
           className="ledger-btn revenue-btn"
-          onClick={onOpenRevenue}
+          onClick={() => {
+            triggerHaptic('medium');
+            onOpenRevenue();
+          }}
         >
-          + வருவாய் (Revenue)
+          + Revenue
         </button>
       </div>
 
       {/* Entries Section */}
       <div className="section-card">
         <div className="section-card-header">
-          <div className="section-card-title">பதிவுகள் · {scopeLabel}</div>
-          <div className="section-card-meta">{filteredData.entries.length} பதிவுகள்</div>
+          <div className="section-card-title">Entries · {scopeLabel}</div>
+          <div className="section-card-meta">{filteredData.entries.length} entries</div>
         </div>
 
         {filteredData.entries.length === 0 ? (
           <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-            இந்தப் பகுதியில் இதுவரை பதிவுகள் எதுவும் இல்லை.
+            No entries recorded for this period yet.
           </div>
         ) : (
           filteredData.entries.map((entry) => (
@@ -191,18 +204,46 @@ export default function FinanceTab({
                 <button
                   type="button"
                   onClick={() => onOpenLightbox?.(entry.proof, entry.partner, entry.label, entry.createdAt)}
-                  title="சான்று படம் பார்"
+                  title="View proof photo"
                   style={{
                     padding: '4px 8px',
                     borderRadius: '6px',
                     background: 'var(--input-bg)',
                     fontSize: '11px',
                     color: 'var(--text-sec)',
+                    border: 'none',
+                    cursor: 'pointer',
                   }}
                 >
                   📷
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete this entry?')) {
+                    if (entry.kind === 'rev') {
+                      deleteRevenue?.(entry.id);
+                    } else {
+                      deleteExpense?.(entry.id);
+                    }
+                  }
+                }}
+                title="Delete"
+                aria-label="Delete entry"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  padding: '4px 6px',
+                  borderRadius: '6px',
+                  opacity: 0.5,
+                }}
+              >
+                ✕
+              </button>
             </div>
           ))
         )}
@@ -211,7 +252,7 @@ export default function FinanceTab({
       {/* Founder Capital Section */}
       <div className="section-card">
         <div className="section-card-header">
-          <div className="section-card-title">பங்குதாரர் மூலதனம் (Founder Capital)</div>
+          <div className="section-card-title">Founder Capital</div>
           <div className="section-card-meta" style={{ color: 'var(--teal-dark)', fontWeight: 600 }}>
             {fmtCurrency(capitalData.total)} total
           </div>
@@ -249,7 +290,7 @@ export default function FinanceTab({
             onClick={onOpenCapital}
             style={{ fontWeight: 600 }}
           >
-            + மூலதனம் சேர்க்க
+            + Add Capital
           </button>
           <span style={{ color: 'var(--card-border)' }}>|</span>
           <button
@@ -257,7 +298,7 @@ export default function FinanceTab({
             className="section-card-link"
             onClick={() => shareSettlementWhatsApp(settlement)}
           >
-            WhatsApp தீர்வு பகிர்வு
+            Share Settlement (WhatsApp)
           </button>
           <span style={{ color: 'var(--card-border)' }}>|</span>
           <button
@@ -265,7 +306,7 @@ export default function FinanceTab({
             className="section-card-link"
             onClick={() => exportLedgerCSV(store)}
           >
-            CSV ஏற்றுமதி
+            Export CSV
           </button>
         </div>
       </div>

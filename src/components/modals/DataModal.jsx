@@ -3,94 +3,119 @@ import React from 'react';
 export default function DataModal({
   isOpen,
   onClose,
-  onExportJSON,
-  onImportJSON,
   onWipeAll,
+  isOnline = true,
+  lastSyncedAt,
+  store = {},
+  currentPartner,
 }) {
   if (!isOpen) return null;
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onImportJSON(file);
-      onClose();
+  const handleWipe = () => {
+    if (window.confirm('⚠️ Are you sure you want to reset all operational data? This will clear all tasks, expenses, revenues, and shift logs from the cloud database.')) {
+      if (window.confirm('⚠️ Final confirmation: Reset everything to zero?')) {
+        onWipeAll?.();
+        onClose();
+      }
     }
   };
 
-  const handleWipe = () => {
-    if (window.confirm('அனைத்து தரவுகளையும் அழிக்க நிச்சயமாக விரும்புகிறீர்களா? (Are you sure you want to clear all data?)')) {
-      onWipeAll();
-      onClose();
-    }
-  };
+  const tasksCount = (store.tasks || []).length;
+  const expensesCount = (store.expenses || []).length;
+  const revenuesCount = (store.revenues || []).length;
+  const worklogsCount = (store.worklogs || []).length;
+  const messagesCount = (store.messages || []).length;
+
+  const syncTimeStr = lastSyncedAt
+    ? new Date(lastSyncedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    : 'Just now';
 
   return (
     <>
       <div className="sheet-overlay" onClick={onClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">தரவு மேலாண்மை (Data & Backup)</div>
+        <div className="sheet-title">System &amp; Cloud Sync</div>
 
-        {/* Clear All Data */}
-        <div style={{ marginBottom: '18px', padding: '14px', background: 'var(--danger-bg)', borderRadius: '14px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--danger)', marginBottom: '4px' }}>
-            🗑️ முழு தரவு அழிப்பு (Clear All Data)
+        {/* Realtime Status Banner */}
+        <div
+          style={{
+            marginBottom: '16px',
+            padding: '14px',
+            background: isOnline ? 'rgba(15, 158, 142, 0.08)' : 'rgba(224, 138, 11, 0.08)',
+            border: `1px solid ${isOnline ? 'rgba(15, 158, 142, 0.25)' : 'rgba(224, 138, 11, 0.25)'}`,
+            borderRadius: '14px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span
+                style={{
+                  width: '9px',
+                  height: '9px',
+                  borderRadius: '50%',
+                  background: isOnline ? '#0F9E8E' : '#E08A0B',
+                  boxShadow: isOnline ? '0 0 10px #0F9E8E' : 'none',
+                }}
+              />
+              <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--navy)' }}>
+                {isOnline ? 'Realtime Database Live' : 'Offline Mode'}
+              </span>
+            </div>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              {syncTimeStr}
+            </span>
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-sec)', lineHeight: 1.4 }}>
+            {isOnline
+              ? 'All tasks, ledger entries, shifts, and messages are backed up to Firebase Realtime Database in real time.'
+              : 'Changes are cached safely on your device and will auto-sync when connection is restored.'}
+          </div>
+        </div>
+
+        {/* Database Stats Card */}
+        <div style={{ marginBottom: '16px', padding: '14px', background: 'var(--input-bg)', borderRadius: '14px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '10px' }}>
+            Cloud Database Records
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            <div style={{ background: '#fff', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--navy)' }}>{tasksCount}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Tasks</div>
+            </div>
+            <div style={{ background: '#fff', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--teal-dark)' }}>{expensesCount + revenuesCount}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Ledger</div>
+            </div>
+            <div style={{ background: '#fff', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
+              <div style={{ fontSize: '18px', fontWeight: 700, color: '#B4531F' }}>{worklogsCount}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Shifts</div>
+            </div>
+          </div>
+          {currentPartner && (
+            <div style={{ marginTop: '10px', fontSize: '11.5px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
+              <span>Signed in as: <strong>{currentPartner.name}</strong></span>
+              <span>{messagesCount} chat messages</span>
+            </div>
+          )}
+        </div>
+
+        {/* Clear Data / Reset */}
+        <div style={{ marginBottom: '16px', padding: '14px', background: 'var(--danger-bg)', borderRadius: '14px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--danger)', marginBottom: '3px' }}>
+            🗑️ Reset Database
           </div>
           <div style={{ fontSize: '11.5px', color: 'var(--text-sec)', marginBottom: '10px' }}>
-            பணிகள், செலவுகள், வருவாய்கள் அனைத்தையும் முழுமையாக நீக்கி புதிய நிலைக்கு கொண்டுவரலாம்.
+            Wipe all records to start fresh operations with zero entries.
           </div>
           <button
             type="button"
             className="sheet-submit-btn"
             onClick={handleWipe}
-            style={{ background: 'var(--danger)', color: '#fff', fontSize: '13.5px', padding: '10px' }}
+            style={{ background: 'var(--danger)', color: '#fff', fontSize: '13px', padding: '9px' }}
           >
-            முழு தரவையும் அழி (Clear Everything)
+            Clear All Data
           </button>
-        </div>
-
-        {/* Export / Import Backup */}
-        <div style={{ marginBottom: '18px', padding: '14px', background: 'var(--input-bg)', borderRadius: '14px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--navy)', marginBottom: '4px' }}>
-            💾 காப்புப்பிரதி (JSON Backup)
-          </div>
-          <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginBottom: '10px' }}>
-            தரவை கணினியில் பதிவிறக்கம் செய்ய அல்லது ஏற்கனவே உள்ள கோப்பை ஏற்றவும்.
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              type="button"
-              className="sheet-submit-btn navy"
-              onClick={onExportJSON}
-              style={{ flex: 1, fontSize: '12.5px', padding: '10px' }}
-            >
-              📥 பேக்கப் பதிவிறக்கு
-            </button>
-            <label
-              className="sheet-submit-btn"
-              style={{
-                flex: 1,
-                fontSize: '12.5px',
-                padding: '10px',
-                background: 'var(--card)',
-                color: 'var(--navy)',
-                border: '1px solid var(--card-border)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-            >
-              📤 கோப்பை ஏற்று
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleFileChange}
-                style={{ display: 'none' }}
-              />
-            </label>
-          </div>
         </div>
 
         <button
@@ -99,7 +124,7 @@ export default function DataModal({
           onClick={onClose}
           style={{ background: 'transparent', color: 'var(--text-sec)', padding: '10px' }}
         >
-          மூடு (Close)
+          Close
         </button>
       </div>
     </>

@@ -4,6 +4,8 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import NavigationTabs from './components/NavigationTabs';
 import Toast from './components/Toast';
+import { triggerHaptic } from './utils/haptics';
+import { getLocalDateStr } from './utils/calculations';
 
 // Lazy load tabs
 const HomeTab = lazy(() => import('./components/HomeTab'));
@@ -26,16 +28,16 @@ function TabLoadingFallback() {
     <div
       style={{
         display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '260px',
+        gap: '12px',
         color: 'var(--text-muted)',
       }}
     >
-      <div style={{ textAlign: 'center', padding: '32px 0' }}>
-        <div style={{ fontSize: '28px', marginBottom: '8px' }}>⏳</div>
-        <div style={{ fontSize: '13.5px', fontWeight: 500 }}>ஏற்றப்படுகிறது...</div>
-      </div>
+      <div className="auth-spinner" />
+      <span style={{ fontSize: '12.5px', fontWeight: 500 }}>Loading…</span>
     </div>
   );
 }
@@ -58,6 +60,8 @@ export default function AppShell({ _user, partner, onSignOut }) {
     setSelectedDate,
     completingTask,
     setCompletingTask,
+    isOnline,
+    lastSyncedAt,
     addTask,
     completeTask,
     completeTaskWithProof,
@@ -72,10 +76,8 @@ export default function AppShell({ _user, partner, onSignOut }) {
     deleteWorklog,
     addProof,
     sendMessage,
+    toggleShift,
     wipeAll,
-    loadDemo,
-    exportJSON,
-    importJSON,
   } = useStore();
 
   const pendingCount = (store.tasks || []).filter(
@@ -106,27 +108,27 @@ export default function AppShell({ _user, partner, onSignOut }) {
       case 'home':
         return {
           kicker: 'Operations Hub',
-          title: `Vanakkam, ${partner?.name || 'Partner'}`,
+          title: `Welcome, ${partner?.name || 'Partner'}`,
         };
       case 'tasks':
         return {
           kicker: 'Task agenda',
-          title: 'பணிகள் (Tasks)',
+          title: 'Tasks',
         };
       case 'hours':
         return {
           kicker: 'Shift & workload',
-          title: 'உழைப்பு (Shifts)',
+          title: 'Shifts',
         };
       case 'ledger':
         return {
           kicker: 'Cashflow & capital',
-          title: 'நிதிப் பதிவேடு (Ledger)',
+          title: 'Ledger',
         };
       case 'chat':
         return {
           kicker: '3 partners · MeenMart',
-          title: 'அரட்டை (Stream)',
+          title: 'Partner Stream',
         };
       default:
         return {
@@ -160,6 +162,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
           partner={partner}
           onCycleUser={handleCycleUser}
           onOpenData={() => setActiveModal('data')}
+          isOnline={isOnline}
         />
 
         {/* Workspace Body */}
@@ -171,6 +174,9 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 partnerFilter={partnerFilter}
                 setPartnerFilter={setPartnerFilter}
                 onOpenTask={openTask}
+                onGoToTasks={() => setActiveTab('tasks')}
+                onGoToHours={() => setActiveTab('hours')}
+                onGoToLedger={() => setActiveTab('ledger')}
               />
             )}
 
@@ -201,6 +207,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 onOpenLightbox={handleOpenLightbox}
                 onOpenWork={openWork}
                 currentPartner={partner}
+                toggleShift={toggleShift}
               />
             )}
 
@@ -234,8 +241,11 @@ export default function AppShell({ _user, partner, onSignOut }) {
           <button
             type="button"
             className="fab-btn"
-            onClick={openTask}
-            aria-label="புதிய பணி சேர்க்க"
+            onClick={() => {
+              triggerHaptic('medium');
+              openTask();
+            }}
+            aria-label="Add new task"
             title="Add task"
           >
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -265,6 +275,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
             onClose={closeModal}
             onAddTask={addTask}
             currentPartner={partner}
+            defaultDate={selectedDate || getLocalDateStr()}
           />
         )}
 
@@ -319,10 +330,11 @@ export default function AppShell({ _user, partner, onSignOut }) {
           <DataModal
             isOpen={true}
             onClose={closeModal}
-            onExportJSON={exportJSON}
-            onImportJSON={importJSON}
-            onLoadDemo={loadDemo}
             onWipeAll={wipeAll}
+            isOnline={isOnline}
+            lastSyncedAt={lastSyncedAt}
+            store={store}
+            currentPartner={partner}
           />
         )}
 

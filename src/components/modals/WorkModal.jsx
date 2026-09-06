@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { getLocalDateStr } from '../../utils/calculations';
 
 const PARTNER_CHIPS = [
@@ -14,12 +14,14 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartne
   const [hours, setHours] = useState('');
   const [assignTo, setAssignTo] = useState(partner);
   const [loading, setLoading] = useState(false);
+  const isSubmitting = useRef(false);
 
   const handleClose = () => {
     setDesc('');
     setHours('');
     setAssignTo(partner);
     setLoading(false);
+    isSubmitting.current = false;
     onClose();
   };
 
@@ -29,13 +31,19 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartne
   const hoursValid = !isNaN(numHours) && numHours > 0;
   const canSubmit = desc.trim() && hoursValid && !loading;
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
+  const handleSubmit = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!canSubmit || isSubmitting.current) return;
+    isSubmitting.current = true;
     setLoading(true);
     onAddWorklog({
       partner: assignTo,
       hours: numHours,
       desc: desc.trim(),
+      activity: desc.trim(),
       date: getLocalDateStr(),
       proof: null,
       proofAddedAt: null,
