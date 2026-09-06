@@ -35,7 +35,7 @@ const PARTNER_ROLES  = { Nagoor: 'Procure & Pack', JP: 'Delivery & Sales', Balaj
 export default function HomeTab({
   store,
   partnerFilter,
-  setPartnerFilter: _setPartnerFilter,
+  setPartnerFilter,
   onOpenTask,
   onGoToTasks,
   onGoToHours,
@@ -231,6 +231,7 @@ export default function HomeTab({
             const isMe = pName === currentPartner?.name;
             const isOnline = !!onlinePartners?.[pName] || isMe;
             const isOnShift = !!store.activeShifts?.[pName];
+            const isFilterSelected = partnerFilter === pName;
             const avatarUrl = profiles?.[pName]?.avatarUrl;
             const initials = PARTNER_INITIALS[pName];
             const pColor = PARTNER_COLORS[pName];
@@ -238,14 +239,14 @@ export default function HomeTab({
             return (
               <div
                 key={pName}
-                className={`live-partner-box ${isOnline ? 'is-online' : isOnShift ? 'is-shift' : 'is-offline'}${isMe ? ' is-me' : ''}`}
+                className={`live-partner-box ${isOnline ? 'is-online' : isOnShift ? 'is-shift' : 'is-offline'}${isMe ? ' is-me' : ''}${isFilterSelected ? ' is-selected-filter' : ''}`}
                 onClick={() => {
                   triggerHaptic('medium');
                   setSelectedPartnerDetail(pName);
                 }}
                 role="button"
                 tabIndex={0}
-                title={`${pName} (${PARTNER_ROLES[pName] || 'Partner'}) — Performance & Insights`}
+                title={`${pName} (${PARTNER_ROLES[pName] || 'Partner'}) — Performance & Insights${isFilterSelected ? ' (Filtered)' : ''}`}
                 style={{ cursor: 'pointer' }}
               >
                 <div className="live-avatar-wrap" style={{ backgroundColor: pColor }}>
@@ -471,6 +472,10 @@ export default function HomeTab({
           onOpenSettings={onOpenSettings}
           isMe={selectedPartnerDetail === currentPartner?.name}
           onClose={() => setSelectedPartnerDetail(null)}
+          onFilterPartner={(name) => {
+            setPartnerFilter?.(name);
+            setSelectedPartnerDetail(null);
+          }}
           onCompleteTask={onCompleteTask}
           onOpenTask={onOpenTask}
         />

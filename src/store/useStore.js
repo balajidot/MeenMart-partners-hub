@@ -82,7 +82,16 @@ export function useStore(activePartnerName = 'Balaji') {
   const [activeModal, setActiveModal] = useState(null);
   const [lightboxProof, setLightboxProof] = useState(null);
   const [toast, setToast] = useState(null);
-  const [partnerFilter, setPartnerFilter] = useState('all');
+  const [partnerFilter, setPartnerFilter] = useState(() => activePartnerName || 'Balaji');
+  const [prevPartnerName, setPrevPartnerName] = useState(activePartnerName);
+
+  // Sync partnerFilter directly during render if active logged-in partner changes
+  if (activePartnerName !== prevPartnerName) {
+    setPrevPartnerName(activePartnerName);
+    if (activePartnerName && activePartnerName !== 'all') {
+      setPartnerFilter(activePartnerName);
+    }
+  }
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState(null);
   const [completingTask, setCompletingTask] = useState(null);

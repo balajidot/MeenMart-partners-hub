@@ -56,30 +56,36 @@ export default function Header({
       <div className="filter-chips">
         {FILTER_CHIPS.map(({ label, value, dot }) => {
           const isActive = partnerFilter === value;
+          const isCurrentUser = partner?.name === value;
           return (
             <button
               key={value}
               type="button"
-              className={`filter-chip${isActive ? ' active' : ''}`}
+              className={`filter-chip${isActive ? ' active' : ''}${isCurrentUser ? ' is-me' : ''}`}
               onClick={() => {
                 triggerHaptic('light');
                 setPartnerFilter(value);
               }}
+              title={isCurrentUser ? `${label} (Your workspace)` : `Filter by ${label}`}
             >
               {dot && (
                 <span
+                  className="filter-chip-dot"
                   style={{
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
                     background: dot,
-                    marginRight: '5px',
-                    display: 'inline-block',
-                    boxShadow: isActive ? `0 0 5px ${dot}` : 'none',
+                    boxShadow: isActive ? `0 0 6px ${dot}` : 'none',
                   }}
                 />
               )}
-              <span>{label}</span>
+              {value === 'all' ? (
+                <>
+                  <span className="chip-label-full">All Partners</span>
+                  <span className="chip-label-short">All</span>
+                </>
+              ) : (
+                <span className="filter-chip-label">{label}</span>
+              )}
+              {isCurrentUser && <span className="filter-chip-you">You</span>}
             </button>
           );
         })}

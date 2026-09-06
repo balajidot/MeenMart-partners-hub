@@ -126,6 +126,7 @@ function ClockSVG() {
 export default function TasksTab({
   store,
   partnerFilter,
+  setPartnerFilter,
   selectedDate,
   setSelectedDate,
   completeTask,
@@ -255,8 +256,22 @@ export default function TasksTab({
       {/* Filter Notice if filtered by a specific partner */}
       {partnerFilter !== 'all' && (
         <div className="task-filter-notice">
-          <span>Filtered for <strong>{partnerFilter}</strong></span>
-          <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>Tap avatar in header to change</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+            <span style={{ fontSize: '13px' }}>👤</span>
+            <span>Filtered for <strong>{partnerFilter}</strong></span>
+          </div>
+          {setPartnerFilter && (
+            <button
+              type="button"
+              className="task-filter-clear-btn"
+              onClick={() => {
+                triggerHaptic('light');
+                setPartnerFilter('all');
+              }}
+            >
+              Show All
+            </button>
+          )}
         </div>
       )}
 

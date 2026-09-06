@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { fmtCurrency, getLocalDateStr } from '../utils/calculations';
+import { getLocalDateStr } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
 
 /* ── Partner config ─────────────────────────────────────── */
@@ -125,15 +125,10 @@ export default function WorkTab({
       const hrs       = logs.reduce((s, w) => s + Number(w.hours || 0), 0);
       const allTasks  = (store.tasks || []).filter((t) => t.to === p.name);
       const doneTasks = allTasks.filter((t) => t.status === 'completed' || t.s === 'done').length;
-      const rev       = (store.revenues || [])
-        .filter((r) => r.partner === p.name && (r.date || getLocalDateStr(r.createdAt)) === todayStr)
-        .reduce((s, r) => s + Number(r.amount || 0), 0);
-      const exp       = (store.expenses || [])
-        .filter((e) => e.partner === p.name && (e.date || getLocalDateStr(e.createdAt)) === todayStr)
-        .reduce((s, e) => s + Number(e.amount || 0), 0);
-      return { ...p, hrs: Number(hrs.toFixed(1)), doneTasks, allTasks: allTasks.length, net: rev - exp };
+      const completionRate = allTasks.length > 0 ? Math.round((doneTasks / allTasks.length) * 100) : 0;
+      return { ...p, hrs: Number(hrs.toFixed(1)), doneTasks, allTasks: allTasks.length, completionRate };
     });
-  }, [store.worklogs, store.tasks, store.revenues, store.expenses, todayStr]);
+  }, [store.worklogs, store.tasks, todayStr]);
 
   const maxPerfHrs = useMemo(() => {
     return Math.max(...todayPerf.map((p) => p.hrs), 1);
@@ -349,7 +344,6 @@ export default function WorkTab({
         <div style={{ padding: '0 16px 16px' }}>
           {todayPerf.map((p) => {
             const barPct = maxPerfHrs > 0 ? Math.round((p.hrs / maxPerfHrs) * 100) : 0;
-            const netStr = p.net > 0 ? `+${fmtCurrency(p.net)}` : p.net < 0 ? fmtCurrency(p.net) : '₹0';
             return (
               <div key={p.name} className="perf-row">
                 <div className={`partner-monogram partner-monogram-lg ${p.cls}`}>
@@ -373,8 +367,10 @@ export default function WorkTab({
                   </div>
                 </div>
                 <div className="perf-right">
-                  <span className="perf-net-label">net</span>
-                  <span className="perf-net">{netStr}</span>
+                  <span className="perf-net-label">Success</span>
+                  <span className="perf-net" style={{ color: p.doneTasks > 0 ? '#0F9E8E' : 'var(--text-sec)' }}>
+                    {p.allTasks > 0 ? `${p.completionRate}%` : '—'}
+                  </span>
                 </div>
               </div>
             );

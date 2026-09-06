@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meenmart-partners-pwa-v6';
+const CACHE_NAME = 'meenmart-partners-pwa-v7';
 const STATIC_ASSETS = [
   '/',
   '/manifest.webmanifest',

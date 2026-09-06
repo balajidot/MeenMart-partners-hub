@@ -29,6 +29,7 @@ export default function PartnerDetailModal({
   onlinePartners,
   onOpenSettings,
   isMe,
+  onFilterPartner,
   onCompleteTask,
   onOpenTask,
 }) {
@@ -176,6 +177,18 @@ export default function PartnerDetailModal({
                 }}
               >
                 ✏️ Edit Profile & Avatar
+              </button>
+            )}
+            {onFilterPartner && (
+              <button
+                type="button"
+                className="partner-detail-filter-btn"
+                onClick={() => {
+                  triggerHaptic('medium');
+                  onFilterPartner(partnerName);
+                }}
+              >
+                🔍 Filter {partnerName}&apos;s View
               </button>
             )}
           </div>

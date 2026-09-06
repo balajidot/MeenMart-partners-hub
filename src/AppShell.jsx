@@ -183,6 +183,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
               <TasksTab
                 store={store}
                 partnerFilter={partnerFilter}
+                setPartnerFilter={setPartnerFilter}
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
                 completeTask={completeTask}
