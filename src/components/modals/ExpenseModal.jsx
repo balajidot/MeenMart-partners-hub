@@ -4,23 +4,24 @@ import { getLocalDateStr } from '../../utils/calculations';
 const EXPENSE_CATEGORIES = ['Fish', 'Ice', 'Packing', 'Transport'];
 const REVENUE_CATEGORIES = ['Retail', 'Bulk', 'Online', 'Other'];
 
-const PARTNER_CHIPS = [
-  { label: 'Balaji', value: 'Balaji', activeClass: 'active-balaji' },
-  { label: 'Nagoor', value: 'Nagoor', activeClass: 'active-nagoor' },
-  { label: 'JP',     value: 'JP',     activeClass: 'active-jp'     },
-  { label: 'Shared', value: 'Shared', activeClass: 'active-shared' },
-];
-
-export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPartner, kind = 'expense' }) {
+export default function ExpenseModal({
+  isOpen,
+  onClose,
+  onAddExpense,
+  onUpdateExpense,
+  currentPartner,
+  kind = 'expense',
+  initialData = null,
+}) {
   const partner = currentPartner?.name || 'Balaji';
   const isRevenue = kind === 'revenue';
+  const isEditing = !!initialData;
 
   const categories = isRevenue ? REVENUE_CATEGORIES : EXPENSE_CATEGORIES;
 
-  const [amount, setAmount] = useState('');
-  const [label, setLabel] = useState('');
-  const [category, setCategory] = useState(categories[0]);
-  const [assignTo, setAssignTo] = useState(partner);
+  const [amount, setAmount] = useState(initialData?.amount ? String(initialData.amount) : '');
+  const [label, setLabel] = useState(initialData?.reason || initialData?.label || '');
+  const [category, setCategory] = useState(initialData?.category || categories[0]);
   const [loading, setLoading] = useState(false);
   const isSubmitting = useRef(false);
 
@@ -28,7 +29,6 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
     setAmount('');
     setLabel('');
     setCategory(categories[0]);
-    setAssignTo(partner);
     setLoading(false);
     isSubmitting.current = false;
     onClose();
@@ -48,17 +48,24 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
     if (!canSubmit || isSubmitting.current) return;
     isSubmitting.current = true;
     setLoading(true);
-    onAddExpense({
-      partner: assignTo === 'Shared' ? partner : assignTo,
+
+    const payload = {
+      partner,
       amount: numAmount,
       category,
       reason: label.trim() || category,
       label: label.trim() || category,
-      date: getLocalDateStr(),
-      proof: null,
-      proofAddedAt: null,
+      date: initialData?.date || getLocalDateStr(),
+      proof: initialData?.proof || null,
+      proofAddedAt: initialData?.proofAddedAt || null,
       kind,
-    });
+    };
+
+    if (isEditing && onUpdateExpense) {
+      onUpdateExpense(initialData.id, payload, partner);
+    } else if (onAddExpense) {
+      onAddExpense(payload);
+    }
     handleClose();
   };
 
@@ -67,8 +74,52 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
       <div className="sheet-overlay" onClick={handleClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">
-          {isRevenue ? 'Varavu Entry Podu' : 'Selavu Entry Podu'}
+        <div className="sheet-header-row">
+          <div className="sheet-title" style={{ margin: 0 }}>
+            {isEditing
+              ? isRevenue ? 'Varavu Edit Pannu' : 'Selavu Edit Pannu'
+              : isRevenue ? 'Varavu Entry Podu' : 'Selavu Entry Podu'}
+          </div>
+          <button
+            type="button"
+            className="sheet-close-btn"
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Logged-in Partner Lock Card */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '9px 13px',
+            background: 'var(--chip-bg)',
+            borderRadius: '10px',
+            marginBottom: '16px',
+            fontSize: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'var(--text-sec)' }}>Partner:</span>
+            <strong style={{ color: 'var(--navy)', fontSize: '13px' }}>{partner}</strong>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>(Logged-in User)</span>
+          </div>
+          <span
+            style={{
+              fontSize: '10.5px',
+              padding: '2px 7px',
+              borderRadius: '6px',
+              background: 'rgba(22, 34, 74, 0.08)',
+              color: 'var(--navy)',
+              fontWeight: 600,
+            }}
+          >
+            🔒 Strict Owner
+          </span>
         </div>
 
         {/* Amount */}
@@ -98,7 +149,7 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
 
         {/* Category chips */}
         <div className="sheet-field-label">Category</div>
-        <div className="sheet-option-chips" style={{ marginBottom: '18px' }}>
+        <div className="sheet-option-chips" style={{ marginBottom: '24px' }}>
           {categories.map((cat) => (
             <button
               key={cat}
@@ -113,28 +164,17 @@ export default function ExpenseModal({ isOpen, onClose, onAddExpense, currentPar
           ))}
         </div>
 
-        {/* Assign to */}
-        <div className="sheet-field-label">Yaaru kaasu? (Partner)</div>
-        <div className="sheet-option-chips" style={{ marginBottom: '24px' }}>
-          {PARTNER_CHIPS.map((chip) => (
-            <button
-              key={chip.value}
-              type="button"
-              className={`sheet-option-chip${assignTo === chip.value ? ` ${chip.activeClass}` : ''}`}
-              onClick={() => setAssignTo(chip.value)}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
-
         <button
           type="button"
           className={`sheet-submit-btn${isRevenue ? ' teal' : ' navy'}`}
           onClick={handleSubmit}
           disabled={!canSubmit}
         >
-          {loading ? 'Saving...' : (isRevenue ? 'Varavu Save Pannu' : 'Selavu Save Pannu')}
+          {loading
+            ? 'Saving...'
+            : isEditing
+            ? isRevenue ? 'Varavu Update Pannu' : 'Selavu Update Pannu'
+            : isRevenue ? 'Varavu Save Pannu' : 'Selavu Save Pannu'}
         </button>
       </div>
     </>

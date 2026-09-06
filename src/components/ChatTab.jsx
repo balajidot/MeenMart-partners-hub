@@ -39,10 +39,11 @@ function formatTodayDate() {
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-const ChatMessageItem = React.memo(function ChatMessageItem({ msg, myName, onOpenLightbox }) {
+const ChatMessageItem = React.memo(function ChatMessageItem({ msg, myName, onOpenLightbox, profiles }) {
   const isMine = msg.partner === myName;
   const partnerColor = PARTNER_COLORS[msg.partner] || '#5A6480';
   const partnerInitials = PARTNER_INITIALS[msg.partner] || (msg.partner ? msg.partner.slice(0, 2).toUpperCase() : '??');
+  const avatarUrl = profiles?.[msg.partner]?.avatarUrl;
   const timeStr = formatChatTime(msg.createdAt);
   const hasProof = !!msg.proof;
   const hasText = msg.text && msg.text.trim() && msg.text !== '📸 Photo attachment';
@@ -55,7 +56,11 @@ const ChatMessageItem = React.memo(function ChatMessageItem({ msg, myName, onOpe
           style={{ backgroundColor: partnerColor }}
           title={`${msg.partner} (${PARTNER_ROLES[msg.partner] || 'Partner'})`}
         >
-          {partnerInitials}
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={msg.partner} className="chat-avatar-thumb" />
+          ) : (
+            partnerInitials
+          )}
         </div>
       )}
 
@@ -114,6 +119,8 @@ export default function ChatTab({
   onOpenLightbox,
   isChatTyping,
   setIsChatTyping,
+  onlinePartners,
+  profiles,
 }) {
   const [draft, setDraft] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -123,6 +130,11 @@ export default function ChatTab({
 
   const messages = store?.messages || [];
   const myName = currentPartner?.name || 'Balaji';
+
+  // Only show partners who are actively online (current user is always considered online)
+  const onlineList = ['Balaji', 'Nagoor', 'JP'].filter(
+    (pName) => onlinePartners?.[pName] || pName === myName
+  );
 
   const scrollToBottom = useCallback((smooth = true) => {
     if (messagesEndRef.current) {
@@ -142,7 +154,6 @@ export default function ChatTab({
 
   const handleInputFocus = () => {
     setIsChatTyping?.(true);
-    // Give mobile browser a tick to adjust keyboard viewport before scrolling
     setTimeout(() => scrollToBottom(true), 250);
   };
 
@@ -203,26 +214,36 @@ export default function ChatTab({
 
   return (
     <div className={`chat-workspace ${isChatTyping ? 'keyboard-active' : ''}`}>
-      {/* Pinned Channel Bar */}
+      {/* Pinned Channel Bar — Only shows online partners */}
       <div className="chat-channel-bar">
         <div className="chat-channel-left">
           <div className="chat-channel-title">
             <span className="chat-channel-dot" />
             <span className="chat-channel-name">MeenMart Co-Founders</span>
           </div>
-          <div className="chat-channel-sub">Balaji • Nagoor • JP · Realtime Ops</div>
+          <div className="chat-channel-sub">
+            {onlineList.join(' • ')} · Online Irukanga
+          </div>
         </div>
         <div className="chat-channel-avatars">
-          {['Balaji', 'Nagoor', 'JP'].map((pName) => (
-            <span
-              key={pName}
-              className={`chat-channel-avatar-pill ${pName === myName ? 'is-me' : ''}`}
-              style={{ backgroundColor: PARTNER_COLORS[pName] }}
-              title={`${pName}: ${PARTNER_ROLES[pName]}`}
-            >
-              {PARTNER_INITIALS[pName]}
-            </span>
-          ))}
+          {onlineList.map((pName) => {
+            const avatarUrl = profiles?.[pName]?.avatarUrl;
+            return (
+              <span
+                key={pName}
+                className={`chat-channel-avatar-pill ${pName === myName ? 'is-me' : ''}`}
+                style={{ backgroundColor: PARTNER_COLORS[pName] }}
+                title={`${pName}: Online (${PARTNER_ROLES[pName]})`}
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={pName} className="chat-avatar-thumb" />
+                ) : (
+                  PARTNER_INITIALS[pName]
+                )}
+                <span className="channel-avatar-online-dot" />
+              </span>
+            );
+          })}
         </div>
       </div>
 
@@ -259,6 +280,7 @@ export default function ChatTab({
               msg={msg}
               myName={myName}
               onOpenLightbox={onOpenLightbox}
+              profiles={profiles}
             />
           ))}
           <div ref={messagesEndRef} style={{ height: '8px' }} />

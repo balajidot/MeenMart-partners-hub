@@ -35,7 +35,17 @@ export default function DataModal({
       <div className="sheet-overlay" onClick={onClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">System &amp; Cloud Sync</div>
+        <div className="sheet-header-row">
+          <div className="sheet-title" style={{ margin: 0 }}>System &amp; Cloud Sync</div>
+          <button
+            type="button"
+            className="sheet-close-btn"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
 
         {/* Realtime Status Banner */}
         <div

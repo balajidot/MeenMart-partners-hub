@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { getLocalDateStr } from '../utils/calculations';
+import { getLocalDateStr, getTaskDeadlineStatus } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
 
 /* -- Partner meta ------------------------------------------------ */
@@ -373,9 +373,11 @@ const TaskCardActive = React.memo(function TaskCardActive({
   const prioLabel    = PRIORITY_LABEL[rawPriority] || 'Normal';
   const timeStr      = fmtTaskMeta(task);
   const initials     = PARTNER_INITIALS[task.to]   || 'ALL';
+  const deadlineAlert = getTaskDeadlineStatus(task);
+  const assignerName = task.assignedBy || task.from || assigner;
 
   return (
-    <div className="task-card">
+    <div className={`task-card${deadlineAlert?.status === 'overdue' ? ' task-is-overdue' : ''}`}>
       {/* Checkbox */}
       <button
         type="button"
@@ -398,6 +400,21 @@ const TaskCardActive = React.memo(function TaskCardActive({
           </span>
         </div>
 
+        {/* Deadline Alert Pill */}
+        {deadlineAlert && (
+          <div className="task-deadline-row">
+            <span
+              className={`task-deadline-pill ${deadlineAlert.status}`}
+              title={deadlineAlert.detail}
+            >
+              {deadlineAlert.label}
+            </span>
+            {deadlineAlert.status === 'overdue' && (
+              <span className="task-deadline-alert-text">Mudika vendiya neram thandiduchu!</span>
+            )}
+          </div>
+        )}
+
         <div className="task-card-foot">
           {timeStr && (
             <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
@@ -405,10 +422,10 @@ const TaskCardActive = React.memo(function TaskCardActive({
             </span>
           )}
           {timeStr && <span>·</span>}
-          <span style={{ fontWeight: 500, color: 'var(--text-sec)' }}>{task.to || 'Shared'}</span>
-          {task.from && (
-            <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
-              by {task.from}
+          <span style={{ fontWeight: 600, color: 'var(--text-sec)' }}>To: {task.to || 'Shared'}</span>
+          {assignerName && (
+            <span className="task-assigner-pill" title={`Task assign pannavaru: ${assignerName}`}>
+              👤 Assign: <strong>{assignerName}</strong>
             </span>
           )}
           {isRunning && (

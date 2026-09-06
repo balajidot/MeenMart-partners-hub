@@ -15,23 +15,23 @@ const FILTER_CHIPS = [
 ];
 
 export default function Header({
-  kicker,
   title,
   partnerFilter,
   setPartnerFilter,
   partner,
-  onCycleUser,
+  onOpenSettings,
+  profiles,
   _onOpenData,
   _isOnline,
 }) {
   const avatarBg = PARTNER_COLORS[partner?.name] ?? '#5A6480';
   const initials = partner?.initials || (partner?.name || '??').slice(0, 2).toUpperCase();
+  const avatarUrl = profiles?.[partner?.name]?.avatarUrl;
 
   return (
     <header className="app-header">
       <div className="header-top-row">
         <div className="header-titles">
-          <span className="header-kicker">{kicker}</span>
           <h1 className="header-title">{title}</h1>
         </div>
         <button
@@ -40,12 +40,16 @@ export default function Header({
           style={{ background: avatarBg }}
           onClick={() => {
             triggerHaptic('medium');
-            if (onCycleUser) onCycleUser();
+            if (onOpenSettings) onOpenSettings();
           }}
-          aria-label="Cycle active user"
-          title={`Active: ${partner?.name ?? 'Unknown'} — click to switch`}
+          aria-label="Open settings and profile"
+          title={`Active: ${partner?.name ?? 'Unknown'} — tap for Settings & Profile`}
         >
-          {initials}
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={partner?.name} className="header-avatar-img" />
+          ) : (
+            initials
+          )}
         </button>
       </div>
 

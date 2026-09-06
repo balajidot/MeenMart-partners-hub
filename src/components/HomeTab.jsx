@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { fmtCurrency, getLocalDateStr } from '../utils/calculations';
+import { fmtCurrency, getLocalDateStr, getTaskDeadlineStatus } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
 
 /* -- Partner meta ------------------------------------------------ */
@@ -45,6 +45,10 @@ export default function HomeTab({
   onGoToTasks,
   onGoToHours,
   onGoToLedger,
+  onlinePartners,
+  profiles,
+  currentPartner,
+  onOpenSettings,
 }) {
   const today = getLocalDateStr();
   const now = new Date();
@@ -88,41 +92,37 @@ export default function HomeTab({
   const revPct = cashTotal > 0 ? Math.round((todayRevenue / cashTotal) * 100) : 0;
   const expPct = cashTotal > 0 ? Math.round((todayExpenses / cashTotal) * 100) : 0;
 
-  /* Workload balance this week */
+  /* Workload balance (weekly hours per partner) */
   const weekLogs = (store.worklogs || []).filter(
-    (w) => (w.date || getLocalDateStr(w.createdAt) || '') >= weekStartStr
+    (w) => (w.date || getLocalDateStr(w.createdAt)) >= weekStartStr
   );
-
-  const workloadHours = {};
-  WORKLOAD_ORDER.forEach((p) => {
-    workloadHours[p] = weekLogs
-      .filter((w) => w.partner === p)
-      .reduce((s, w) => s + Number(w.hours || 0), 0);
+  const workloadHours = { Nagoor: 0, JP: 0, Balaji: 0 };
+  weekLogs.forEach((w) => {
+    if (workloadHours[w.partner] !== undefined) {
+      workloadHours[w.partner] += Number(w.hours || 0);
+    }
   });
   const maxWkHours = Math.max(...Object.values(workloadHours), 1);
-  const topWorker  = WORKLOAD_ORDER.reduce((a, b) =>
+  const topWorker  = Object.keys(workloadHours).reduce((a, b) =>
     workloadHours[a] >= workloadHours[b] ? a : b
   );
 
-  /* Up next */
+  /* Up next: up to 3 active tasks */
   const upNextTasks = useMemo(() => {
-    let list = pendingTasks;
-    const pOrder = { urgent: 0, high: 1, normal: 2 };
-    return [...list]
+    return pendingTasks
+      .slice()
       .sort((a, b) => {
-        const pa = pOrder[a.priority] ?? 2;
-        const pb = pOrder[b.priority] ?? 2;
-        if (pa !== pb) return pa - pb;
-        return (a.dueDateTime || a.dueAt || '').localeCompare(b.dueDateTime || b.dueAt || '');
+        const order = { urgent: 0, high: 1, normal: 2 };
+        return (order[a.priority] ?? 2) - (order[b.priority] ?? 2);
       })
       .slice(0, 3);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store.tasks, partnerFilter, pendingTasks]);
+  }, [pendingTasks]);
 
+  /* -- Render ------------------------------------------------ */
   return (
     <div className="tab-content">
 
-      {/* KPI Grid */}
+      {/* KPI 4-Card Grid */}
       <div className="kpi-grid">
         <div
           className="kpi-card interactive"
@@ -140,11 +140,9 @@ export default function HomeTab({
           </div>
           <div className="kpi-value-row">
             <span className="kpi-value">{pendingCount}</span>
-            {urgentCount > 0 ? (
-              <span className="kpi-urgent-badge">{urgentCount} urgent</span>
-            ) : pendingCount === 0 ? (
-              <span className="kpi-done-badge">All done 🎉</span>
-            ) : null}
+            {urgentCount > 0 && (
+              <span className="kpi-urgent-badge">{urgentCount} Urgent</span>
+            )}
           </div>
         </div>
 
@@ -210,6 +208,52 @@ export default function HomeTab({
           <div className="kpi-value-row">
             <span className="kpi-value">{completionPct}%</span>
           </div>
+        </div>
+      </div>
+
+      {/* Live Active Partners Section */}
+      <div className="section-card live-team-card">
+        <div className="section-card-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="live-team-dot" />
+            <span className="section-card-title">Live Active Partners</span>
+          </div>
+          <span className="section-card-meta">Realtime Status</span>
+        </div>
+        <div className="live-partners-grid">
+          {['Balaji', 'Nagoor', 'JP'].map((pName) => {
+            const isOnline = !!onlinePartners?.[pName] || pName === currentPartner?.name;
+            const isOnShift = !!store.activeShifts?.[pName];
+            const avatarUrl = profiles?.[pName]?.avatarUrl;
+            const initials = PARTNER_INITIALS[pName];
+            const pColor = PARTNER_COLORS[pName];
+
+            return (
+              <div
+                key={pName}
+                className={`live-partner-box ${isOnline ? 'is-online' : 'is-offline'}`}
+                onClick={() => {
+                  triggerHaptic('light');
+                  if (onOpenSettings) onOpenSettings();
+                }}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="live-avatar-wrap" style={{ backgroundColor: pColor }}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={pName} className="live-avatar-img" />
+                  ) : (
+                    <span>{initials}</span>
+                  )}
+                  <span className={`live-status-bubble ${isOnline ? 'online' : 'offline'}`} />
+                </div>
+                <div className="live-partner-name">{pName}</div>
+                <div className={`live-partner-badge ${isOnline ? 'online' : isOnShift ? 'shift' : 'offline'}`}>
+                  {isOnline ? '🟢 Online' : isOnShift ? '⏱️ Shift' : 'Offline'}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -356,6 +400,8 @@ export default function HomeTab({
           upNextTasks.map((task) => {
             const priorityColor = PRIORITY_COLORS[task.priority] ?? PRIORITY_COLORS.normal;
             const timeStr       = fmtTaskTime(task);
+            const deadlineAlert = getTaskDeadlineStatus(task);
+            const assignerName  = task.assignedBy || task.from;
             return (
               <div
                 key={task.id}
@@ -375,11 +421,21 @@ export default function HomeTab({
                 />
                 <div className="task-info">
                   <span className="task-title">{task.title}</span>
-                  <span className="task-meta">{task.from} → {task.to || 'Shared'}</span>
+                  <span className="task-meta">
+                    {assignerName ? `by ${assignerName} → ` : ''}{task.to || 'Shared'}
+                  </span>
                 </div>
-                {timeStr && (
-                  <span className="task-time" style={{ color: 'var(--text-muted)' }}>{timeStr}</span>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', flexShrink: 0 }}>
+                  {deadlineAlert ? (
+                    <span className={`task-deadline-pill sm ${deadlineAlert.status}`}>
+                      {deadlineAlert.label}
+                    </span>
+                  ) : (
+                    timeStr && (
+                      <span className="task-time" style={{ color: 'var(--text-muted)' }}>{timeStr}</span>
+                    )
+                  )}
+                </div>
               </div>
             );
           })

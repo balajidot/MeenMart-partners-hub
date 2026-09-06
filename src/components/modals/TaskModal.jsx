@@ -15,12 +15,30 @@ const PRIORITY_CHIPS = [
   { label: 'Normal', value: 'normal', activeClass: 'active-navy'   },
 ];
 
+const TIME_PRESETS = [
+  { label: '07:00 AM', value: '07:00 AM', hint: 'Kaalai Sandhai' },
+  { label: '09:30 AM', value: '09:30 AM', hint: 'Packing & Cleaning' },
+  { label: '01:00 PM', value: '01:00 PM', hint: 'Madhiya Slot' },
+  { label: '05:00 PM', value: '05:00 PM', hint: 'Maalai Delivery' },
+  { label: '08:30 PM', value: '08:30 PM', hint: 'Night Tally' },
+];
+
+function formatTime12h(time24) {
+  if (!time24) return '';
+  const [h, m] = time24.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${ampm}`;
+}
+
 export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, defaultDate }) {
   const from = currentPartner?.name || PARTNER_NAMES[0];
 
   const [title, setTitle] = useState('');
   const [assignTo, setAssignTo] = useState(from);
   const [priority, setPriority] = useState('normal');
+  const [dueTime, setDueTime] = useState('01:00 PM');
+  const [isCustomTime, setIsCustomTime] = useState(false);
   const [loading, setLoading] = useState(false);
   const isSubmitting = useRef(false);
 
@@ -28,6 +46,8 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
     setTitle('');
     setAssignTo(from);
     setPriority('normal');
+    setDueTime('01:00 PM');
+    setIsCustomTime(false);
     setLoading(false);
     isSubmitting.current = false;
     onClose();
@@ -48,10 +68,12 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
     onAddTask({
       title: title.trim(),
       from,
+      assignedBy: from,
       to: assignTo === 'Shared' ? null : assignTo,
       assignedTo: assignTo,
       priority,
       dueDateTime: defaultDate || getLocalDateStr(),
+      dueTime: dueTime || null,
       proof: null,
       proofAddedAt: null,
     });
@@ -62,8 +84,35 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
     <>
       <div className="sheet-overlay" onClick={handleClose} />
       <div className="bottom-sheet">
-        <div className="sheet-handle" />
-        <div className="sheet-title">Pudhu Task</div>
+        {/* Modal Header with Title & ✕ Close button */}
+        <div className="sheet-header-row">
+          <div className="sheet-title" style={{ margin: 0 }}>Pudhu Task</div>
+          <button
+            type="button"
+            className="sheet-close-btn"
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Assigner banner */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 12px',
+          background: 'var(--chip-bg)',
+          borderRadius: '10px',
+          fontSize: '12px',
+          color: 'var(--text-sec)',
+          marginBottom: '14px',
+        }}>
+          <span>👤 <strong>Assign pannavaru:</strong></span>
+          <span style={{ color: 'var(--navy)', fontWeight: 600 }}>{from}</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>(Logged-in partner)</span>
+        </div>
 
         {/* Task title */}
         <input
@@ -97,8 +146,54 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
           ))}
         </div>
 
+        {/* Deadline Time Picker */}
+        <div className="sheet-field-label">
+          ⏰ Ethana manikulla mudikanum? (Deadline Time)
+        </div>
+        <div className="sheet-option-chips" style={{ marginBottom: '10px' }}>
+          {TIME_PRESETS.map((preset) => (
+            <button
+              key={preset.value}
+              type="button"
+              className={`sheet-option-chip${dueTime === preset.value && !isCustomTime ? ' active-navy' : ''}`}
+              onClick={() => {
+                setDueTime(preset.value);
+                setIsCustomTime(false);
+              }}
+              title={preset.hint}
+            >
+              {preset.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            className={`sheet-option-chip${isCustomTime ? ' active-navy' : ''}`}
+            onClick={() => setIsCustomTime(true)}
+          >
+            ✏️ Custom Time
+          </button>
+        </div>
+
+        {isCustomTime && (
+          <div style={{ marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="time"
+              className="sheet-input"
+              style={{ width: '160px', padding: '8px 12px', fontSize: '14px' }}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setDueTime(formatTime12h(e.target.value));
+                }
+              }}
+            />
+            <span style={{ fontSize: '12px', color: 'var(--text-sec)' }}>
+              Selected: <strong>{dueTime}</strong>
+            </span>
+          </div>
+        )}
+
         {/* Priority */}
-        <div className="sheet-field-label">Priority</div>
+        <div className="sheet-field-label" style={{ marginTop: '10px' }}>Priority</div>
         <div className="sheet-option-chips" style={{ marginBottom: '24px' }}>
           {PRIORITY_CHIPS.map((chip) => (
             <button
@@ -118,7 +213,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
           onClick={handleSubmit}
           disabled={!canSubmit}
         >
-          {loading ? 'Saving...' : 'Task Add Pannu'}
+          {loading ? 'Saving...' : `Task Add Pannu (${dueTime}-kulla)`}
         </button>
       </div>
     </>

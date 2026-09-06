@@ -99,9 +99,18 @@ function SignOutIcon() {
   );
 }
 
-export default function Sidebar({ activeTab, setActiveTab, pendingCount, partner, onSignOut }) {
+export default function Sidebar({
+  activeTab,
+  setActiveTab,
+  pendingCount,
+  partner,
+  onSignOut,
+  onOpenSettings,
+  profiles,
+}) {
   const avatarBg = PARTNER_COLORS[partner?.name] ?? '#5A6480';
   const initials = partner?.initials || (partner?.name || '??').slice(0, 2).toUpperCase();
+  const avatarUrl = profiles?.[partner?.name]?.avatarUrl;
 
   return (
     <aside className="desktop-sidebar">
@@ -143,16 +152,29 @@ export default function Sidebar({ activeTab, setActiveTab, pendingCount, partner
 
       {/* Footer */}
       <div className="sidebar-footer">
-        <span
-          className="sidebar-avatar"
-          style={{ background: avatarBg }}
-          aria-hidden="true"
+        <div
+          className="sidebar-user-trigger"
+          onClick={onOpenSettings}
+          role="button"
+          tabIndex={0}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0, cursor: 'pointer' }}
+          title="Settings & Profile"
         >
-          {initials}
-        </span>
-        <div className="sidebar-footer-info">
-          <span className="sidebar-footer-name">{partner?.name ?? 'Unknown'}</span>
-          <span className="sidebar-footer-role">{partner?.role ?? 'Partner'}</span>
+          <span
+            className="sidebar-avatar"
+            style={{ background: avatarBg, overflow: 'hidden' }}
+            aria-hidden="true"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={partner?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              initials
+            )}
+          </span>
+          <div className="sidebar-footer-info">
+            <span className="sidebar-footer-name">{partner?.name ?? 'Unknown'}</span>
+            <span className="sidebar-footer-role">{partner?.role ?? 'Partner'}</span>
+          </div>
         </div>
         <button
           className="sidebar-signout-btn"

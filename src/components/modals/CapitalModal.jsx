@@ -52,7 +52,17 @@ export default function CapitalModal({ isOpen, onClose, onAddCapital, currentPar
       <div className="sheet-overlay" onClick={handleClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">Add Founder Capital</div>
+        <div className="sheet-header-row">
+          <div className="sheet-title" style={{ margin: 0 }}>Add Founder Capital</div>
+          <button
+            type="button"
+            className="sheet-close-btn"
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
 
         {/* Amount Input */}
         <div className="sheet-amount-wrap" style={{ marginBottom: '16px' }}>

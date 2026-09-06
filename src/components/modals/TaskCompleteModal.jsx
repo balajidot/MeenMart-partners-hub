@@ -47,7 +47,17 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
       <div className="sheet-overlay" onClick={handleClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">Vela Mudinjidha?</div>
+        <div className="sheet-header-row">
+          <div className="sheet-title" style={{ margin: 0 }}>Vela Mudinjidha?</div>
+          <button
+            type="button"
+            className="sheet-close-btn"
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
 
         {/* Task summary info */}
         <div className="sheet-assignee-box" style={{ marginBottom: '16px' }}>

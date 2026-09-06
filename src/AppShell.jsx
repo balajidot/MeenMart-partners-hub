@@ -22,6 +22,7 @@ const WorkModal = lazy(() => import('./components/modals/WorkModal'));
 const CapitalModal = lazy(() => import('./components/modals/CapitalModal'));
 const DataModal = lazy(() => import('./components/modals/DataModal'));
 const LightboxModal = lazy(() => import('./components/modals/LightboxModal'));
+const SettingsModal = lazy(() => import('./components/modals/SettingsModal'));
 
 function TabLoadingFallback() {
   return (
@@ -45,6 +46,8 @@ function TabLoadingFallback() {
 const PARTNER_CYCLE = ['Balaji', 'Nagoor', 'JP'];
 
 export default function AppShell({ _user, partner, onSignOut }) {
+  const [activePartner, setActivePartner] = useState(partner);
+
   const {
     store,
     activeTab,
@@ -62,13 +65,20 @@ export default function AppShell({ _user, partner, onSignOut }) {
     setCompletingTask,
     isOnline,
     lastSyncedAt,
+    // Presence & Profiles
+    onlinePartners,
+    profiles,
+    updateProfilePhoto,
+    // Actions
     addTask,
     completeTask,
     completeTaskWithProof,
     deleteTask,
     addExpense,
+    updateExpense,
     deleteExpense,
     addRevenue,
+    updateRevenue,
     deleteRevenue,
     addCapital,
     deleteCapital,
@@ -78,7 +88,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
     sendMessage,
     toggleShift,
     wipeAll,
-  } = useStore();
+  } = useStore(activePartner?.name || 'Balaji');
 
   const pendingCount = (store.tasks || []).filter(
     (t) => t.status !== 'completed' && t.s !== 'done'
@@ -88,16 +98,36 @@ export default function AppShell({ _user, partner, onSignOut }) {
     setLightboxProof({ imgUrl, partner: partnerName, title, addedAt });
   };
 
+  const [editingEntry, setEditingEntry] = useState(null);
+
   const openTask = () => setActiveModal('task');
-  const openExpense = () => setActiveModal('expense');
-  const openRevenue = () => setActiveModal('revenue');
+  const openExpense = () => {
+    setEditingEntry(null);
+    setActiveModal('expense');
+  };
+  const openRevenue = () => {
+    setEditingEntry(null);
+    setActiveModal('revenue');
+  };
+  const openSettings = () => setActiveModal('settings');
+  const handleEditEntry = (entry) => {
+    setEditingEntry(entry);
+    if (entry.kind === 'rev') {
+      setActiveModal('revenue');
+    } else {
+      setActiveModal('expense');
+    }
+  };
   const openWork = () => setActiveModal('work');
-  const closeModal = () => setActiveModal(null);
+  const closeModal = () => {
+    setActiveModal(null);
+    setEditingEntry(null);
+  };
   const [isChatTyping, setIsChatTyping] = useState(false);
 
   // Cycle user filter or avatar
   const handleCycleUser = () => {
-    const currentName = partner?.name || 'Balaji';
+    const currentName = activePartner?.name || 'Balaji';
     const currentIndex = PARTNER_CYCLE.indexOf(currentName);
     const nextPartnerName = PARTNER_CYCLE[(currentIndex + 1) % PARTNER_CYCLE.length];
     setPartnerFilter(nextPartnerName);
@@ -109,7 +139,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
       case 'home':
         return {
           kicker: 'MeenMart Hub',
-          title: `Vanakkam, ${partner?.name || 'Partner'}!`,
+          title: `Vanakkam, ${activePartner?.name || 'Partner'}!`,
         };
       case 'tasks':
         return {
@@ -139,7 +169,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
     }
   };
 
-  const { kicker, title } = getHeaderInfo();
+  const { title } = getHeaderInfo();
 
   const handleSelectTab = (tab) => {
     setIsChatTyping(false);
@@ -153,23 +183,28 @@ export default function AppShell({ _user, partner, onSignOut }) {
         activeTab={activeTab}
         setActiveTab={handleSelectTab}
         pendingCount={pendingCount}
-        partner={partner}
+        partner={activePartner}
         onSignOut={onSignOut}
+        onOpenSettings={openSettings}
+        profiles={profiles}
       />
 
       {/* Main Workspace */}
       <div className="app-main-workspace">
-        {/* Navy Header */}
-        <Header
-          kicker={kicker}
-          title={title}
-          partnerFilter={partnerFilter}
-          setPartnerFilter={setPartnerFilter}
-          partner={partner}
-          onCycleUser={handleCycleUser}
-          onOpenData={() => setActiveModal('data')}
-          isOnline={isOnline}
-        />
+        {/* Navy Header — hidden on Chat tab for full screen */}
+        {activeTab !== 'chat' && (
+          <Header
+            title={title}
+            partnerFilter={partnerFilter}
+            setPartnerFilter={setPartnerFilter}
+            partner={activePartner}
+            onOpenSettings={openSettings}
+            profiles={profiles}
+            onCycleUser={handleCycleUser}
+            onOpenData={() => setActiveModal('data')}
+            isOnline={isOnline}
+          />
+        )}
 
         {/* Workspace Body */}
         <main className={`workspace-body${activeTab === 'chat' ? ' chat-tab-active' : ''}`}>
@@ -183,6 +218,10 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 onGoToTasks={() => handleSelectTab('tasks')}
                 onGoToHours={() => handleSelectTab('hours')}
                 onGoToLedger={() => handleSelectTab('ledger')}
+                onlinePartners={onlinePartners}
+                profiles={profiles}
+                currentPartner={activePartner}
+                onOpenSettings={openSettings}
               />
             )}
 
@@ -198,7 +237,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 onOpenLightbox={handleOpenLightbox}
                 onOpenTask={openTask}
                 onOpenCompleteTask={setCompletingTask}
-                currentPartner={partner}
+                currentPartner={activePartner}
               />
             )}
 
@@ -212,7 +251,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 addProof={addProof}
                 onOpenLightbox={handleOpenLightbox}
                 onOpenWork={openWork}
-                currentPartner={partner}
+                currentPartner={activePartner}
                 toggleShift={toggleShift}
               />
             )}
@@ -224,10 +263,11 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 onOpenExpense={openExpense}
                 onOpenRevenue={openRevenue}
                 onOpenLightbox={handleOpenLightbox}
+                onEditEntry={handleEditEntry}
                 deleteExpense={deleteExpense}
                 deleteRevenue={deleteRevenue}
                 deleteCapital={deleteCapital}
-                currentPartner={partner}
+                currentPartner={activePartner}
               />
             )}
 
@@ -235,10 +275,12 @@ export default function AppShell({ _user, partner, onSignOut }) {
               <ChatTab
                 store={store}
                 sendMessage={sendMessage}
-                currentPartner={partner}
+                currentPartner={activePartner}
                 onOpenLightbox={handleOpenLightbox}
                 isChatTyping={isChatTyping}
                 setIsChatTyping={setIsChatTyping}
+                onlinePartners={onlinePartners}
+                profiles={profiles}
               />
             )}
           </Suspense>
@@ -283,7 +325,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
             isOpen={true}
             onClose={closeModal}
             onAddTask={addTask}
-            currentPartner={partner}
+            currentPartner={activePartner}
             defaultDate={selectedDate || getLocalDateStr()}
           />
         )}
@@ -299,21 +341,27 @@ export default function AppShell({ _user, partner, onSignOut }) {
 
         {activeModal === 'expense' && (
           <ExpenseModal
+            key={editingEntry?.id || 'expense'}
             isOpen={true}
             onClose={closeModal}
             onAddExpense={addExpense}
-            currentPartner={partner}
+            onUpdateExpense={updateExpense}
+            currentPartner={activePartner}
             kind="expense"
+            initialData={editingEntry}
           />
         )}
 
         {activeModal === 'revenue' && (
           <ExpenseModal
+            key={editingEntry?.id || 'revenue'}
             isOpen={true}
             onClose={closeModal}
             onAddExpense={addRevenue}
-            currentPartner={partner}
+            onUpdateExpense={updateRevenue}
+            currentPartner={activePartner}
             kind="revenue"
+            initialData={editingEntry}
           />
         )}
 
@@ -322,7 +370,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
             isOpen={true}
             onClose={closeModal}
             onAddWorklog={addWorklog}
-            currentPartner={partner}
+            currentPartner={activePartner}
           />
         )}
 
@@ -331,7 +379,30 @@ export default function AppShell({ _user, partner, onSignOut }) {
             isOpen={true}
             onClose={closeModal}
             onAddCapital={addCapital}
-            currentPartner={partner}
+            currentPartner={activePartner}
+          />
+        )}
+
+        {activeModal === 'settings' && (
+          <SettingsModal
+            isOpen={true}
+            onClose={closeModal}
+            partner={activePartner}
+            onSwitchPartner={(name) => {
+              const role =
+                name === 'Balaji'
+                  ? 'Tech & Product'
+                  : name === 'Nagoor'
+                  ? 'Procure & Pack'
+                  : 'Delivery & Sales';
+              setActivePartner({ name, role });
+            }}
+            profiles={profiles}
+            onUpdateProfilePhoto={updateProfilePhoto}
+            onlinePartners={onlinePartners}
+            onSignOut={onSignOut}
+            onWipeAll={wipeAll}
+            isOnline={isOnline}
           />
         )}
 
@@ -343,7 +414,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
             isOnline={isOnline}
             lastSyncedAt={lastSyncedAt}
             store={store}
-            currentPartner={partner}
+            currentPartner={activePartner}
           />
         )}
 

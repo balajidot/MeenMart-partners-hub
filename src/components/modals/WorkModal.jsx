@@ -56,7 +56,17 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartne
       <div className="sheet-overlay" onClick={handleClose} />
       <div className="bottom-sheet">
         <div className="sheet-handle" />
-        <div className="sheet-title">Work Activity Log</div>
+        <div className="sheet-header-row">
+          <div className="sheet-title" style={{ margin: 0 }}>Work Activity Log</div>
+          <button
+            type="button"
+            className="sheet-close-btn"
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
 
         {/* Activity description */}
         <input

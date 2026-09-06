@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { ref, onValue, set } from 'firebase/database';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { ref, onValue, set, onDisconnect } from 'firebase/database';
 import { db } from '../firebase';
 import { DEFAULT_STATE, generateId, getSeedData } from '../utils/seedData';
 import { pruneExpiredProofs } from '../utils/calculations';
@@ -69,7 +69,7 @@ function loadLocal() {
   return null;
 }
 
-export function useStore() {
+export function useStore(activePartnerName = 'Balaji') {
   const [store, setStore] = useState(() => {
     const local = loadLocal();
     if (local) return pruneExpiredProofs(local);
@@ -92,12 +92,34 @@ export function useStore() {
   const fbRef = useRef(null);
   const isMounted = useRef(true);
 
-  // Monitor Firebase Realtime Database connection status
+  // Presence State & Sync
+  const [presenceMap, setPresenceMap] = useState({});
+  const [profiles, setProfiles] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('meenmart_profiles') || '{}');
+    } catch {
+      return {};
+    }
+  });
+
+  // Monitor Firebase Realtime Database connection status & Presence
   useEffect(() => {
     const connectedRef = ref(db, '.info/connected');
     const unsubConn = onValue(connectedRef, (snap) => {
       const connected = snap.val() === true;
       setIsOnline(connected && navigator.onLine);
+
+      if (connected && activePartnerName) {
+        const userStatusRef = ref(db, `presence/${activePartnerName}`);
+        try {
+          onDisconnect(userStatusRef)
+            .set({ state: 'offline', lastSeen: Date.now() })
+            .catch(() => {});
+          set(userStatusRef, { state: 'online', lastSeen: Date.now() }).catch(() => {});
+        } catch (e) {
+          console.warn('Presence registration failed:', e);
+        }
+      }
     });
 
     const handleOnline = () => setIsOnline(true);
@@ -110,7 +132,58 @@ export function useStore() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
+  }, [activePartnerName]);
+
+  // Periodic heartbeat for presence every 3 minutes
+  useEffect(() => {
+    if (!activePartnerName || !isOnline) return;
+    const interval = setInterval(() => {
+      try {
+        const userStatusRef = ref(db, `presence/${activePartnerName}`);
+        set(userStatusRef, { state: 'online', lastSeen: Date.now() }).catch(() => {});
+      } catch {}
+    }, 180000);
+    return () => clearInterval(interval);
+  }, [activePartnerName, isOnline]);
+
+  // Listen to all partners' presence
+  useEffect(() => {
+    const presenceRef = ref(db, 'presence');
+    const unsub = onValue(presenceRef, (snapshot) => {
+      const val = snapshot.val();
+      if (val) setPresenceMap(val);
+    });
+    return () => unsub();
   }, []);
+
+  // Listen to partner profiles (avatars, bio)
+  useEffect(() => {
+    const profilesRef = ref(db, 'profiles');
+    const unsub = onValue(profilesRef, (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        setProfiles(val);
+        try {
+          localStorage.setItem('meenmart_profiles', JSON.stringify(val));
+        } catch {}
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Derived map of who is currently online
+  const onlinePartners = useMemo(() => {
+    const res = { Balaji: false, Nagoor: false, JP: false };
+    // Current user is always online locally
+    if (activePartnerName) res[activePartnerName] = true;
+
+    Object.entries(presenceMap).forEach(([pName, data]) => {
+      if (data && data.state === 'online') {
+        res[pName] = true;
+      }
+    });
+    return res;
+  }, [presenceMap, activePartnerName]);
 
   // Realtime Firebase two-way sync
   useEffect(() => {
@@ -309,12 +382,54 @@ export function useStore() {
     showToast('💰 Expense logged!');
   }, [updateStore, showToast]);
 
-  const deleteExpense = useCallback((id) => {
-    updateStore((prev) => ({
-      ...prev,
-      expenses: (prev.expenses || []).filter((e) => e.id !== id),
-    }));
+  const deleteExpense = useCallback((id, requesterName = null) => {
+    let allowed = true;
+    let owner = '';
+    updateStore((prev) => {
+      const target = (prev.expenses || []).find((e) => e.id === id);
+      if (target && requesterName && target.partner !== requesterName) {
+        allowed = false;
+        owner = target.partner;
+        return prev;
+      }
+      return {
+        ...prev,
+        expenses: (prev.expenses || []).filter((e) => e.id !== id),
+      };
+    });
+    if (!allowed) {
+      showToast(`⚠️ Idhu ${owner}-oda selavu! Avanga mattum dhaan delete panna mudiyum.`, 'warn');
+      return false;
+    }
     showToast('🗑️ Expense deleted');
+    return true;
+  }, [updateStore, showToast]);
+
+  const updateExpense = useCallback((id, updatedData, requesterName = null) => {
+    let allowed = true;
+    let owner = '';
+    updateStore((prev) => {
+      const target = (prev.expenses || []).find((e) => e.id === id);
+      if (target && requesterName && target.partner !== requesterName) {
+        allowed = false;
+        owner = target.partner;
+        return prev;
+      }
+      return {
+        ...prev,
+        expenses: (prev.expenses || []).map((e) =>
+          e.id === id
+            ? { ...e, ...updatedData, amount: Number(updatedData.amount ?? e.amount), updatedAt: Date.now() }
+            : e
+        ),
+      };
+    });
+    if (!allowed) {
+      showToast(`⚠️ Idhu ${owner}-oda selavu! Avanga mattum dhaan edit panna mudiyum.`, 'warn');
+      return false;
+    }
+    showToast('✏️ Selavu updated!');
+    return true;
   }, [updateStore, showToast]);
 
   const addRevenue = useCallback((revenue) => {
@@ -332,12 +447,54 @@ export function useStore() {
     showToast('💚 Revenue recorded!');
   }, [updateStore, showToast]);
 
-  const deleteRevenue = useCallback((id) => {
-    updateStore((prev) => ({
-      ...prev,
-      revenues: (prev.revenues || []).filter((r) => r.id !== id),
-    }));
+  const deleteRevenue = useCallback((id, requesterName = null) => {
+    let allowed = true;
+    let owner = '';
+    updateStore((prev) => {
+      const target = (prev.revenues || []).find((r) => r.id === id);
+      if (target && requesterName && target.partner !== requesterName) {
+        allowed = false;
+        owner = target.partner;
+        return prev;
+      }
+      return {
+        ...prev,
+        revenues: (prev.revenues || []).filter((r) => r.id !== id),
+      };
+    });
+    if (!allowed) {
+      showToast(`⚠️ Idhu ${owner}-oda varavu! Avanga mattum dhaan delete panna mudiyum.`, 'warn');
+      return false;
+    }
     showToast('🗑️ Revenue deleted');
+    return true;
+  }, [updateStore, showToast]);
+
+  const updateRevenue = useCallback((id, updatedData, requesterName = null) => {
+    let allowed = true;
+    let owner = '';
+    updateStore((prev) => {
+      const target = (prev.revenues || []).find((r) => r.id === id);
+      if (target && requesterName && target.partner !== requesterName) {
+        allowed = false;
+        owner = target.partner;
+        return prev;
+      }
+      return {
+        ...prev,
+        revenues: (prev.revenues || []).map((r) =>
+          r.id === id
+            ? { ...r, ...updatedData, amount: Number(updatedData.amount ?? r.amount), updatedAt: Date.now() }
+            : r
+        ),
+      };
+    });
+    if (!allowed) {
+      showToast(`⚠️ Idhu ${owner}-oda varavu! Avanga mattum dhaan edit panna mudiyum.`, 'warn');
+      return false;
+    }
+    showToast('✏️ Varavu updated!');
+    return true;
   }, [updateStore, showToast]);
 
   const addCapital = useCallback((capital) => {
@@ -435,6 +592,27 @@ export function useStore() {
     });
   }, [updateStore]);
 
+  const updateProfilePhoto = useCallback((partnerName, avatarUrl) => {
+    if (!partnerName) return;
+    const profileRef = ref(db, `profiles/${partnerName}`);
+    const nextData = {
+      ...(profiles[partnerName] || {}),
+      avatarUrl,
+      updatedAt: Date.now(),
+    };
+    try {
+      set(profileRef, nextData).catch(() => {});
+    } catch {}
+    setProfiles((prev) => {
+      const updated = { ...prev, [partnerName]: nextData };
+      try {
+        localStorage.setItem('meenmart_profiles', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    showToast('📸 Profile photo updated!');
+  }, [profiles, showToast]);
+
   const wipeAll = useCallback(() => {
     const empty = { ...DEFAULT_STATE, tasks: [], expenses: [], capitals: [], worklogs: [], messages: [], activeShifts: {} };
     saveStore(empty);
@@ -451,10 +629,14 @@ export function useStore() {
     selectedDate, setSelectedDate,
     completingTask, setCompletingTask,
     isOnline, lastSyncedAt,
+    // Presence & Profiles
+    onlinePartners,
+    profiles,
+    updateProfilePhoto,
     // Actions
     addTask, completeTask, completeTaskWithProof, deleteTask,
-    addExpense, deleteExpense,
-    addRevenue, deleteRevenue,
+    addExpense, updateExpense, deleteExpense,
+    addRevenue, updateRevenue, deleteRevenue,
     addCapital, deleteCapital,
     addWorklog, deleteWorklog,
     addProof, sendMessage,

@@ -21,10 +21,11 @@ export default function FinanceTab({
   onOpenExpense,
   onOpenRevenue,
   onOpenLightbox,
+  onEditEntry,
   deleteExpense,
   deleteRevenue,
   _deleteCapital,
-  _currentPartner,
+  currentPartner,
 }) {
   const [scope, setScope] = useState('day'); // 'day' | 'month'
 
@@ -186,66 +187,114 @@ export default function FinanceTab({
             Indha period-ku innum entries podala.
           </div>
         ) : (
-          filteredData.entries.map((entry) => (
-            <div key={`${entry.kind}-${entry.id}`} className="entry-row">
-              <div className={`entry-sign-chip ${entry.kind}`}>
-                {entry.sign}
-              </div>
-              <div className="entry-info">
-                <div className="entry-label">{entry.label}</div>
-                <div className="entry-meta">
-                  {entry.partner} &middot; {fmtDate(entry.date)} &middot; {entry.category}
+          filteredData.entries.map((entry) => {
+            const isMine = entry.partner === currentPartner?.name;
+            return (
+              <div key={`${entry.kind}-${entry.id}`} className="entry-row">
+                <div className={`entry-sign-chip ${entry.kind}`}>
+                  {entry.sign}
                 </div>
+                <div className="entry-info">
+                  <div className="entry-label">{entry.label}</div>
+                  <div className="entry-meta">
+                    <strong style={{ color: isMine ? 'var(--navy)' : 'inherit' }}>
+                      {entry.partner}
+                    </strong>
+                    {isMine && <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 600 }}> (You)</span>}
+                    {' '}&middot; {fmtDate(entry.date)} &middot; {entry.category}
+                  </div>
+                </div>
+                <div className={`entry-amount ${entry.kind}`}>
+                  {entry.sign}{fmtCurrency(entry.amount)}
+                </div>
+                {entry.proof && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenLightbox?.(entry.proof, entry.partner, entry.label, entry.createdAt)}
+                    title="View proof photo"
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      background: 'var(--input-bg)',
+                      fontSize: '11px',
+                      color: 'var(--text-sec)',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    📷
+                  </button>
+                )}
+
+                {/* Ownership actions: Edit & Delete only visible to entry owner */}
+                {isMine ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        triggerHaptic('light');
+                        onEditEntry?.(entry);
+                      }}
+                      title="Edit unga entry"
+                      aria-label="Edit entry"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--navy)',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        padding: '4px 6px',
+                        borderRadius: '6px',
+                        opacity: 0.75,
+                      }}
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to delete this ${entry.kind === 'rev' ? 'revenue' : 'expense'}?`)) {
+                          triggerHaptic('warning');
+                          if (entry.kind === 'rev') {
+                            deleteRevenue?.(entry.id, currentPartner?.name);
+                          } else {
+                            deleteExpense?.(entry.id, currentPartner?.name);
+                          }
+                        }
+                      }}
+                      title="Delete unga entry"
+                      aria-label="Delete entry"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--danger)',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        padding: '4px 6px',
+                        borderRadius: '6px',
+                        opacity: 0.65,
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <span
+                    title={`${entry.partner}-oda entry (Read-only)`}
+                    style={{
+                      fontSize: '11px',
+                      color: 'var(--text-faint)',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      background: 'var(--chip-bg)',
+                    }}
+                  >
+                    🔒 Read-only
+                  </span>
+                )}
               </div>
-              <div className={`entry-amount ${entry.kind}`}>
-                {entry.sign}{fmtCurrency(entry.amount)}
-              </div>
-              {entry.proof && (
-                <button
-                  type="button"
-                  onClick={() => onOpenLightbox?.(entry.proof, entry.partner, entry.label, entry.createdAt)}
-                  title="View proof photo"
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    background: 'var(--input-bg)',
-                    fontSize: '11px',
-                    color: 'var(--text-sec)',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  📷
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  if (window.confirm('Are you sure you want to delete this entry?')) {
-                    if (entry.kind === 'rev') {
-                      deleteRevenue?.(entry.id);
-                    } else {
-                      deleteExpense?.(entry.id);
-                    }
-                  }
-                }}
-                title="Delete"
-                aria-label="Delete entry"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  padding: '4px 6px',
-                  borderRadius: '6px',
-                  opacity: 0.5,
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
