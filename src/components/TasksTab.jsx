@@ -464,13 +464,10 @@ const TaskCardActive = React.memo(function TaskCardActive({
             >
               {deadlineAlert.label}
             </span>
-            {deadlineAlert.status === 'overdue' && (
-              <span className="task-deadline-alert-text">Mudika vendiya neram thandiduchu!</span>
-            )}
           </div>
         )}
 
-        {/* Neatly Aligned Footer Row */}
+        {/* Neatly Aligned Single-Row Footer */}
         <div className="task-card-foot">
           <div className="task-card-foot-meta">
             {timeStr && (
@@ -481,9 +478,9 @@ const TaskCardActive = React.memo(function TaskCardActive({
             <span className="task-meta-chip to">
               To: <strong>{task.to || 'Shared'}</strong>
             </span>
-            {assignerName && (
+            {assignerName && assignerName !== (task.to || 'Shared') && (
               <span className="task-meta-chip by" title={`Task assign pannavaru: ${assignerName}`}>
-                👤 {assignerName}
+                by {assignerName}
               </span>
             )}
             {isRunning && (

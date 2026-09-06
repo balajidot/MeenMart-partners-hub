@@ -6,6 +6,10 @@ import { PROOF_EXPIRY_MS } from './seedData';
  */
 export function getLocalDateStr(d = new Date()) {
   if (!d) return '';
+  if (typeof d === 'string') {
+    const match = d.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (match) return match[1];
+  }
   const date = typeof d === 'string' || typeof d === 'number' ? new Date(d) : d;
   if (isNaN(date.getTime())) return '';
   const year = date.getFullYear();

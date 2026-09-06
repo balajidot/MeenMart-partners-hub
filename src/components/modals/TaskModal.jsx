@@ -69,7 +69,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
       title: title.trim(),
       from,
       assignedBy: from,
-      to: assignTo === 'Shared' ? null : assignTo,
+      to: assignTo,
       assignedTo: assignTo,
       priority,
       dueDateTime: defaultDate || getLocalDateStr(),
@@ -97,124 +97,129 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
           </button>
         </div>
 
-        {/* Assigner banner */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '8px 12px',
-          background: 'var(--chip-bg)',
-          borderRadius: '10px',
-          fontSize: '12px',
-          color: 'var(--text-sec)',
-          marginBottom: '14px',
-        }}>
-          <span>👤 <strong>Assign pannavaru:</strong></span>
-          <span style={{ color: 'var(--navy)', fontWeight: 600 }}>{from}</span>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>(Logged-in partner)</span>
-        </div>
-
-        {/* Task title */}
-        <input
-          className="sheet-input"
-          type="text"
-          placeholder="Enna vela pannanum?"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleSubmit(e);
-            }
-          }}
-          autoFocus
-          style={{ marginBottom: '18px' }}
-        />
-
-        {/* Assign to */}
-        <div className="sheet-field-label">Yaaruku assign?</div>
-        <div className="sheet-option-chips" style={{ marginBottom: '18px' }}>
-          {PARTNER_CHIPS.map((chip) => (
-            <button
-              key={chip.value}
-              type="button"
-              className={`sheet-option-chip${assignTo === chip.value ? ` ${chip.activeClass}` : ''}`}
-              onClick={() => setAssignTo(chip.value)}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Deadline Time Picker */}
-        <div className="sheet-field-label">
-          ⏰ Ethana manikulla mudikanum? (Deadline Time)
-        </div>
-        <div className="sheet-option-chips" style={{ marginBottom: '10px' }}>
-          {TIME_PRESETS.map((preset) => (
-            <button
-              key={preset.value}
-              type="button"
-              className={`sheet-option-chip${dueTime === preset.value && !isCustomTime ? ' active-navy' : ''}`}
-              onClick={() => {
-                setDueTime(preset.value);
-                setIsCustomTime(false);
-              }}
-              title={preset.hint}
-            >
-              {preset.label}
-            </button>
-          ))}
-          <button
-            type="button"
-            className={`sheet-option-chip${isCustomTime ? ' active-navy' : ''}`}
-            onClick={() => setIsCustomTime(true)}
-          >
-            ✏️ Custom Time
-          </button>
-        </div>
-
-        {isCustomTime && (
-          <div style={{ marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <input
-              type="time"
-              className="sheet-input"
-              style={{ width: '160px', padding: '8px 12px', fontSize: '14px' }}
-              onChange={(e) => {
-                if (e.target.value) {
-                  setDueTime(formatTime12h(e.target.value));
-                }
-              }}
-            />
-            <span style={{ fontSize: '12px', color: 'var(--text-sec)' }}>
-              Selected: <strong>{dueTime}</strong>
-            </span>
+        <form onSubmit={handleSubmit} autoComplete="off">
+          {/* Assigner banner */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 12px',
+            background: 'var(--chip-bg)',
+            borderRadius: '10px',
+            fontSize: '12px',
+            color: 'var(--text-sec)',
+            marginBottom: '14px',
+          }}>
+            <span>👤 <strong>Assign pannavaru:</strong></span>
+            <span style={{ color: 'var(--navy)', fontWeight: 600 }}>{from}</span>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>(Logged-in partner)</span>
           </div>
-        )}
 
-        {/* Priority */}
-        <div className="sheet-field-label" style={{ marginTop: '10px' }}>Priority</div>
-        <div className="sheet-option-chips" style={{ marginBottom: '24px' }}>
-          {PRIORITY_CHIPS.map((chip) => (
+          {/* Task title */}
+          <input
+            id="task_create_title"
+            name="task_create_title"
+            className="sheet-input"
+            type="text"
+            placeholder="Enna vela pannanum?"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="sentences"
+            spellCheck="false"
+            data-form-type="other"
+            data-lpignore="true"
+            data-1p-ignore="true"
+            enterKeyHint="done"
+            style={{ marginBottom: '18px' }}
+          />
+
+          {/* Assign to */}
+          <div className="sheet-field-label">Yaaruku assign?</div>
+          <div className="sheet-option-chips" style={{ marginBottom: '18px' }}>
+            {PARTNER_CHIPS.map((chip) => (
+              <button
+                key={chip.value}
+                type="button"
+                className={`sheet-option-chip${assignTo === chip.value ? ` ${chip.activeClass}` : ''}`}
+                onClick={() => setAssignTo(chip.value)}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Deadline Time Picker */}
+          <div className="sheet-field-label">
+            ⏰ Ethana manikulla mudikanum? (Deadline Time)
+          </div>
+          <div className="sheet-option-chips" style={{ marginBottom: '10px' }}>
+            {TIME_PRESETS.map((preset) => (
+              <button
+                key={preset.value}
+                type="button"
+                className={`sheet-option-chip${dueTime === preset.value && !isCustomTime ? ' active-navy' : ''}`}
+                onClick={() => {
+                  setDueTime(preset.value);
+                  setIsCustomTime(false);
+                }}
+                title={preset.hint}
+              >
+                {preset.label}
+              </button>
+            ))}
             <button
-              key={chip.value}
               type="button"
-              className={`sheet-option-chip${priority === chip.value ? ` ${chip.activeClass}` : ''}`}
-              onClick={() => setPriority(chip.value)}
+              className={`sheet-option-chip${isCustomTime ? ' active-navy' : ''}`}
+              onClick={() => setIsCustomTime(true)}
             >
-              {chip.label}
+              ✏️ Custom Time
             </button>
-          ))}
-        </div>
+          </div>
 
-        <button
-          type="button"
-          className="sheet-submit-btn navy"
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-        >
-          {loading ? 'Saving...' : `Task Add Pannu (${dueTime}-kulla)`}
-        </button>
+          {isCustomTime && (
+            <div style={{ marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                type="time"
+                name="task_custom_time"
+                className="sheet-input"
+                style={{ width: '160px', padding: '8px 12px', fontSize: '14px' }}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setDueTime(formatTime12h(e.target.value));
+                  }
+                }}
+              />
+              <span style={{ fontSize: '12px', color: 'var(--text-sec)' }}>
+                Selected: <strong>{dueTime}</strong>
+              </span>
+            </div>
+          )}
+
+          {/* Priority */}
+          <div className="sheet-field-label" style={{ marginTop: '10px' }}>Priority</div>
+          <div className="sheet-option-chips" style={{ marginBottom: '24px' }}>
+            {PRIORITY_CHIPS.map((chip) => (
+              <button
+                key={chip.value}
+                type="button"
+                className={`sheet-option-chip${priority === chip.value ? ` ${chip.activeClass}` : ''}`}
+                onClick={() => setPriority(chip.value)}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="submit"
+            className="sheet-submit-btn navy"
+            disabled={!canSubmit}
+          >
+            {loading ? 'Saving...' : `Task Add Pannu (${dueTime}-kulla)`}
+          </button>
+        </form>
       </div>
     </>
   );

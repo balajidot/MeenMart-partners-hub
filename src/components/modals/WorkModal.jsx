@@ -70,12 +70,21 @@ export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartne
 
         {/* Activity description */}
         <input
+          name="worklog_activity_desc"
+          id="worklog_activity_desc"
           className="sheet-input"
           type="text"
           placeholder="Enna vela paartheenga?"
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
-          autoFocus
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="sentences"
+          spellCheck="false"
+          data-form-type="other"
+          data-lpignore="true"
+          data-1p-ignore="true"
+          enterKeyHint="done"
           style={{ marginBottom: '16px' }}
         />
 
