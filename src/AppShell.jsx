@@ -11,15 +11,12 @@ import { getLocalDateStr } from './utils/calculations';
 const HomeTab = lazy(() => import('./components/HomeTab'));
 const TasksTab = lazy(() => import('./components/TasksTab'));
 const WorkTab = lazy(() => import('./components/WorkTab'));
-const FinanceTab = lazy(() => import('./components/FinanceTab'));
 const ChatTab = lazy(() => import('./components/ChatTab'));
 
 // Lazy load modals
 const TaskModal = lazy(() => import('./components/modals/TaskModal'));
 const TaskCompleteModal = lazy(() => import('./components/modals/TaskCompleteModal'));
-const ExpenseModal = lazy(() => import('./components/modals/ExpenseModal'));
 const WorkModal = lazy(() => import('./components/modals/WorkModal'));
-const CapitalModal = lazy(() => import('./components/modals/CapitalModal'));
 const DataModal = lazy(() => import('./components/modals/DataModal'));
 const LightboxModal = lazy(() => import('./components/modals/LightboxModal'));
 const SettingsModal = lazy(() => import('./components/modals/SettingsModal'));
@@ -70,14 +67,8 @@ export default function AppShell({ _user, partner, onSignOut }) {
     completeTask,
     completeTaskWithProof,
     deleteTask,
-    addExpense,
-    updateExpense,
-    deleteExpense,
-    addRevenue,
-    updateRevenue,
-    deleteRevenue,
-    addCapital,
-    deleteCapital,
+    addTaskComment,
+    toggleTaskProblem,
     addWorklog,
     deleteWorklog,
     addProof,
@@ -94,30 +85,11 @@ export default function AppShell({ _user, partner, onSignOut }) {
     setLightboxProof({ imgUrl, partner: partnerName, title, addedAt });
   };
 
-  const [editingEntry, setEditingEntry] = useState(null);
-
   const openTask = () => setActiveModal('task');
-  const openExpense = () => {
-    setEditingEntry(null);
-    setActiveModal('expense');
-  };
-  const openRevenue = () => {
-    setEditingEntry(null);
-    setActiveModal('revenue');
-  };
   const openSettings = () => setActiveModal('settings');
-  const handleEditEntry = (entry) => {
-    setEditingEntry(entry);
-    if (entry.kind === 'rev') {
-      setActiveModal('revenue');
-    } else {
-      setActiveModal('expense');
-    }
-  };
   const openWork = () => setActiveModal('work');
   const closeModal = () => {
     setActiveModal(null);
-    setEditingEntry(null);
   };
   const [isChatTyping, setIsChatTyping] = useState(false);
 
@@ -138,11 +110,6 @@ export default function AppShell({ _user, partner, onSignOut }) {
         return {
           kicker: 'Shift & Hours',
           title: 'Partner Shifts',
-        };
-      case 'ledger':
-        return {
-          kicker: 'Varavu & Selavu',
-          title: 'Cashflow Ledger',
         };
       case 'chat':
         return {
@@ -204,7 +171,6 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 onOpenTask={openTask}
                 onGoToTasks={() => handleSelectTab('tasks')}
                 onGoToHours={() => handleSelectTab('hours')}
-                onGoToLedger={() => handleSelectTab('ledger')}
                 onlinePartners={onlinePartners}
                 profiles={profiles}
                 currentPartner={partner}
@@ -226,6 +192,9 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 onOpenTask={openTask}
                 onOpenCompleteTask={setCompletingTask}
                 currentPartner={partner}
+                addTaskComment={addTaskComment}
+                toggleTaskProblem={toggleTaskProblem}
+                profiles={profiles}
               />
             )}
 
@@ -244,21 +213,6 @@ export default function AppShell({ _user, partner, onSignOut }) {
               />
             )}
 
-            {activeTab === 'ledger' && (
-              <FinanceTab
-                store={store}
-                onOpenCapital={() => setActiveModal('capital')}
-                onOpenExpense={openExpense}
-                onOpenRevenue={openRevenue}
-                onOpenLightbox={handleOpenLightbox}
-                onEditEntry={handleEditEntry}
-                deleteExpense={deleteExpense}
-                deleteRevenue={deleteRevenue}
-                deleteCapital={deleteCapital}
-                currentPartner={partner}
-              />
-            )}
-
             {activeTab === 'chat' && (
               <ChatTab
                 store={store}
@@ -269,6 +223,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 setIsChatTyping={setIsChatTyping}
                 onlinePartners={onlinePartners}
                 profiles={profiles}
+                onBack={() => handleSelectTab('home')}
               />
             )}
           </Suspense>
@@ -327,46 +282,11 @@ export default function AppShell({ _user, partner, onSignOut }) {
           />
         )}
 
-        {activeModal === 'expense' && (
-          <ExpenseModal
-            key={editingEntry?.id || 'expense'}
-            isOpen={true}
-            onClose={closeModal}
-            onAddExpense={addExpense}
-            onUpdateExpense={updateExpense}
-            currentPartner={partner}
-            kind="expense"
-            initialData={editingEntry}
-          />
-        )}
-
-        {activeModal === 'revenue' && (
-          <ExpenseModal
-            key={editingEntry?.id || 'revenue'}
-            isOpen={true}
-            onClose={closeModal}
-            onAddExpense={addRevenue}
-            onUpdateExpense={updateRevenue}
-            currentPartner={partner}
-            kind="revenue"
-            initialData={editingEntry}
-          />
-        )}
-
         {activeModal === 'work' && (
           <WorkModal
             isOpen={true}
             onClose={closeModal}
             onAddWorklog={addWorklog}
-            currentPartner={partner}
-          />
-        )}
-
-        {activeModal === 'capital' && (
-          <CapitalModal
-            isOpen={true}
-            onClose={closeModal}
-            onAddCapital={addCapital}
             currentPartner={partner}
           />
         )}

@@ -51,19 +51,6 @@ const TABS = [
     ),
   },
   {
-    id: 'ledger',
-    label: 'Ledger',
-    svg: (
-      <path
-        d="M3.5 17.5V9M8.5 17.5V4.5M13.5 17.5v-6M18.5 17.5V7"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-      />
-    ),
-  },
-  {
     id: 'chat',
     label: 'Chat',
     svg: (

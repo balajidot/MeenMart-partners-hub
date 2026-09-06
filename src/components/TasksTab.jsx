@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { getLocalDateStr, getTaskDeadlineStatus } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
+import TaskDiscussionModal from './modals/TaskDiscussionModal';
 
 /* -- Partner meta ------------------------------------------------ */
 const PARTNER_INITIALS   = { Balaji: 'BA', Nagoor: 'NA', JP: 'JP', Shared: 'ALL' };
@@ -134,9 +135,14 @@ export default function TasksTab({
   onOpenTask,
   onOpenCompleteTask,
   currentPartner,
+  addTaskComment,
+  toggleTaskProblem,
+  profiles,
 }) {
   const calDays = useMemo(() => buildCalDays(), []);
   const today   = getLocalDateStr();
+
+  const [discussionTask, setDiscussionTask] = useState(null);
 
   const activeUser = currentPartner?.name || 'Balaji';
 
@@ -279,6 +285,7 @@ export default function TasksTab({
                 canDelete={canDelete}
                 assigner={assigner}
                 activeUser={activeUser}
+                onOpenDiscussion={(t) => setDiscussionTask(t)}
               />
             );
           })}
@@ -306,6 +313,7 @@ export default function TasksTab({
                 canDelete={canDelete}
                 assigner={assigner}
                 activeUser={activeUser}
+                onOpenDiscussion={(t) => setDiscussionTask(t)}
               />
             );
           })}
@@ -332,13 +340,14 @@ export default function TasksTab({
                 canDelete={canDelete}
                 assigner={assigner}
                 activeUser={activeUser}
+                onOpenDiscussion={(t) => setDiscussionTask(t)}
               />
             );
           })}
         </div>
       )}
 
-      {/* Quick Add Button below tasks list */}
+      {/* Quick Add Button below tasks list (Fixed no double plus) */}
       {dateTasks.length > 0 && (
         <button
           type="button"
@@ -349,8 +358,21 @@ export default function TasksTab({
           }}
         >
           <PlusSVG />
-          <span>+ {activeDateStr === today ? 'Innaiku' : activeDateStr}-ku Task Podu</span>
+          <span>{activeDateStr === today ? 'Innaiku' : activeDateStr}-ku Task Podu</span>
         </button>
+      )}
+
+      {/* Task Discussion & Problem Resolution Modal */}
+      {discussionTask && (
+        <TaskDiscussionModal
+          isOpen={!!discussionTask}
+          onClose={() => setDiscussionTask(null)}
+          task={allTasks.find((t) => t.id === discussionTask.id) || discussionTask}
+          currentPartner={currentPartner}
+          profiles={profiles}
+          onAddComment={addTaskComment}
+          onToggleProblem={toggleTaskProblem}
+        />
       )}
 
     </div>
@@ -366,6 +388,7 @@ const TaskCardActive = React.memo(function TaskCardActive({
   canDelete,
   assigner,
   activeUser,
+  onOpenDiscussion,
 }) {
   const partnerClass = PARTNER_MONO_CLASS[task.to] || 'shared';
   const rawPriority  = (task.priority || 'normal').toLowerCase();
@@ -375,9 +398,11 @@ const TaskCardActive = React.memo(function TaskCardActive({
   const initials     = PARTNER_INITIALS[task.to]   || 'ALL';
   const deadlineAlert = getTaskDeadlineStatus(task);
   const assignerName = task.assignedBy || task.from || assigner;
+  const commentsCount = task.comments?.length || 0;
+  const hasProblem = !!task.hasProblem;
 
   return (
-    <div className={`task-card${deadlineAlert?.status === 'overdue' ? ' task-is-overdue' : ''}`}>
+    <div className={`task-card${deadlineAlert?.status === 'overdue' ? ' task-is-overdue' : ''}${hasProblem ? ' task-is-problem' : ''}`}>
       {/* Checkbox */}
       <button
         type="button"
@@ -400,6 +425,24 @@ const TaskCardActive = React.memo(function TaskCardActive({
           </span>
         </div>
 
+        {/* Problem Alert Banner if Flagged */}
+        {hasProblem && (
+          <div
+            className="task-problem-alert-banner"
+            onClick={(e) => {
+              e.stopPropagation();
+              triggerHaptic('light');
+              onOpenDiscussion?.(task);
+            }}
+            role="button"
+            tabIndex={0}
+          >
+            <span className="task-problem-alert-icon">⚠️</span>
+            <span className="task-problem-alert-text">Problem / Issue Reported</span>
+            <span className="task-problem-alert-link">Discuss →</span>
+          </div>
+        )}
+
         {/* Deadline Alert Pill */}
         {deadlineAlert && (
           <div className="task-deadline-row">
@@ -415,52 +458,76 @@ const TaskCardActive = React.memo(function TaskCardActive({
           </div>
         )}
 
+        {/* Neatly Aligned Footer Row */}
         <div className="task-card-foot">
-          {timeStr && (
-            <span className="mono" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-              <ClockSVG /> {timeStr}
+          <div className="task-card-foot-meta">
+            {timeStr && (
+              <span className="task-meta-chip time">
+                <ClockSVG /> {timeStr}
+              </span>
+            )}
+            <span className="task-meta-chip to">
+              To: <strong>{task.to || 'Shared'}</strong>
             </span>
-          )}
-          {timeStr && <span>·</span>}
-          <span style={{ fontWeight: 600, color: 'var(--text-sec)' }}>To: {task.to || 'Shared'}</span>
-          {assignerName && (
-            <span className="task-assigner-pill" title={`Task assign pannavaru: ${assignerName}`}>
-              👤 Assign: <strong>{assignerName}</strong>
-            </span>
-          )}
-          {isRunning && (
-            <span className="running-badge">
-              <span className="running-dot" />
-              Running
-            </span>
-          )}
-          {canDelete ? (
-            onDelete && (
-              <button
-                type="button"
-                className="task-delete-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (window.confirm('Delete this task?')) {
-                    triggerHaptic('warning');
-                    onDelete(task.id, activeUser);
-                  }
-                }}
-                title={`Delete task (assigned by ${assigner || 'you'})`}
-                aria-label="Delete task"
-              >
-                <TrashSVG />
-              </button>
-            )
-          ) : (
-            <span
-              className="task-lock-badge"
-              title={`Assigned by ${assigner}. Only ${assigner} can delete.`}
-              aria-label={`Assigned by ${assigner}. Only ${assigner} can delete.`}
+            {assignerName && (
+              <span className="task-meta-chip by" title={`Task assign pannavaru: ${assignerName}`}>
+                👤 {assignerName}
+              </span>
+            )}
+            {isRunning && (
+              <span className="running-badge">
+                <span className="running-dot" />
+                Running
+              </span>
+            )}
+          </div>
+
+          <div className="task-card-foot-actions">
+            <button
+              type="button"
+              className={`task-chat-btn ${hasProblem ? 'is-problem' : commentsCount > 0 ? 'has-comments' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic('light');
+                onOpenDiscussion?.(task);
+              }}
+              title={hasProblem ? 'Active problem flagged! Tap to discuss' : 'Discuss or report problem on this task'}
             >
-              <LockSVG />
-            </span>
-          )}
+              <span className="task-chat-icon">{hasProblem ? '⚠️' : '💬'}</span>
+              <span className="task-chat-label">{hasProblem ? 'Problem' : 'Chat'}</span>
+              {commentsCount > 0 && (
+                <span className="task-chat-badge">{commentsCount}</span>
+              )}
+            </button>
+
+            {canDelete ? (
+              onDelete && (
+                <button
+                  type="button"
+                  className="task-delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm('Delete this task?')) {
+                      triggerHaptic('warning');
+                      onDelete(task.id, activeUser);
+                    }
+                  }}
+                  title={`Delete task (assigned by ${assigner || 'you'})`}
+                  aria-label="Delete task"
+                >
+                  <TrashSVG />
+                </button>
+              )
+            ) : (
+              <span
+                className="task-lock-badge"
+                title={`Assigned by ${assigner}. Only ${assigner} can delete.`}
+                aria-label={`Assigned by ${assigner}. Only ${assigner} can delete.`}
+              >
+                <LockSVG />
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -475,9 +542,11 @@ const TaskCardDone = React.memo(function TaskCardDone({
   canDelete,
   assigner,
   activeUser,
+  onOpenDiscussion,
 }) {
   const partnerClass = PARTNER_MONO_CLASS[task.to] || 'shared';
   const initials     = PARTNER_INITIALS[task.to]   || 'ALL';
+  const commentsCount = task.comments?.length || 0;
 
   return (
     <div className="task-card done-card">
@@ -498,45 +567,59 @@ const TaskCardDone = React.memo(function TaskCardDone({
       {/* Body */}
       <div className="task-card-body">
         <span className="task-done-title">{task.title}</span>
-        <span className="task-done-meta">
-          {task.from ? `${task.from} → ` : ''}{task.to || 'Shared'}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <span className="task-done-meta">
+            {task.from ? `${task.from} → ` : ''}{task.to || 'Shared'}
+          </span>
+          {commentsCount > 0 && (
+            <button
+              type="button"
+              className="task-chat-btn sm"
+              onClick={() => onOpenDiscussion?.(task)}
+              title="View task discussion"
+            >
+              💬 {commentsCount}
+            </button>
+          )}
+        </div>
       </div>
 
-      {canDelete ? (
-        onDelete && (
-          <button
-            type="button"
-            className="task-delete-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (window.confirm('Delete this task?')) {
-                triggerHaptic('warning');
-                onDelete(task.id, activeUser);
-              }
-            }}
-            title={`Delete task (assigned by ${assigner || 'you'})`}
-            aria-label="Delete task"
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: 'auto' }}>
+        {canDelete ? (
+          onDelete && (
+            <button
+              type="button"
+              className="task-delete-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm('Delete this task?')) {
+                  triggerHaptic('warning');
+                  onDelete(task.id, activeUser);
+                }
+              }}
+              title={`Delete task (assigned by ${assigner || 'you'})`}
+              aria-label="Delete task"
+            >
+              <TrashSVG />
+            </button>
+          )
+        ) : (
+          <span
+            className="task-lock-badge"
+            title={`Assigned by ${assigner}. Only ${assigner} can delete.`}
+            aria-label={`Assigned by ${assigner}. Only ${assigner} can delete.`}
           >
-            <TrashSVG />
-          </button>
-        )
-      ) : (
-        <span
-          className="task-lock-badge"
-          title={`Assigned by ${assigner}. Only ${assigner} can delete.`}
-          aria-label={`Assigned by ${assigner}. Only ${assigner} can delete.`}
-        >
-          <LockSVG />
-        </span>
-      )}
+            <LockSVG />
+          </span>
+        )}
 
-      {/* Right monogram */}
-      <div
-        className={`partner-monogram ${partnerClass}`}
-        style={{ width: 26, height: 26, fontSize: 10.5, borderRadius: 8, flexShrink: 0 }}
-      >
-        {initials}
+        {/* Right monogram */}
+        <div
+          className={`partner-monogram ${partnerClass}`}
+          style={{ width: 26, height: 26, fontSize: 10.5, borderRadius: 8, flexShrink: 0 }}
+        >
+          {initials}
+        </div>
       </div>
     </div>
   );

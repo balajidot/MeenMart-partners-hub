@@ -45,7 +45,6 @@ export default function HomeTab({
   onOpenTask,
   onGoToTasks,
   onGoToHours,
-  onGoToLedger,
   onlinePartners,
   profiles,
   currentPartner,
@@ -199,16 +198,7 @@ export default function HomeTab({
           </div>
         </div>
 
-        <div
-          className="kpi-card interactive"
-          onClick={() => {
-            triggerHaptic('light');
-            onGoToLedger?.();
-          }}
-          role="button"
-          tabIndex={0}
-          title="Go to Ledger"
-        >
+        <div className="kpi-card">
           <div className="kpi-label-row">
             <span className="kpi-label">Innaiku Net</span>
             <span className="kpi-icon-hint">💰</span>
@@ -452,16 +442,6 @@ export default function HomeTab({
                 Moththam
               </button>
             </div>
-
-            {onGoToLedger && (
-              <button
-                type="button"
-                className="section-card-link"
-                onClick={onGoToLedger}
-              >
-                Ledger →
-              </button>
-            )}
           </div>
         </div>
 

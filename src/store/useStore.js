@@ -365,6 +365,42 @@ export function useStore(activePartnerName = 'Balaji') {
     return true;
   }, [updateStore, showToast]);
 
+  const addTaskComment = useCallback((taskId, comment) => {
+    const now = Date.now();
+    const newComment = {
+      id: generateId(),
+      partner: comment.partner || 'Partner',
+      text: comment.text,
+      isProblem: !!comment.isProblem,
+      createdAt: now,
+    };
+    updateStore((prev) => ({
+      ...prev,
+      tasks: (prev.tasks || []).map((t) => {
+        if (t.id === taskId) {
+          const existing = t.comments || [];
+          return {
+            ...t,
+            comments: [...existing, newComment],
+            hasProblem: comment.isProblem ? true : t.hasProblem,
+          };
+        }
+        return t;
+      }),
+    }));
+    showToast(comment.isProblem ? '⚠️ Problem flagged on task' : '💬 Comment posted');
+  }, [updateStore, showToast]);
+
+  const toggleTaskProblem = useCallback((taskId, isProblem) => {
+    updateStore((prev) => ({
+      ...prev,
+      tasks: (prev.tasks || []).map((t) =>
+        t.id === taskId ? { ...t, hasProblem: isProblem } : t
+      ),
+    }));
+    showToast(isProblem ? '⚠️ Task marked with problem/blocker' : '✅ Problem marked resolved');
+  }, [updateStore, showToast]);
+
   const addExpense = useCallback((expense) => {
     const now = Date.now();
     const newExp = {
@@ -635,6 +671,7 @@ export function useStore(activePartnerName = 'Balaji') {
     updateProfilePhoto,
     // Actions
     addTask, completeTask, completeTaskWithProof, deleteTask,
+    addTaskComment, toggleTaskProblem,
     addExpense, updateExpense, deleteExpense,
     addRevenue, updateRevenue, deleteRevenue,
     addCapital, deleteCapital,
