@@ -43,11 +43,7 @@ function TabLoadingFallback() {
   );
 }
 
-const PARTNER_CYCLE = ['Balaji', 'Nagoor', 'JP'];
-
 export default function AppShell({ _user, partner, onSignOut }) {
-  const [activePartner, setActivePartner] = useState(partner);
-
   const {
     store,
     activeTab,
@@ -88,7 +84,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
     sendMessage,
     toggleShift,
     wipeAll,
-  } = useStore(activePartner?.name || 'Balaji');
+  } = useStore(partner?.name || 'Balaji');
 
   const pendingCount = (store.tasks || []).filter(
     (t) => t.status !== 'completed' && t.s !== 'done'
@@ -125,21 +121,13 @@ export default function AppShell({ _user, partner, onSignOut }) {
   };
   const [isChatTyping, setIsChatTyping] = useState(false);
 
-  // Cycle user filter or avatar
-  const handleCycleUser = () => {
-    const currentName = activePartner?.name || 'Balaji';
-    const currentIndex = PARTNER_CYCLE.indexOf(currentName);
-    const nextPartnerName = PARTNER_CYCLE[(currentIndex + 1) % PARTNER_CYCLE.length];
-    setPartnerFilter(nextPartnerName);
-  };
-
   // Header kicker & title per active tab
   const getHeaderInfo = () => {
     switch (activeTab) {
       case 'home':
         return {
           kicker: 'MeenMart Hub',
-          title: `Vanakkam, ${activePartner?.name || 'Partner'}!`,
+          title: `Vanakkam, ${partner?.name || 'Partner'}!`,
         };
       case 'tasks':
         return {
@@ -183,7 +171,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
         activeTab={activeTab}
         setActiveTab={handleSelectTab}
         pendingCount={pendingCount}
-        partner={activePartner}
+        partner={partner}
         onSignOut={onSignOut}
         onOpenSettings={openSettings}
         profiles={profiles}
@@ -197,10 +185,9 @@ export default function AppShell({ _user, partner, onSignOut }) {
             title={title}
             partnerFilter={partnerFilter}
             setPartnerFilter={setPartnerFilter}
-            partner={activePartner}
+            partner={partner}
             onOpenSettings={openSettings}
             profiles={profiles}
-            onCycleUser={handleCycleUser}
             onOpenData={() => setActiveModal('data')}
             isOnline={isOnline}
           />
@@ -220,7 +207,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 onGoToLedger={() => handleSelectTab('ledger')}
                 onlinePartners={onlinePartners}
                 profiles={profiles}
-                currentPartner={activePartner}
+                currentPartner={partner}
                 onOpenSettings={openSettings}
               />
             )}
@@ -237,7 +224,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 onOpenLightbox={handleOpenLightbox}
                 onOpenTask={openTask}
                 onOpenCompleteTask={setCompletingTask}
-                currentPartner={activePartner}
+                currentPartner={partner}
               />
             )}
 
@@ -251,7 +238,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 addProof={addProof}
                 onOpenLightbox={handleOpenLightbox}
                 onOpenWork={openWork}
-                currentPartner={activePartner}
+                currentPartner={partner}
                 toggleShift={toggleShift}
               />
             )}
@@ -267,7 +254,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 deleteExpense={deleteExpense}
                 deleteRevenue={deleteRevenue}
                 deleteCapital={deleteCapital}
-                currentPartner={activePartner}
+                currentPartner={partner}
               />
             )}
 
@@ -275,7 +262,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
               <ChatTab
                 store={store}
                 sendMessage={sendMessage}
-                currentPartner={activePartner}
+                currentPartner={partner}
                 onOpenLightbox={handleOpenLightbox}
                 isChatTyping={isChatTyping}
                 setIsChatTyping={setIsChatTyping}
@@ -325,7 +312,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
             isOpen={true}
             onClose={closeModal}
             onAddTask={addTask}
-            currentPartner={activePartner}
+            currentPartner={partner}
             defaultDate={selectedDate || getLocalDateStr()}
           />
         )}
@@ -346,7 +333,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
             onClose={closeModal}
             onAddExpense={addExpense}
             onUpdateExpense={updateExpense}
-            currentPartner={activePartner}
+            currentPartner={partner}
             kind="expense"
             initialData={editingEntry}
           />
@@ -359,7 +346,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
             onClose={closeModal}
             onAddExpense={addRevenue}
             onUpdateExpense={updateRevenue}
-            currentPartner={activePartner}
+            currentPartner={partner}
             kind="revenue"
             initialData={editingEntry}
           />
@@ -370,7 +357,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
             isOpen={true}
             onClose={closeModal}
             onAddWorklog={addWorklog}
-            currentPartner={activePartner}
+            currentPartner={partner}
           />
         )}
 
@@ -379,7 +366,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
             isOpen={true}
             onClose={closeModal}
             onAddCapital={addCapital}
-            currentPartner={activePartner}
+            currentPartner={partner}
           />
         )}
 
@@ -387,16 +374,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
           <SettingsModal
             isOpen={true}
             onClose={closeModal}
-            partner={activePartner}
-            onSwitchPartner={(name) => {
-              const role =
-                name === 'Balaji'
-                  ? 'Tech & Product'
-                  : name === 'Nagoor'
-                  ? 'Procure & Pack'
-                  : 'Delivery & Sales';
-              setActivePartner({ name, role });
-            }}
+            partner={partner}
             profiles={profiles}
             onUpdateProfilePhoto={updateProfilePhoto}
             onlinePartners={onlinePartners}
@@ -414,7 +392,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
             isOnline={isOnline}
             lastSyncedAt={lastSyncedAt}
             store={store}
-            currentPartner={activePartner}
+            currentPartner={partner}
           />
         )}
 

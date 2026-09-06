@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react';
-import { PARTNER_NAMES } from '../../config/partners';
 import { compressImage } from '../../utils/calculations';
 import { triggerHaptic } from '../../utils/haptics';
 
@@ -25,7 +24,6 @@ export default function SettingsModal({
   isOpen,
   onClose,
   partner,
-  onSwitchPartner,
   profiles,
   onUpdateProfilePhoto,
   onlinePartners,
@@ -140,34 +138,13 @@ export default function SettingsModal({
           </div>
         </div>
 
-        {/* Switch Active Partner */}
-        <div className="sheet-field-label" style={{ marginTop: '18px' }}>
-          Switch Active Partner (Co-Founders)
-        </div>
-        <div className="sheet-option-chips" style={{ marginBottom: '18px' }}>
-          {PARTNER_NAMES.map((name) => {
-            const isSelected = name === currentName;
-            const isPartnerOnline = !!onlinePartners?.[name];
-            return (
-              <button
-                key={name}
-                type="button"
-                className={`sheet-option-chip partner-select-chip ${isSelected ? 'active-navy' : ''}`}
-                onClick={() => {
-                  triggerHaptic('medium');
-                  onSwitchPartner?.(name);
-                }}
-              >
-                <span
-                  className="partner-chip-dot"
-                  style={{ backgroundColor: isPartnerOnline ? '#10B981' : '#94A3B8' }}
-                  title={isPartnerOnline ? 'Online' : 'Offline'}
-                />
-                <span>{name}</span>
-                {isSelected && <span style={{ fontSize: '10px', opacity: 0.8 }}> (Active)</span>}
-              </button>
-            );
-          })}
+        {/* Current Logged-in Account Security Badge */}
+        <div className="partner-account-badge">
+          <span className="partner-account-icon">🔒</span>
+          <div className="partner-account-text">
+            <strong>Logged In: {currentName}</strong>
+            <span>You are editing your own profile. Vera partner account ku maara, keezhe iruka Sign Out click panni login pannunga.</span>
+          </div>
         </div>
 
         {/* System & Connection Status Card */}

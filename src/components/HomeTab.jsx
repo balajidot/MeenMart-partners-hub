@@ -222,7 +222,8 @@ export default function HomeTab({
         </div>
         <div className="live-partners-grid">
           {['Balaji', 'Nagoor', 'JP'].map((pName) => {
-            const isOnline = !!onlinePartners?.[pName] || pName === currentPartner?.name;
+            const isMe = pName === currentPartner?.name;
+            const isOnline = !!onlinePartners?.[pName] || isMe;
             const isOnShift = !!store.activeShifts?.[pName];
             const avatarUrl = profiles?.[pName]?.avatarUrl;
             const initials = PARTNER_INITIALS[pName];
@@ -231,13 +232,17 @@ export default function HomeTab({
             return (
               <div
                 key={pName}
-                className={`live-partner-box ${isOnline ? 'is-online' : 'is-offline'}`}
+                className={`live-partner-box ${isOnline ? 'is-online' : 'is-offline'}${isMe ? ' is-me' : ''}`}
                 onClick={() => {
-                  triggerHaptic('light');
-                  if (onOpenSettings) onOpenSettings();
+                  if (isMe) {
+                    triggerHaptic('light');
+                    if (onOpenSettings) onOpenSettings();
+                  }
                 }}
-                role="button"
-                tabIndex={0}
+                role={isMe ? 'button' : 'group'}
+                tabIndex={isMe ? 0 : -1}
+                title={isMe ? `${pName} (You) — Tap for Settings & Profile` : `${pName} (${PARTNER_ROLES[pName] || 'Partner'})`}
+                style={{ cursor: isMe ? 'pointer' : 'default' }}
               >
                 <div className="live-avatar-wrap" style={{ backgroundColor: pColor }}>
                   {avatarUrl ? (
@@ -247,7 +252,9 @@ export default function HomeTab({
                   )}
                   <span className={`live-status-bubble ${isOnline ? 'online' : 'offline'}`} />
                 </div>
-                <div className="live-partner-name">{pName}</div>
+                <div className="live-partner-name">
+                  {pName} {isMe && <span className="live-you-tag">(You)</span>}
+                </div>
                 <div className={`live-partner-badge ${isOnline ? 'online' : isOnShift ? 'shift' : 'offline'}`}>
                   {isOnline ? '🟢 Online' : isOnShift ? '⏱️ Shift' : 'Offline'}
                 </div>
