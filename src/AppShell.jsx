@@ -209,6 +209,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 profiles={profiles}
                 currentPartner={partner}
                 onOpenSettings={openSettings}
+                onCompleteTask={completeTask}
               />
             )}
 

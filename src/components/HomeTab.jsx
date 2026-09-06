@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { fmtCurrency, getLocalDateStr, getTaskDeadlineStatus } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
+import PartnerDetailModal from './modals/PartnerDetailModal';
 
 /* -- Partner meta ------------------------------------------------ */
 const PARTNER_COLORS    = { Balaji: '#1B2A5B', Nagoor: '#0F9E8E', JP: '#B4531F', Shared: '#5A6480' };
@@ -34,7 +35,7 @@ function fmtTaskTime(task) {
 }
 
 const WORKLOAD_ORDER = ['Nagoor', 'JP', 'Balaji'];
-const PARTNER_ROLES  = { Nagoor: 'Operations', JP: 'Logistics', Balaji: 'Finance' };
+const PARTNER_ROLES  = { Nagoor: 'Procure & Pack', JP: 'Delivery & Sales', Balaji: 'Tech & Product' };
 
 /* ---------------------------------------------------------------- */
 export default function HomeTab({
@@ -49,6 +50,7 @@ export default function HomeTab({
   profiles,
   currentPartner,
   onOpenSettings,
+  onCompleteTask,
 }) {
   const today = getLocalDateStr();
   const now = new Date();
@@ -56,6 +58,11 @@ export default function HomeTab({
   const weekStartDate = new Date(now);
   weekStartDate.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
   const weekStartStr = getLocalDateStr(weekStartDate);
+
+  // Active Partner Insight Modal & Cashflow Scope state
+  const [selectedPartnerDetail, setSelectedPartnerDetail] = useState(null);
+  const [cashflowScope, setCashflowScope] = useState('today'); // 'today' | 'total'
+  const [selectedTaskPartner, setSelectedTaskPartner] = useState(currentPartner?.name || 'Balaji');
 
   /* Tasks KPI */
   const allTasks = store.tasks || [];
@@ -78,7 +85,7 @@ export default function HomeTab({
   );
   const todayHours = todayLogs.reduce((s, w) => s + Number(w.hours || 0), 0);
 
-  /* Cashflow KPI */
+  /* Cashflow KPI: Today vs Total */
   const todayExpenses = (store.expenses || [])
     .filter((e) => (e.date || getLocalDateStr(e.createdAt)) === today && (partnerFilter === 'all' || e.partner === partnerFilter))
     .reduce((s, e) => s + Number(e.amount || 0), 0);
@@ -88,9 +95,35 @@ export default function HomeTab({
     .reduce((s, r) => s + Number(r.amount || 0), 0);
 
   const netToday = todayRevenue - todayExpenses;
-  const cashTotal = todayRevenue + todayExpenses;
-  const revPct = cashTotal > 0 ? Math.round((todayRevenue / cashTotal) * 100) : 0;
-  const expPct = cashTotal > 0 ? Math.round((todayExpenses / cashTotal) * 100) : 0;
+
+  const totalExpenses = useMemo(() => {
+    return (store.expenses || [])
+      .filter((e) => partnerFilter === 'all' || e.partner === partnerFilter)
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
+  }, [store.expenses, partnerFilter]);
+
+  const totalRevenue = useMemo(() => {
+    return (store.revenues || [])
+      .filter((r) => partnerFilter === 'all' || r.partner === partnerFilter)
+      .reduce((s, r) => s + Number(r.amount || 0), 0);
+  }, [store.revenues, partnerFilter]);
+
+  const displayRevenue  = cashflowScope === 'today' ? todayRevenue : totalRevenue;
+  const displayExpenses = cashflowScope === 'today' ? todayExpenses : totalExpenses;
+  const displayNet      = displayRevenue - displayExpenses;
+  const displayCashTotal= displayRevenue + displayExpenses;
+  const revPct = displayCashTotal > 0 ? Math.round((displayRevenue / displayCashTotal) * 100) : 0;
+  const expPct = displayCashTotal > 0 ? Math.round((displayExpenses / displayCashTotal) * 100) : 0;
+
+  /* Live Partner Tasks filtering */
+  const livePartnerPendingTasks = useMemo(() => {
+    return (store.tasks || []).filter((t) => {
+      const isPending = t.status !== 'completed' && t.s !== 'done';
+      if (!isPending) return false;
+      if (selectedTaskPartner === 'all') return true;
+      return t.to === selectedTaskPartner;
+    });
+  }, [store.tasks, selectedTaskPartner]);
 
   /* Workload balance (weekly hours per partner) */
   const weekLogs = (store.worklogs || []).filter(
@@ -218,7 +251,7 @@ export default function HomeTab({
             <span className="live-team-dot" />
             <span className="section-card-title">Live Active Partners</span>
           </div>
-          <span className="section-card-meta">Realtime Status</span>
+          <span className="section-card-meta">Tap partner for insights</span>
         </div>
         <div className="live-partners-grid">
           {['Balaji', 'Nagoor', 'JP'].map((pName) => {
@@ -234,15 +267,13 @@ export default function HomeTab({
                 key={pName}
                 className={`live-partner-box ${isOnline ? 'is-online' : 'is-offline'}${isMe ? ' is-me' : ''}`}
                 onClick={() => {
-                  if (isMe) {
-                    triggerHaptic('light');
-                    if (onOpenSettings) onOpenSettings();
-                  }
+                  triggerHaptic('medium');
+                  setSelectedPartnerDetail(pName);
                 }}
-                role={isMe ? 'button' : 'group'}
-                tabIndex={isMe ? 0 : -1}
-                title={isMe ? `${pName} (You) — Tap for Settings & Profile` : `${pName} (${PARTNER_ROLES[pName] || 'Partner'})`}
-                style={{ cursor: isMe ? 'pointer' : 'default' }}
+                role="button"
+                tabIndex={0}
+                title={`${pName} (${PARTNER_ROLES[pName] || 'Partner'}) — Performance & Insights`}
+                style={{ cursor: 'pointer' }}
               >
                 <div className="live-avatar-wrap" style={{ backgroundColor: pColor }}>
                   {avatarUrl ? (
@@ -264,12 +295,164 @@ export default function HomeTab({
         </div>
       </div>
 
-      {/* Today cashflow */}
+      {/* Live Partner Tasks Section - Directly below Live Active Partners */}
+      <div className="section-card live-partner-tasks-card">
+        <div className="section-card-header">
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="live-team-dot" style={{ backgroundColor: 'var(--teal)' }} />
+              <span className="section-card-title">Live Partner Tasks</span>
+            </div>
+            <span className="section-card-meta" style={{ display: 'block', marginTop: 2 }}>
+              Partner-wise active assignments
+            </span>
+          </div>
+          {onOpenTask && (
+            <button
+              type="button"
+              className="section-card-link"
+              onClick={onOpenTask}
+            >
+              + Pudhu Task
+            </button>
+          )}
+        </div>
+
+        {/* Partner selection tabs for tasks */}
+        <div className="live-partner-task-tabs">
+          {['all', 'Balaji', 'Nagoor', 'JP'].map((p) => {
+            const count = (store.tasks || []).filter((t) => {
+              const isPending = t.status !== 'completed' && t.s !== 'done';
+              if (!isPending) return false;
+              return p === 'all' ? true : t.to === p;
+            }).length;
+
+            return (
+              <button
+                key={p}
+                type="button"
+                className={`live-task-tab-btn ${selectedTaskPartner === p ? 'active' : ''}`}
+                onClick={() => {
+                  triggerHaptic('light');
+                  setSelectedTaskPartner(p);
+                }}
+              >
+                <span>{p === 'all' ? 'All' : p}</span>
+                {count > 0 && <span className="live-task-tab-count">{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tasks List for selected partner */}
+        <div className="live-partner-tasks-list">
+          {livePartnerPendingTasks.length === 0 ? (
+            <div className="live-task-empty">
+              <span>🎉 Indha partner-ku pending vela yedhum illa!</span>
+            </div>
+          ) : (
+            livePartnerPendingTasks.slice(0, 5).map((task) => {
+              const priorityColor = PRIORITY_COLORS[task.priority] ?? PRIORITY_COLORS.normal;
+              const timeStr       = fmtTaskTime(task);
+              const deadlineAlert = getTaskDeadlineStatus(task);
+              const assignerName  = task.assignedBy || task.from;
+              return (
+                <div key={task.id} className="live-task-row">
+                  <button
+                    type="button"
+                    className="live-task-check"
+                    title="Mark task completed"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      triggerHaptic('medium');
+                      onCompleteTask?.(task.id);
+                    }}
+                  >
+                    ✓
+                  </button>
+                  <div
+                    className="live-task-content"
+                    onClick={() => onGoToTasks?.() || onOpenTask?.()}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="live-task-title-row">
+                      <span
+                        className="task-priority-dot"
+                        style={{
+                          background: priorityColor,
+                          boxShadow: task.priority === 'urgent' ? '0 0 6px rgba(217, 58, 58, 0.4)' : 'none',
+                        }}
+                      />
+                      <span className="live-task-title">{task.title}</span>
+                    </div>
+                    <div className="live-task-meta-row">
+                      <span className="live-task-assigned">
+                        {task.to ? `→ ${task.to}` : 'Shared'} {assignerName ? `(${assignerName})` : ''}
+                      </span>
+                      {deadlineAlert ? (
+                        <span className={`task-deadline-pill sm ${deadlineAlert.status}`}>
+                          {deadlineAlert.label}
+                        </span>
+                      ) : (
+                        timeStr && <span className="task-time">{timeStr}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+          {livePartnerPendingTasks.length > 5 && (
+            <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
+              <button
+                type="button"
+                className="section-card-link"
+                onClick={onGoToTasks}
+              >
+                View all {livePartnerPendingTasks.length} tasks →
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Cashflow Card (Today vs Total Segmented Control) */}
       <div className="section-card">
         <div className="section-card-header">
-          <span className="section-card-title">Innaiku Cashflow</span>
+          <div>
+            <span className="section-card-title">
+              {cashflowScope === 'today' ? 'Innaiku Cashflow' : 'Moththa Cashflow (Total)'}
+            </span>
+            <span className="section-card-meta" style={{ display: 'block', marginTop: 2 }}>
+              {cashflowScope === 'today' ? fmtDDMon(today) : 'Overall Business Records'}
+            </span>
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span className="section-card-meta">{fmtDDMon(today)}</span>
+            {/* iOS Segmented Control */}
+            <div className="cashflow-segmented-control">
+              <button
+                type="button"
+                className={`cashflow-segment-btn ${cashflowScope === 'today' ? 'active' : ''}`}
+                onClick={() => {
+                  triggerHaptic('light');
+                  setCashflowScope('today');
+                }}
+              >
+                Innaiku
+              </button>
+              <button
+                type="button"
+                className={`cashflow-segment-btn ${cashflowScope === 'total' ? 'active' : ''}`}
+                onClick={() => {
+                  triggerHaptic('light');
+                  setCashflowScope('total');
+                }}
+              >
+                Moththam
+              </button>
+            </div>
+
             {onGoToLedger && (
               <button
                 type="button"
@@ -281,12 +464,13 @@ export default function HomeTab({
             )}
           </div>
         </div>
+
         <div className="cashflow-rows">
           <div className="cashflow-row">
             <div className="cashflow-row-head">
-              <span className="cashflow-label">Varavu (In)</span>
+              <span className="cashflow-label">Varavu (Income)</span>
               <span className="cashflow-amount" style={{ color: '#0F9E8E' }}>
-                {fmtCurrency(todayRevenue)}
+                {fmtCurrency(displayRevenue)}
               </span>
             </div>
             <div className="cashflow-bar-track">
@@ -301,9 +485,9 @@ export default function HomeTab({
           </div>
           <div className="cashflow-row">
             <div className="cashflow-row-head">
-              <span className="cashflow-label">Selavu (Out)</span>
+              <span className="cashflow-label">Selavu (Expense)</span>
               <span className="cashflow-amount" style={{ color: '#E08A0B' }}>
-                {fmtCurrency(todayExpenses)}
+                {fmtCurrency(displayExpenses)}
               </span>
             </div>
             <div className="cashflow-bar-track">
@@ -315,6 +499,17 @@ export default function HomeTab({
                 }}
               />
             </div>
+          </div>
+          <div className="cashflow-net-row">
+            <span className="cashflow-net-label">
+              {displayNet >= 0 ? '📈 Net Profit (Laabam)' : '📉 Net Deficit (Nashtam)'}
+            </span>
+            <span
+              className="cashflow-net-amount"
+              style={{ color: displayNet >= 0 ? '#0B7E71' : '#D93A3A' }}
+            >
+              {fmtCurrency(displayNet)}
+            </span>
           </div>
         </div>
       </div>
@@ -448,6 +643,22 @@ export default function HomeTab({
           })
         )}
       </div>
+
+      {/* Partner Performance & Contribution Modal */}
+      {selectedPartnerDetail && (
+        <PartnerDetailModal
+          isOpen={!!selectedPartnerDetail}
+          partnerName={selectedPartnerDetail}
+          store={store}
+          profiles={profiles}
+          onlinePartners={onlinePartners}
+          onOpenSettings={onOpenSettings}
+          isMe={selectedPartnerDetail === currentPartner?.name}
+          onClose={() => setSelectedPartnerDetail(null)}
+          onCompleteTask={onCompleteTask}
+          onOpenTask={onOpenTask}
+        />
+      )}
 
     </div>
   );

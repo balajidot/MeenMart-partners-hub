@@ -29,7 +29,7 @@ export default function SettingsModal({
   onlinePartners,
   onSignOut,
   onWipeAll,
-  isOnline,
+  _isOnline,
 }) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -147,26 +147,6 @@ export default function SettingsModal({
           </div>
         </div>
 
-        {/* System & Connection Status Card */}
-        <div className="settings-section-card">
-          <div className="settings-row">
-            <div className="settings-row-label">
-              <span>Firebase Realtime Sync</span>
-              <span className="settings-row-sub">Asia-Southeast (Live cluster)</span>
-            </div>
-            <span className={`sync-status-badge ${isOnline ? 'online' : 'offline'}`}>
-              {isOnline ? '🟢 Connected' : '🔴 Offline'}
-            </span>
-          </div>
-
-          <div className="settings-row">
-            <div className="settings-row-label">
-              <span>PWA App Status</span>
-              <span className="settings-row-sub">MeenMart Partners Hub v2.2</span>
-            </div>
-            <span className="sync-status-badge ready">⚡ PWA Ready</span>
-          </div>
-        </div>
 
         {/* Danger zone / sign out */}
         <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
