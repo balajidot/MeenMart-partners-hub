@@ -25,19 +25,42 @@ export function dedupeById(list) {
   });
 }
 
+export function stripDemoData(data) {
+  if (!data) return data;
+  const isDemoTask = (t) => t.title && (t.title.includes('காலை மீன் மார்க்கெட்') || t.title.includes('Notification Setup') || t.title.includes('Route திட்டம்'));
+  const isDemoExp = (e) => e.reason && (e.reason.includes('காசிமேடு சந்தை') || e.reason.includes('பைக் சர்வீஸ்') || e.reason.includes('Firebase Blaze Plan'));
+  const isDemoWork = (w) => {
+    const txt = w.desc || w.activity || w.description || '';
+    return txt.includes('காலை 5 மணி மார்க்கெட்') || txt.includes('18 ஆர்டர்கள்') || txt.includes('Firebase Integration');
+  };
+  const isDemoCap = (c) => c.note === 'ஆரம்ப முதலீடு';
+  const isDemoMsg = (m) => m.text && (m.text.includes('நேரலைக்கு வந்துவிட்டது') || m.text.includes('காசிமேடு சந்தை நிலவரம்') || m.text.includes('இன்றைய டெலிவரி ரூட்கள்'));
+
+  return {
+    ...data,
+    tasks:    dedupeById(data.tasks || []).filter((t) => !isDemoTask(t)),
+    expenses: dedupeById(data.expenses || []).filter((e) => !isDemoExp(e)),
+    revenues: dedupeById(data.revenues || []),
+    capitals: dedupeById(data.capitals || []).filter((c) => !isDemoCap(c)),
+    worklogs: dedupeById(data.worklogs || []).filter((w) => !isDemoWork(w)),
+    messages: dedupeById(data.messages || []).filter((m) => !isDemoMsg(m)),
+  };
+}
+
 function loadLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      return {
-        tasks:    dedupeById(toArray(parsed.tasks)),
-        expenses: dedupeById(toArray(parsed.expenses)).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
-        revenues: dedupeById(toArray(parsed.revenues)).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
-        capitals: dedupeById(toArray(parsed.capitals)).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
-        worklogs: dedupeById(toArray(parsed.worklogs)).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
-        messages: dedupeById(toArray(parsed.messages)),
-      };
+      const clean = stripDemoData({
+        tasks:    toArray(parsed.tasks),
+        expenses: toArray(parsed.expenses).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
+        revenues: toArray(parsed.revenues).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
+        capitals: toArray(parsed.capitals).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
+        worklogs: toArray(parsed.worklogs).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
+        messages: toArray(parsed.messages),
+      });
+      return clean;
     }
   } catch {
     // ignore parse error
@@ -77,14 +100,14 @@ export function useStore() {
       if (!remote || !isMounted.current) return;
       // Remote Firebase state is canonical; prevents reviving deleted items
       setStore(() => {
-        const canonical = {
+        const canonical = stripDemoData({
           tasks:    dedupeById(toArray(remote.tasks)),
           expenses: dedupeById(toArray(remote.expenses)).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
           revenues: dedupeById(toArray(remote.revenues)).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
           capitals: dedupeById(toArray(remote.capitals)).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
           worklogs: dedupeById(toArray(remote.worklogs)).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
           messages: dedupeById(toArray(remote.messages)),
-        };
+        });
         const pruned = pruneExpiredProofs(canonical);
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));

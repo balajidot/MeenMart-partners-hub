@@ -159,6 +159,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
           setPartnerFilter={setPartnerFilter}
           partner={partner}
           onCycleUser={handleCycleUser}
+          onOpenData={() => setActiveModal('data')}
         />
 
         {/* Workspace Body */}
