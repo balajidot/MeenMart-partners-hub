@@ -1,7 +1,6 @@
-const CACHE_NAME = 'meenmart-partners-pwa-v2';
+const CACHE_NAME = 'meenmart-partners-pwa-v4';
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
   '/manifest.webmanifest',
   '/favicon.svg',
   '/pwa-192x192.png',
@@ -33,7 +32,7 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-http schemes (e.g. chrome-extension://, data:)
+  // Skip non-http schemes
   if (!url.protocol.startsWith('http')) {
     return;
   }
@@ -52,7 +51,33 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale-While-Revalidate strategy for app assets
+  // Bypass hashed Vite assets from SW caching to prevent cross-world modulepreload mismatches
+  // Hashed assets (/assets/**) are already cached permanently via HTTP headers
+  if (url.pathname.startsWith('/assets/')) {
+    return;
+  }
+
+  // Network-First for HTML navigations: always get latest index.html when online!
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match('/index.html') || caches.match('/');
+        })
+    );
+    return;
+  }
+
+  // Stale-While-Revalidate for static icons/manifest
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       const fetchPromise = fetch(request)
@@ -65,13 +90,7 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => {
-          // Offline fallback
-          if (request.mode === 'navigate') {
-            return caches.match('/index.html') || cachedResponse;
-          }
-          return cachedResponse;
-        });
+        .catch(() => cachedResponse);
 
       return cachedResponse || fetchPromise;
     })
