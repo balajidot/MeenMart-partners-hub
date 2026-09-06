@@ -256,7 +256,7 @@ export default function TasksTab({
       {partnerFilter !== 'all' && (
         <div className="task-filter-notice">
           <span>Filtered for <strong>{partnerFilter}</strong></span>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Tap avatar in header to change</span>
+          <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>Tap avatar in header to change</span>
         </div>
       )}
 
@@ -625,7 +625,7 @@ const TaskCardDone = React.memo(function TaskCardDone({
         {/* Right monogram */}
         <div
           className={`partner-monogram ${partnerClass}`}
-          style={{ width: 26, height: 26, fontSize: 10.5, borderRadius: 8, flexShrink: 0 }}
+          style={{ width: 28, height: 28, fontSize: 12, borderRadius: 8, flexShrink: 0 }}
         >
           {initials}
         </div>

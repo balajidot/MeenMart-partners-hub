@@ -68,15 +68,15 @@ export default function DataModal({
                   boxShadow: isOnline ? '0 0 10px #0F9E8E' : 'none',
                 }}
               />
-              <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--navy)' }}>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--navy)' }}>
                 {isOnline ? 'Realtime Database Live' : 'Offline Mode'}
               </span>
             </div>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+            <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
               {syncTimeStr}
             </span>
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-sec)', lineHeight: 1.4 }}>
+          <div style={{ fontSize: '13px', color: 'var(--text-sec)', lineHeight: 1.45 }}>
             {isOnline
               ? 'All tasks, ledger entries, shifts, and messages are backed up to Firebase Realtime Database in real time.'
               : 'Changes are cached safely on your device and will auto-sync when connection is restored.'}
@@ -85,25 +85,25 @@ export default function DataModal({
 
         {/* Database Stats Card */}
         <div style={{ marginBottom: '16px', padding: '14px', background: 'var(--input-bg)', borderRadius: '14px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '10px' }}>
+          <div style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--navy)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '10px' }}>
             Cloud Database Records
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
             <div style={{ background: '#fff', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--navy)' }}>{tasksCount}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Tasks</div>
+              <div style={{ fontSize: '19px', fontWeight: 700, color: 'var(--navy)' }}>{tasksCount}</div>
+              <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', fontWeight: 500 }}>Tasks</div>
             </div>
             <div style={{ background: '#fff', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--teal-dark)' }}>{expensesCount + revenuesCount}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Ledger</div>
+              <div style={{ fontSize: '19px', fontWeight: 700, color: 'var(--teal-dark)' }}>{expensesCount + revenuesCount}</div>
+              <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', fontWeight: 500 }}>Ledger</div>
             </div>
             <div style={{ background: '#fff', padding: '10px', borderRadius: '10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: '#B4531F' }}>{worklogsCount}</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Shifts</div>
+              <div style={{ fontSize: '19px', fontWeight: 700, color: '#B4531F' }}>{worklogsCount}</div>
+              <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', fontWeight: 500 }}>Shifts</div>
             </div>
           </div>
           {currentPartner && (
-            <div style={{ marginTop: '10px', fontSize: '11.5px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ marginTop: '10px', fontSize: '12.5px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
               <span>Signed in as: <strong>{currentPartner.name}</strong></span>
               <span>{messagesCount} chat messages</span>
             </div>
@@ -112,10 +112,10 @@ export default function DataModal({
 
         {/* Clear Data / Reset */}
         <div style={{ marginBottom: '16px', padding: '14px', background: 'var(--danger-bg)', borderRadius: '14px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--danger)', marginBottom: '3px' }}>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--danger)', marginBottom: '3px' }}>
             🗑️ Reset Database
           </div>
-          <div style={{ fontSize: '11.5px', color: 'var(--text-sec)', marginBottom: '10px' }}>
+          <div style={{ fontSize: '12.5px', color: 'var(--text-sec)', marginBottom: '10px' }}>
             Wipe all records to start fresh operations with zero entries.
           </div>
           <button

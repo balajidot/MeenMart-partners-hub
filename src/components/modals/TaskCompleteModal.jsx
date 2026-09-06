@@ -62,14 +62,14 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
         {/* Task summary info */}
         <div className="sheet-assignee-box" style={{ marginBottom: '16px' }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--teal-dark)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '3px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--teal-dark)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '3px' }}>
               {task.to ? `${task.to}-ku assign pannadhu` : 'Ellarukum podhuvaana task'}
             </div>
-            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--navy)', lineHeight: 1.3 }}>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--navy)', lineHeight: 1.35 }}>
               {task.title}
             </div>
             {task.from && task.from !== task.to && (
-              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
                 Assign pannavaru: <strong>{task.from}</strong>
               </div>
             )}
@@ -103,7 +103,7 @@ export default function TaskCompleteModal({ isOpen, task, onClose, onComplete })
             <label className="sheet-photo-zone" style={{ display: 'flex', cursor: 'pointer' }}>
               <span style={{ fontSize: '20px' }}>📷</span>
               <span className="sheet-photo-label">{proofLabel}</span>
-              <span style={{ fontSize: '10px', color: 'var(--text-faint)' }}>48 hours-la auto expire aagidum</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-faint)' }}>48 hours-la auto expire aagidum</span>
               <input
                 type="file"
                 accept="image/*"

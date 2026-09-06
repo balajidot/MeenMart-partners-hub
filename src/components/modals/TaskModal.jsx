@@ -112,7 +112,7 @@ export default function TaskModal({ isOpen, onClose, onAddTask, currentPartner, 
           }}>
             <span>👤 <strong>Assign pannavaru:</strong></span>
             <span style={{ color: 'var(--navy)', fontWeight: 600 }}>{from}</span>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>(Logged-in partner)</span>
+            <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>(Logged-in partner)</span>
           </div>
 
           {/* Task title */}
