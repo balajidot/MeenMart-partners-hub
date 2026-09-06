@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { fmtCurrency, getLocalDateStr } from '../../utils/calculations';
+import { getLocalDateStr } from '../../utils/calculations';
 import { triggerHaptic } from '../../utils/haptics';
 
 const PARTNER_ROLES = {
@@ -85,34 +85,29 @@ export default function PartnerDetailModal({
     return max;
   }, [dailyHours]);
 
-  // 2. Financial Contribution (Capital + Direct Expenses)
-  const { capitalTotal, expenseTotal, totalContributed, teamGrandTotal, contribPct } = useMemo(() => {
-    const capitals = store?.capitals || [];
-    const expenses = store?.expenses || [];
+  // 2. Weekly Shifts & Active Work Pattern
+  const { weeklyShiftsCount, activeDaysCount, avgShiftHrs } = useMemo(() => {
+    const worklogs = store?.worklogs || [];
+    const now = new Date();
+    const weekAgo = new Date(now);
+    weekAgo.setDate(now.getDate() - 7);
+    const weekAgoStr = getLocalDateStr(weekAgo);
 
-    const pCapital = capitals
-      .filter((c) => c.partner === partnerName)
-      .reduce((s, c) => s + Number(c.amount || 0), 0);
+    const partnerRecentLogs = worklogs.filter((w) => {
+      const dStr = w.date || (w.createdAt ? getLocalDateStr(w.createdAt) : '');
+      return w.partner === partnerName && dStr >= weekAgoStr;
+    });
 
-    const pExpenses = expenses
-      .filter((e) => e.partner === partnerName)
-      .reduce((s, e) => s + Number(e.amount || 0), 0);
-
-    const allCap = capitals.reduce((s, c) => s + Number(c.amount || 0), 0);
-    const allExp = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
-    const grand = allCap + allExp;
-
-    const contributed = pCapital + pExpenses;
-    const pct = grand > 0 ? Math.round((contributed / grand) * 100) : 0;
+    const shiftCount = partnerRecentLogs.length;
+    const uniqueDays = new Set(partnerRecentLogs.map((w) => w.date || (w.createdAt ? getLocalDateStr(w.createdAt) : ''))).size;
+    const avg = shiftCount > 0 ? (weekHours / shiftCount).toFixed(1) : '0.0';
 
     return {
-      capitalTotal: pCapital,
-      expenseTotal: pExpenses,
-      totalContributed: contributed,
-      teamGrandTotal: grand,
-      contribPct: pct,
+      weeklyShiftsCount: shiftCount,
+      activeDaysCount: uniqueDays,
+      avgShiftHrs: avg,
     };
-  }, [store?.capitals, store?.expenses, partnerName]);
+  }, [store?.worklogs, partnerName, weekHours]);
 
   // 3. Task Performance & Assigned Tasks List
   const { assignedTasks, completedTasks, pendingTasks, completionRate } = useMemo(() => {
@@ -159,17 +154,14 @@ export default function PartnerDetailModal({
             {avatarUrl ? (
               <img src={avatarUrl} alt={partnerName} className="partner-detail-avatar-img" />
             ) : (
-              <span className="partner-detail-initials">{initials}</span>
+              <span>{initials}</span>
             )}
-            <span className={`live-status-bubble ${isOnline ? 'online' : 'offline'}`} />
           </div>
-
           <div className="partner-detail-info">
             <div className="partner-detail-name-row">
               <h3 className="partner-detail-name">{partnerName}</h3>
-              {isMe && <span className="live-you-tag">(You)</span>}
               <span className={`partner-detail-badge ${isOnline ? 'online' : isOnShift ? 'shift' : 'offline'}`}>
-                {isOnline ? '🟢 Online' : isOnShift ? '⏱️ Shift' : 'Offline'}
+                {isOnline ? '🟢 Live' : isOnShift ? '⏱️ Shift' : 'Offline'}
               </span>
             </div>
             <div className="partner-detail-role">{role}</div>
@@ -183,13 +175,13 @@ export default function PartnerDetailModal({
                   onOpenSettings();
                 }}
               >
-                ⚙️ Settings & Edit Profile →
+                ✏️ Edit Profile & Avatar
               </button>
             )}
           </div>
         </div>
 
-        {/* 4 3D KPI Metrics Grid */}
+        {/* 4 KPI Metrics Grid */}
         <div className="partner-kpi-grid">
           <div className="partner-kpi-tile">
             <span className="partner-kpi-label">This Week</span>
@@ -209,11 +201,12 @@ export default function PartnerDetailModal({
           </div>
 
           <div className="partner-kpi-tile">
-            <span className="partner-kpi-label">Contribution</span>
+            <span className="partner-kpi-label">Active Days</span>
             <div className="partner-kpi-value-row">
-              <span className="partner-kpi-val">{contribPct}%</span>
+              <span className="partner-kpi-val">{activeDaysCount}</span>
+              <span className="partner-kpi-unit">days/wk</span>
             </div>
-            <span className="partner-kpi-sub">{fmtCurrency(totalContributed)}</span>
+            <span className="partner-kpi-sub">{weeklyShiftsCount} shifts logged (avg {avgShiftHrs}h)</span>
           </div>
 
           <div className="partner-kpi-tile">
@@ -264,15 +257,15 @@ export default function PartnerDetailModal({
           </div>
         </div>
 
-        {/* Visual Graph 2: Financial Contribution Breakdown */}
+        {/* Visual Graph 2: Task Execution & Success Ratio */}
         <div className="partner-chart-card">
           <div className="partner-chart-header">
             <div>
-              <h4 className="partner-chart-title">Financial Contribution Share</h4>
-              <span className="partner-chart-sub">Capital injected & direct expenses paid</span>
+              <h4 className="partner-chart-title">Task Completion & Efficiency</h4>
+              <span className="partner-chart-sub">Overall assignments completed vs pending</span>
             </div>
             <span className="partner-chart-total-pill" style={{ background: '#E6FAF6', color: '#0F9E8E' }}>
-              {contribPct}% of Total
+              {completionRate}% Success
             </span>
           </div>
 
@@ -280,23 +273,27 @@ export default function PartnerDetailModal({
             <div className="partner-contrib-progress-track">
               <div
                 className="partner-contrib-progress-fill"
-                style={{ width: `${Math.min(100, Math.max(5, contribPct))}%`, background: color }}
+                style={{ width: `${Math.min(100, Math.max(5, completionRate))}%`, background: '#0F9E8E' }}
               />
             </div>
             <div className="partner-contrib-labels">
-              <span>{fmtCurrency(totalContributed)} contributed</span>
-              <span>Team Grand Total: {fmtCurrency(teamGrandTotal)}</span>
+              <span>{completedTasks.length} completed tasks</span>
+              <span>{pendingTasks.length} pending</span>
             </div>
           </div>
 
           <div className="partner-contrib-details-grid">
             <div className="partner-contrib-detail-box">
-              <span className="partner-contrib-detail-label">Capital Deposited</span>
-              <span className="partner-contrib-detail-val">{fmtCurrency(capitalTotal)}</span>
+              <span className="partner-contrib-detail-label">Completed Tasks</span>
+              <span className="partner-contrib-detail-val" style={{ color: '#0F9E8E' }}>
+                {completedTasks.length}
+              </span>
             </div>
             <div className="partner-contrib-detail-box">
-              <span className="partner-contrib-detail-label">Out-of-pocket Expenses</span>
-              <span className="partner-contrib-detail-val">{fmtCurrency(expenseTotal)}</span>
+              <span className="partner-contrib-detail-label">Pending / Active</span>
+              <span className="partner-contrib-detail-val" style={{ color: pendingTasks.length > 0 ? '#E08A0B' : 'var(--navy)' }}>
+                {pendingTasks.length}
+              </span>
             </div>
           </div>
         </div>

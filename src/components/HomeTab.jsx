@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { fmtCurrency, getLocalDateStr, getTaskDeadlineStatus } from '../utils/calculations';
+import { getLocalDateStr, getTaskDeadlineStatus } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
 import PartnerDetailModal from './modals/PartnerDetailModal';
 
@@ -11,12 +11,6 @@ const PARTNER_MONO_CLASS= { Balaji: 'balaji', Nagoor: 'nagoor', JP: 'jp', Shared
 const PRIORITY_COLORS   = { urgent: '#D93A3A', high: '#E08A0B', normal: '#6B7590' };
 
 /* -- Helpers ----------------------------------------------------- */
-function fmtDDMon(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
-}
-
 function fmtTaskTime(task) {
   const raw = task.dueDateTime || task.dueAt;
   if (raw && raw.length > 10 && (raw.includes('T') || raw.includes(':'))) {
@@ -58,13 +52,11 @@ export default function HomeTab({
   weekStartDate.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
   const weekStartStr = getLocalDateStr(weekStartDate);
 
-  // Active Partner Insight Modal & Cashflow Scope state
+  // Active Partner Insight Modal state
   const [selectedPartnerDetail, setSelectedPartnerDetail] = useState(null);
-  const [cashflowScope, setCashflowScope] = useState('today'); // 'today' | 'total'
-  const [selectedTaskPartner, setSelectedTaskPartner] = useState(currentPartner?.name || 'Balaji');
 
   /* Tasks KPI (Memoized) */
-  const { pendingTasks, pendingCount, urgentCount, completionPct } = useMemo(() => {
+  const { pendingTasks, pendingCount, urgentCount, doneCount, completionPct } = useMemo(() => {
     const allTasks = store.tasks || [];
     const activeTasks =
       partnerFilter === 'all'
@@ -82,6 +74,7 @@ export default function HomeTab({
       pendingTasks: pending,
       pendingCount: pending.length,
       urgentCount: urgent,
+      doneCount: done.length,
       completionPct: pct,
     };
   }, [store.tasks, partnerFilter]);
@@ -93,49 +86,9 @@ export default function HomeTab({
       .reduce((s, w) => s + Number(w.hours || 0), 0);
   }, [store.worklogs, today, partnerFilter]);
 
-  /* Cashflow KPI: Today vs Total (Memoized) */
-  const todayExpenses = useMemo(() => {
-    return (store.expenses || [])
-      .filter((e) => (e.date || getLocalDateStr(e.createdAt)) === today && (partnerFilter === 'all' || e.partner === partnerFilter))
-      .reduce((s, e) => s + Number(e.amount || 0), 0);
-  }, [store.expenses, today, partnerFilter]);
-
-  const todayRevenue = useMemo(() => {
-    return (store.revenues || [])
-      .filter((r) => (r.date || getLocalDateStr(r.createdAt)) === today && (partnerFilter === 'all' || r.partner === partnerFilter))
-      .reduce((s, r) => s + Number(r.amount || 0), 0);
-  }, [store.revenues, today, partnerFilter]);
-
-  const netToday = todayRevenue - todayExpenses;
-
-  const totalExpenses = useMemo(() => {
-    return (store.expenses || [])
-      .filter((e) => partnerFilter === 'all' || e.partner === partnerFilter)
-      .reduce((s, e) => s + Number(e.amount || 0), 0);
-  }, [store.expenses, partnerFilter]);
-
-  const totalRevenue = useMemo(() => {
-    return (store.revenues || [])
-      .filter((r) => partnerFilter === 'all' || r.partner === partnerFilter)
-      .reduce((s, r) => s + Number(r.amount || 0), 0);
-  }, [store.revenues, partnerFilter]);
-
-  const displayRevenue  = cashflowScope === 'today' ? todayRevenue : totalRevenue;
-  const displayExpenses = cashflowScope === 'today' ? todayExpenses : totalExpenses;
-  const displayNet      = displayRevenue - displayExpenses;
-  const displayCashTotal= displayRevenue + displayExpenses;
-  const revPct = displayCashTotal > 0 ? Math.round((displayRevenue / displayCashTotal) * 100) : 0;
-  const expPct = displayCashTotal > 0 ? Math.round((displayExpenses / displayCashTotal) * 100) : 0;
-
-  /* Live Partner Tasks filtering */
-  const livePartnerPendingTasks = useMemo(() => {
-    return (store.tasks || []).filter((t) => {
-      const isPending = t.status !== 'completed' && t.s !== 'done';
-      if (!isPending) return false;
-      if (selectedTaskPartner === 'all') return true;
-      return t.to === selectedTaskPartner;
-    });
-  }, [store.tasks, selectedTaskPartner]);
+  const activeShiftsCount = useMemo(() => {
+    return Object.keys(store.activeShifts || {}).length;
+  }, [store.activeShifts]);
 
   /* Workload balance (weekly hours per partner, memoized) */
   const { workloadHours, maxWkHours, topWorker } = useMemo(() => {
@@ -155,15 +108,20 @@ export default function HomeTab({
     return { workloadHours: hours, maxWkHours: max, topWorker: top };
   }, [store.worklogs, weekStartStr]);
 
-  /* Up next: up to 3 active tasks */
+  /* Up next: up to 5 prioritized tasks for the active partner filter */
   const upNextTasks = useMemo(() => {
     return pendingTasks
       .slice()
       .sort((a, b) => {
         const order = { urgent: 0, high: 1, normal: 2 };
-        return (order[a.priority] ?? 2) - (order[b.priority] ?? 2);
+        const pA = order[a.priority?.toLowerCase()] ?? 2;
+        const pB = order[b.priority?.toLowerCase()] ?? 2;
+        if (pA !== pB) return pA - pB;
+        const timeA = a.dueDateTime || a.dueAt || a.createdAt || '';
+        const timeB = b.dueDateTime || b.dueAt || b.createdAt || '';
+        return timeA.localeCompare(timeB);
       })
-      .slice(0, 3);
+      .slice(0, 5);
   }, [pendingTasks]);
 
   /* -- Render ------------------------------------------------ */
@@ -211,22 +169,31 @@ export default function HomeTab({
           <div className="kpi-value-row">
             <span className="kpi-value">{todayHours.toFixed(1)}</span>
             <span className="kpi-unit">hrs</span>
+            {activeShiftsCount > 0 && (
+              <span className="kpi-urgent-badge" style={{ background: '#FEF3C7', color: '#B45309' }}>
+                {activeShiftsCount} Active
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="kpi-card">
+        <div
+          className="kpi-card interactive"
+          onClick={() => {
+            triggerHaptic('light');
+            onGoToTasks?.();
+          }}
+          role="button"
+          tabIndex={0}
+          title="Completed tasks"
+        >
           <div className="kpi-label-row">
-            <span className="kpi-label">Innaiku Net</span>
-            <span className="kpi-icon-hint">💰</span>
+            <span className="kpi-label">Mudicha Vela</span>
+            <span className="kpi-icon-hint">✅</span>
           </div>
-          <div
-            className="kpi-value-sm"
-            style={{
-              color: netToday > 0 ? '#0B7E71' : netToday < 0 ? '#D93A3A' : 'var(--text-primary)',
-              marginTop: 8,
-            }}
-          >
-            {fmtCurrency(netToday)}
+          <div className="kpi-value-row">
+            <span className="kpi-value" style={{ color: '#0F9E8E' }}>{doneCount}</span>
+            <span className="kpi-done-badge">{doneCount > 0 ? '✓ Done' : '0 done'}</span>
           </div>
         </div>
 
@@ -271,7 +238,7 @@ export default function HomeTab({
             return (
               <div
                 key={pName}
-                className={`live-partner-box ${isOnline ? 'is-online' : 'is-offline'}${isMe ? ' is-me' : ''}`}
+                className={`live-partner-box ${isOnline ? 'is-online' : isOnShift ? 'is-shift' : 'is-offline'}${isMe ? ' is-me' : ''}`}
                 onClick={() => {
                   triggerHaptic('medium');
                   setSelectedPartnerDetail(pName);
@@ -287,7 +254,7 @@ export default function HomeTab({
                   ) : (
                     <span>{initials}</span>
                   )}
-                  <span className={`live-status-bubble ${isOnline ? 'online' : 'offline'}`} />
+                  <span className={`live-status-bubble ${isOnline ? 'online' : isOnShift ? 'shift' : 'offline'}`} />
                 </div>
                 <div className="live-partner-name">
                   {pName} {isMe && <span className="live-you-tag">(You)</span>}
@@ -301,219 +268,134 @@ export default function HomeTab({
         </div>
       </div>
 
-      {/* Live Partner Tasks Section - Directly below Live Active Partners */}
-      <div className="section-card live-partner-tasks-card">
+      {/* Priority Action Queue: Next Enna Vela? */}
+      <div className="section-card up-next-section-card">
         <div className="section-card-header">
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="live-team-dot" style={{ backgroundColor: 'var(--teal)' }} />
-              <span className="section-card-title">Live Partner Tasks</span>
+              <span className="live-team-dot" style={{ backgroundColor: '#D93A3A' }} />
+              <span className="section-card-title">Next Enna Vela?</span>
             </div>
             <span className="section-card-meta" style={{ display: 'block', marginTop: 2 }}>
-              Partner-wise active assignments
+              {partnerFilter !== 'all' ? `${partnerFilter}-ku pending velaiga` : 'High-priority team tasks'}
             </span>
           </div>
-          {onOpenTask && (
-            <button
-              type="button"
-              className="section-card-link"
-              onClick={onOpenTask}
-            >
-              + Pudhu Task
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {onOpenTask && (
+              <button
+                type="button"
+                className="section-card-link"
+                onClick={onOpenTask}
+                style={{ fontWeight: 700 }}
+              >
+                + Pudhu Task
+              </button>
+            )}
+            {onGoToTasks && (
+              <button
+                type="button"
+                className="section-card-link"
+                onClick={onGoToTasks}
+              >
+                Ella Tasks →
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Partner selection tabs for tasks */}
-        <div className="live-partner-task-tabs">
-          {['all', 'Balaji', 'Nagoor', 'JP'].map((p) => {
-            const count = (store.tasks || []).filter((t) => {
-              const isPending = t.status !== 'completed' && t.s !== 'done';
-              if (!isPending) return false;
-              return p === 'all' ? true : t.to === p;
-            }).length;
-
-            return (
+        {upNextTasks.length === 0 ? (
+          <div className="home-all-clear-card">
+            <span className="home-all-clear-icon">🎉</span>
+            <div className="home-all-clear-info">
+              <div className="home-all-clear-title">
+                {partnerFilter === 'all'
+                  ? 'All Clear! Endha pending velayum illa.'
+                  : `${partnerFilter}-ku ippo endha velayum pending illa.`}
+              </div>
+              <div className="home-all-clear-sub">
+                Pudhu task irundha keezha irukura button moolama add pannalaam.
+              </div>
+            </div>
+            {onOpenTask && (
               <button
-                key={p}
                 type="button"
-                className={`live-task-tab-btn ${selectedTaskPartner === p ? 'active' : ''}`}
+                className="home-quick-add-task-btn"
                 onClick={() => {
                   triggerHaptic('light');
-                  setSelectedTaskPartner(p);
+                  onOpenTask();
                 }}
               >
-                <span>{p === 'all' ? 'All' : p}</span>
-                {count > 0 && <span className="live-task-tab-count">{count}</span>}
+                + Task Add Pannu
               </button>
-            );
-          })}
-        </div>
-
-        {/* Tasks List for selected partner */}
-        <div className="live-partner-tasks-list">
-          {livePartnerPendingTasks.length === 0 ? (
-            <div className="live-task-empty">
-              <span>🎉 Indha partner-ku pending vela yedhum illa!</span>
-            </div>
-          ) : (
-            livePartnerPendingTasks.slice(0, 5).map((task) => {
+            )}
+          </div>
+        ) : (
+          <div className="upnext-tasks-list">
+            {upNextTasks.map((task) => {
               const priorityColor = PRIORITY_COLORS[task.priority] ?? PRIORITY_COLORS.normal;
               const timeStr       = fmtTaskTime(task);
               const deadlineAlert = getTaskDeadlineStatus(task);
               const assignerName  = task.assignedBy || task.from;
               return (
-                <div key={task.id} className="live-task-row">
+                <div
+                  key={task.id}
+                  className="task-row"
+                  role="button"
+                  tabIndex={0}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => (onGoToTasks ? onGoToTasks() : onOpenTask())}
+                >
                   <button
                     type="button"
-                    className="live-task-check"
+                    className="task-checkbox"
                     title="Mark task completed"
                     onClick={(e) => {
                       e.stopPropagation();
                       triggerHaptic('medium');
                       onCompleteTask?.(task.id);
                     }}
-                  >
-                    ✓
-                  </button>
+                    aria-label="Complete task"
+                  />
                   <div
-                    className="live-task-content"
-                    onClick={() => onGoToTasks?.() || onOpenTask?.()}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className="live-task-title-row">
-                      <span
-                        className="task-priority-dot"
-                        style={{
-                          background: priorityColor,
-                          boxShadow: task.priority === 'urgent' ? '0 0 6px rgba(217, 58, 58, 0.4)' : 'none',
-                        }}
-                      />
-                      <span className="live-task-title">{task.title}</span>
-                    </div>
-                    <div className="live-task-meta-row">
-                      <span className="live-task-assigned">
-                        {task.to ? `→ ${task.to}` : 'Shared'} {assignerName ? `(${assignerName})` : ''}
+                    className="task-priority-dot"
+                    style={{
+                      background: priorityColor,
+                      boxShadow: task.priority === 'urgent' ? '0 0 6px rgba(217, 58, 58, 0.4)' : 'none',
+                    }}
+                  />
+                  <div className="task-info">
+                    <span className="task-title">{task.title}</span>
+                    <span className="task-meta">
+                      {assignerName ? `by ${assignerName} → ` : ''}{task.to || 'Shared'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
+                    {deadlineAlert ? (
+                      <span className={`task-deadline-pill sm ${deadlineAlert.status}`}>
+                        {deadlineAlert.label}
                       </span>
-                      {deadlineAlert ? (
-                        <span className={`task-deadline-pill sm ${deadlineAlert.status}`}>
-                          {deadlineAlert.label}
-                        </span>
-                      ) : (
-                        timeStr && <span className="task-time">{timeStr}</span>
-                      )}
-                    </div>
+                    ) : (
+                      timeStr && (
+                        <span className="task-time" style={{ color: 'var(--text-muted)' }}>{timeStr}</span>
+                      )
+                    )}
                   </div>
                 </div>
               );
-            })
-          )}
-          {livePartnerPendingTasks.length > 5 && (
-            <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
-              <button
-                type="button"
-                className="section-card-link"
-                onClick={onGoToTasks}
-              >
-                View all {livePartnerPendingTasks.length} tasks →
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Cashflow Card (Today vs Total Segmented Control) */}
-      <div className="section-card">
-        <div className="section-card-header">
-          <div>
-            <span className="section-card-title">
-              {cashflowScope === 'today' ? 'Innaiku Cashflow' : 'Moththa Cashflow (Total)'}
-            </span>
-            <span className="section-card-meta" style={{ display: 'block', marginTop: 2 }}>
-              {cashflowScope === 'today' ? fmtDDMon(today) : 'Overall Business Records'}
-            </span>
+            })}
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* iOS Segmented Control */}
-            <div className="cashflow-segmented-control">
-              <button
-                type="button"
-                className={`cashflow-segment-btn ${cashflowScope === 'today' ? 'active' : ''}`}
-                onClick={() => {
-                  triggerHaptic('light');
-                  setCashflowScope('today');
-                }}
-              >
-                Innaiku
-              </button>
-              <button
-                type="button"
-                className={`cashflow-segment-btn ${cashflowScope === 'total' ? 'active' : ''}`}
-                onClick={() => {
-                  triggerHaptic('light');
-                  setCashflowScope('total');
-                }}
-              >
-                Moththam
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="cashflow-rows">
-          <div className="cashflow-row">
-            <div className="cashflow-row-head">
-              <span className="cashflow-label">Varavu (Income)</span>
-              <span className="cashflow-amount" style={{ color: '#0F9E8E' }}>
-                {fmtCurrency(displayRevenue)}
-              </span>
-            </div>
-            <div className="cashflow-bar-track">
-              <div
-                className="cashflow-bar-fill"
-                style={{
-                  width: `${revPct}%`,
-                  background: 'linear-gradient(90deg, #0F9E8E, #2DD4BF)',
-                }}
-              />
-            </div>
-          </div>
-          <div className="cashflow-row">
-            <div className="cashflow-row-head">
-              <span className="cashflow-label">Selavu (Expense)</span>
-              <span className="cashflow-amount" style={{ color: '#E08A0B' }}>
-                {fmtCurrency(displayExpenses)}
-              </span>
-            </div>
-            <div className="cashflow-bar-track">
-              <div
-                className="cashflow-bar-fill"
-                style={{
-                  width: `${expPct}%`,
-                  background: 'linear-gradient(90deg, #E08A0B, #FBBF24)',
-                }}
-              />
-            </div>
-          </div>
-          <div className="cashflow-net-row">
-            <span className="cashflow-net-label">
-              {displayNet >= 0 ? '📈 Net Profit (Laabam)' : '📉 Net Deficit (Nashtam)'}
-            </span>
-            <span
-              className="cashflow-net-amount"
-              style={{ color: displayNet >= 0 ? '#0B7E71' : '#D93A3A' }}
-            >
-              {fmtCurrency(displayNet)}
-            </span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Workload balance */}
       <div className="section-card">
         <div className="section-card-header">
-          <span className="section-card-title">Workload Balance · Indha Vaaram</span>
+          <div>
+            <span className="section-card-title">Workload Balance · Indha Vaaram</span>
+            <span className="section-card-meta" style={{ display: 'block', marginTop: 2 }}>
+              Weekly logged shift hours
+            </span>
+          </div>
           {onGoToHours && (
             <button
               type="button"
@@ -578,69 +460,7 @@ export default function HomeTab({
         </div>
       </div>
 
-      {/* Up next */}
-      <div className="section-card">
-        <div className="section-card-header">
-          <span className="section-card-title">Next Enna Vela? (Up Next)</span>
-          <button
-            className="section-card-link"
-            onClick={onGoToTasks || onOpenTask}
-            type="button"
-          >
-            Ella Tasks →
-          </button>
-        </div>
-        {upNextTasks.length === 0 ? (
-          <div style={{ padding: '0 16px 18px', color: 'var(--text-muted)', fontSize: 13 }}>
-            Pending vela yedhum illa{partnerFilter !== 'all' ? ` (${partnerFilter}-ku)` : ''}.
-          </div>
-        ) : (
-          upNextTasks.map((task) => {
-            const priorityColor = PRIORITY_COLORS[task.priority] ?? PRIORITY_COLORS.normal;
-            const timeStr       = fmtTaskTime(task);
-            const deadlineAlert = getTaskDeadlineStatus(task);
-            const assignerName  = task.assignedBy || task.from;
-            return (
-              <div
-                key={task.id}
-                className="task-row"
-                role="button"
-                tabIndex={0}
-                style={{ cursor: 'pointer' }}
-                onClick={() => (onGoToTasks ? onGoToTasks() : onOpenTask())}
-              >
-                <div className="task-checkbox" aria-label="View task" />
-                <div
-                  className="task-priority-dot"
-                  style={{
-                    background: priorityColor,
-                    boxShadow: task.priority === 'urgent' ? '0 0 6px rgba(217, 58, 58, 0.4)' : 'none',
-                  }}
-                />
-                <div className="task-info">
-                  <span className="task-title">{task.title}</span>
-                  <span className="task-meta">
-                    {assignerName ? `by ${assignerName} → ` : ''}{task.to || 'Shared'}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', flexShrink: 0 }}>
-                  {deadlineAlert ? (
-                    <span className={`task-deadline-pill sm ${deadlineAlert.status}`}>
-                      {deadlineAlert.label}
-                    </span>
-                  ) : (
-                    timeStr && (
-                      <span className="task-time" style={{ color: 'var(--text-muted)' }}>{timeStr}</span>
-                    )
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* Partner Performance & Contribution Modal */}
+      {/* Partner Performance & Insights Modal */}
       {selectedPartnerDetail && (
         <PartnerDetailModal
           isOpen={!!selectedPartnerDetail}
