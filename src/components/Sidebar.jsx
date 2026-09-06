@@ -1,149 +1,166 @@
 import React from 'react';
-import Icon from './Icons';
 
-const NAV_ITEMS = [
-  { id: 'tasks',     label: 'பணிகள் (Tasks)',       icon: 'tasks',     hasBadge: true },
-  { id: 'work',      label: 'உழைப்பு (Worklogs)',   icon: 'work' },
-  { id: 'chat',      label: 'அரட்டை (Team Chat)',  icon: 'chat' },
-  { id: 'finance',   label: 'நிதி (Finance)',       icon: 'finance' },
-  { id: 'analytics', label: 'பகுப்பாய்வு (Stats)', icon: 'analytics' },
+const PARTNER_COLORS = {
+  Balaji: '#1B2A5B',
+  Nagoor: '#0F9E8E',
+  JP: '#B4531F',
+};
+
+const TABS = [
+  {
+    id: 'home',
+    label: 'Hub',
+    svg: (
+      <path
+        d="M3.5 9.2L11 3.5l7.5 5.7v8.3a1 1 0 01-1 1h-13a1 1 0 01-1-1V9.2z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    ),
+  },
+  {
+    id: 'tasks',
+    label: 'Tasks',
+    svg: (
+      <path
+        d="M3.5 6h4M3.5 11h4M3.5 16h4M10.5 6h8M10.5 11h8M10.5 16h8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    ),
+  },
+  {
+    id: 'hours',
+    label: 'Shifts',
+    svg: (
+      <>
+        <circle cx="11" cy="11" r="7.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+        <path
+          d="M11 6.8V11l3 2"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+        />
+      </>
+    ),
+  },
+  {
+    id: 'ledger',
+    label: 'Ledger',
+    svg: (
+      <path
+        d="M3.5 17.5V9M8.5 17.5V4.5M13.5 17.5v-6M18.5 17.5V7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+      />
+    ),
+  },
+  {
+    id: 'chat',
+    label: 'Chat',
+    svg: (
+      <path
+        d="M4 5.5h14a1 1 0 011 1v7a1 1 0 01-1 1h-7l-4 3v-3H4a1 1 0 01-1-1v-7a1 1 0 011-1z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    ),
+  },
 ];
 
-const FOUNDERS = [
-  { name: 'Balaji', role: 'Tech',     icon: 'laptop', key: 'balaji' },
-  { name: 'Nagoor', role: 'Procure',  icon: 'fish',   key: 'nagoor' },
-  { name: 'JP',     role: 'Delivery', icon: 'bike',   key: 'jp' },
-];
+function SignOutIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 22 22"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M8.5 4H5a1 1 0 00-1 1v12a1 1 0 001 1h3.5M14.5 7.5L18 11l-3.5 3.5M18 11H9"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
-export default function Sidebar({
-  activeTab,
-  setActiveTab,
-  pendingCount = 0,
-  partnerFilter,
-  setPartnerFilter,
-  onOpenTask,
-  user,
-  partner,
-  onSignOut,
-  onOpenData,
-  onShareWA,
-}) {
-  const initial = (partner?.name || user?.displayName || 'U').charAt(0).toUpperCase();
+export default function Sidebar({ activeTab, setActiveTab, pendingCount, partner, onSignOut }) {
+  const avatarBg = PARTNER_COLORS[partner?.name] ?? '#5A6480';
+  const initials = partner?.initials || (partner?.name || '??').slice(0, 2).toUpperCase();
 
   return (
-    <aside className="app-sidebar" aria-label="Desktop Navigation">
-      {/* Google Workspace Brand Header */}
+    <aside className="desktop-sidebar">
+      {/* Brand */}
       <div className="sidebar-brand">
-        <div className="sidebar-brand-icon">
-          <Icon name="fish" size={22} color="var(--accent)" />
-        </div>
-        <div className="sidebar-brand-title">
-          <span className="brand-txt">MeenMart</span>
-          <span className="brand-sub-badge">Partners</span>
-        </div>
+        <span className="sidebar-brand-icon" aria-hidden="true">🐟</span>
+        <span className="sidebar-brand-name">MeenMart</span>
+        <span className="sidebar-brand-pill">Partners</span>
       </div>
 
-      {/* Google "+ New" Pill CTA */}
-      <div className="sidebar-cta-wrap">
-        <button className="sidebar-add-btn" onClick={onOpenTask} type="button">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
-          </svg>
-          <span>புதிய பணி</span>
-        </button>
-      </div>
-
-      {/* Main Navigation */}
-      <nav className="sidebar-nav">
-        <div className="sidebar-section-label">செயல்பாடுகள்</div>
-        {NAV_ITEMS.map(({ id, label, icon, hasBadge }) => {
-          const isActive = activeTab === id;
-          return (
-            <button
-              key={id}
-              className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
-              onClick={() => setActiveTab(id)}
-              type="button"
-            >
-              <span className="nav-item-icon"><Icon name={icon} size={16} /></span>
-              <span className="nav-item-label">{label}</span>
-              {hasBadge && pendingCount > 0 && (
-                <span className="nav-item-badge">{pendingCount > 99 ? '99+' : pendingCount}</span>
+      {/* Navigation */}
+      <nav className="sidebar-nav" aria-label="Main navigation">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            className={`sidebar-nav-btn${activeTab === tab.id ? ' active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+            aria-current={activeTab === tab.id ? 'page' : undefined}
+          >
+            <span className="sidebar-nav-icon-wrap">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                {tab.svg}
+              </svg>
+              {tab.id === 'tasks' && pendingCount > 0 && (
+                <span className="sidebar-nav-badge">{pendingCount}</span>
               )}
-            </button>
-          );
-        })}
-
-        {/* Founders Filter Section */}
-        <div className="sidebar-section-label" style={{ marginTop: 24 }}>
-          பங்குதாரர்கள்
-        </div>
-        <button
-          className={`sidebar-filter-item ${partnerFilter === 'all' ? 'active' : ''}`}
-          onClick={() => setPartnerFilter('all')}
-          type="button"
-        >
-          <span className="filter-dot all" />
-          <span>அனைத்துப் பணிகள்</span>
-        </button>
-
-        {FOUNDERS.map(({ name, role, icon, key }) => {
-          const isActive = partnerFilter === name;
-          return (
-            <button
-              key={name}
-              className={`sidebar-filter-item ${isActive ? 'active' : ''}`}
-              onClick={() => setPartnerFilter((prev) => (prev === name ? 'all' : name))}
-              type="button"
-            >
-              <Icon name={icon} size={14} className={`founder-icon-small ${key}`} />
-              <span className="founder-filter-name">{name}</span>
-              <span className="founder-filter-role">{role}</span>
-            </button>
-          );
-        })}
+            </span>
+            <span className="sidebar-nav-label">{tab.label}</span>
+          </button>
+        ))}
       </nav>
 
-      {/* Sidebar Footer */}
+      {/* Footer */}
       <div className="sidebar-footer">
-        <div className="sidebar-user-row">
-          {user?.photoURL ? (
-            <img className="sidebar-avatar" src={user.photoURL} alt="" referrerPolicy="no-referrer" />
-          ) : (
-            <div className="sidebar-avatar-fallback">{initial}</div>
-          )}
-          <div className="sidebar-user-info">
-            <div className="user-info-name">{partner?.name || 'User'}</div>
-            <div className="user-info-role">{partner?.role || 'Partner'}</div>
-          </div>
+        <span
+          className="sidebar-avatar"
+          style={{ background: avatarBg }}
+          aria-hidden="true"
+        >
+          {initials}
+        </span>
+        <div className="sidebar-footer-info">
+          <span className="sidebar-footer-name">{partner?.name ?? 'Unknown'}</span>
+          <span className="sidebar-footer-role">{partner?.role ?? 'Partner'}</span>
         </div>
-
-        <div className="sidebar-footer-actions">
-          <button
-            className="sidebar-action-btn"
-            onClick={onShareWA}
-            title="WhatsApp பகிர்வு"
-            aria-label="WhatsApp Share"
-          >
-            <Icon name="whatsapp" size={15} />
-          </button>
-          <button
-            className="sidebar-action-btn"
-            onClick={onOpenData}
-            title="தரவு மேலாண்மை"
-            aria-label="Data Backup"
-          >
-            <Icon name="database" size={15} />
-          </button>
-          <button
-            className="sidebar-action-btn danger"
-            onClick={onSignOut}
-            title="வெளியேறு (Sign out)"
-            aria-label="Sign Out"
-          >
-            <Icon name="logout" size={15} />
-          </button>
-        </div>
+        <button
+          className="sidebar-signout-btn"
+          onClick={onSignOut}
+          aria-label="Sign out"
+          title="Sign out"
+        >
+          <SignOutIcon />
+        </button>
       </div>
     </aside>
   );

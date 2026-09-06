@@ -1,241 +1,273 @@
-import React, { useMemo } from 'react';
-import KpiTicker from './KpiTicker';
-import Icon from './Icons';
+import React, { useState, useMemo } from 'react';
 import {
   calcSettlement,
   fmtCurrency,
   fmtDate,
   shareSettlementWhatsApp,
   exportLedgerCSV,
+  getLocalDateStr,
 } from '../utils/calculations';
 
 const PARTNERS = [
-  { name: 'Balaji', dotCls: 'dot-b', color: 'var(--balaji)' },
-  { name: 'Nagoor', dotCls: 'dot-n', color: 'var(--nagoor)' },
-  { name: 'JP',     dotCls: 'dot-j', color: 'var(--jp)' },
+  { name: 'Balaji', initial: 'BA', cls: 'balaji', color: '#1B2A5B' },
+  { name: 'Nagoor', initial: 'NA', cls: 'nagoor', color: '#0F9E8E' },
+  { name: 'JP',     initial: 'JP', cls: 'jp',     color: '#B4531F' },
 ];
 
 export default function FinanceTab({
   store,
   onOpenCapital,
+  onOpenExpense,
+  onOpenRevenue,
   onOpenLightbox,
-  deleteExpense,
-  deleteCapital,
-  currentPartner,
+  _deleteExpense,
+  _deleteRevenue,
+  _deleteCapital,
+  _currentPartner,
 }) {
-  const settlement = useMemo(() => calcSettlement(store), [store]);
+  const [scope, setScope] = useState('day'); // 'day' | 'month'
 
-  const partnerContribs = useMemo(() => {
-    const list = PARTNERS.map((p) => {
-      const cap = (store.capitals || [])
+  const todayStr = getLocalDateStr();
+  const currentMonth = new Date().toLocaleString('en-US', { month: 'long' });
+
+  // Filter entries based on scope
+  const filteredData = useMemo(() => {
+    const expenses = store.expenses || [];
+    const revenues = store.revenues || [];
+
+    const isMatch = (item) => {
+      if (scope === 'day') {
+        return (item.date || getLocalDateStr(item.createdAt)) === todayStr;
+      }
+      // Month match (e.g. "2026-09")
+      const itemDate = item.date || getLocalDateStr(item.createdAt);
+      const currentYearMonth = todayStr.slice(0, 7);
+      return itemDate ? itemDate.startsWith(currentYearMonth) : true;
+    };
+
+    const expList = expenses.filter(isMatch);
+    const revList = revenues.filter(isMatch);
+
+    const totalExp = expList.reduce((s, e) => s + Number(e.amount || 0), 0);
+    const totalRev = revList.reduce((s, r) => s + Number(r.amount || 0), 0);
+    const net = totalRev - totalExp;
+
+    // Unified entries sorted newest first
+    const entries = [
+      ...revList.map((r) => ({
+        ...r,
+        kind: 'rev',
+        sign: '+',
+        amount: Number(r.amount || 0),
+        label: r.label || r.source || r.category || 'வருவாய்',
+        category: r.category || 'பொது',
+        date: r.date || getLocalDateStr(r.createdAt),
+      })),
+      ...expList.map((e) => ({
+        ...e,
+        kind: 'exp',
+        sign: '−',
+        amount: Number(e.amount || 0),
+        label: e.reason || e.category || 'செலவு',
+        category: e.category || 'பொது',
+        date: e.date || getLocalDateStr(e.createdAt),
+      })),
+    ].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    return { totalExp, totalRev, net, entries };
+  }, [store.expenses, store.revenues, scope, todayStr]);
+
+  // Founder capital data
+  const capitalData = useMemo(() => {
+    const capitals = store.capitals || [];
+    const total = capitals.reduce((s, c) => s + Number(c.amount || 0), 0);
+
+    const partnerList = PARTNERS.map((p) => {
+      const amt = capitals
         .filter((c) => c.partner === p.name)
         .reduce((s, c) => s + Number(c.amount || 0), 0);
-      const exp = (store.expenses || [])
-        .filter((e) => e.partner === p.name)
-        .reduce((s, e) => s + Number(e.amount || 0), 0);
-      return { ...p, capital: cap, expense: exp, total: cap + exp };
+      const pct = total > 0 ? Math.round((amt / total) * 100) : 0;
+      return { ...p, amount: amt, share: `${pct}%`, pctNum: pct };
     });
-    const grandTotal = list.reduce((s, item) => s + item.total, 0);
-    return list.map((item) => ({
-      ...item,
-      pct: grandTotal > 0 ? Math.round((item.total / grandTotal) * 100) : 0,
-    }));
-  }, [store.capitals, store.expenses]);
 
-  const partnerChipCls = (name) => name.toLowerCase();
+    return { total, partnerList };
+  }, [store.capitals]);
 
-  const transactions = useMemo(() => {
-    const list = [];
-    (store.capitals || []).forEach((c) => {
-      list.push({
-        id: `cap-${c.id}`,
-        rawId: c.id,
-        type: 'capital',
-        partner: c.partner,
-        title: `${c.partner} · மூலதன முதலீடு`,
-        sub: `${fmtDate(c.date)} · ${c.note || 'மூலதனம்'}`,
-        amount: Number(c.amount || 0),
-        isCredit: true,
-        date: c.date,
-        proof: null,
-      });
-    });
-    (store.expenses || []).forEach((e) => {
-      list.push({
-        id: `exp-${e.id}`,
-        rawId: e.id,
-        type: 'expense',
-        partner: e.partner,
-        title: `${e.partner} · ${e.category}`,
-        sub: `${fmtDate(e.date)} · ${e.reason || ''}`,
-        amount: Number(e.amount || 0),
-        isCredit: false,
-        date: e.date,
-        proof: e.proof || null,
-        proofAddedAt: e.proofAddedAt || null,
-      });
-    });
-    list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-    return list;
-  }, [store.capitals, store.expenses]);
+  const settlement = useMemo(() => calcSettlement(store), [store]);
+
+  const scopeLabel = scope === 'day' ? 'இன்று (Today)' : `${currentMonth}`;
 
   return (
     <div className="tab-content">
-      {/* Financial Overview Cards */}
-      <KpiTicker store={store} />
-
-      <div className="finance-overview">
-        <div className="fin-header">
-          <div>
-            <h3>பங்குதாரர்கள் மொத்த நிதி பங்களிப்பு</h3>
-            <p>மூலதனம் + நேரடி செலவுகள்</p>
-          </div>
-          <button className="btn-sm success" onClick={onOpenCapital}>
-            <Icon name="plus" size={12} /> மூலதனம் சேர்
-          </button>
-        </div>
-
-        {partnerContribs.map((item) => (
-          <div key={item.name} className="capital-row">
-            <div className={`cap-dot dot ${item.dotCls}`} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span className="cap-name">{item.name}</span>
-                <span className="cap-pct">{item.pct}%</span>
-              </div>
-              <div className="cap-bar-wrap">
-                <div
-                  className="cap-bar"
-                  style={{ width: `${item.pct}%`, background: item.color }}
-                />
-              </div>
-            </div>
-            <div className="cap-amount mono">{fmtCurrency(item.total)}</div>
-          </div>
-        ))}
+      {/* Day / Month Toggle Tabs */}
+      <div className="ledger-scope-tabs">
+        <button
+          type="button"
+          className={`ledger-scope-tab ${scope === 'day' ? 'active' : ''}`}
+          onClick={() => setScope('day')}
+        >
+          இன்று (Today)
+        </button>
+        <button
+          type="button"
+          className={`ledger-scope-tab ${scope === 'month' ? 'active' : ''}`}
+          onClick={() => setScope('month')}
+        >
+          {currentMonth}
+        </button>
       </div>
 
-      <div className="settlement-card">
-        <div className="fin-header">
-          <div>
-            <h3>சம பங்கு கணக்கு தீர்வு</h3>
-            <p>தலா 33.3% வீதம் சமமாக பிரிக்கப்பட்டது</p>
+      {/* Net Profit Hero Card */}
+      <div className="ledger-hero">
+        <div className="ledger-hero-label">Net profit · {scopeLabel}</div>
+        <div
+          className="ledger-hero-amount"
+          style={{ color: filteredData.net >= 0 ? '#54D6C4' : '#FF8A80' }}
+        >
+          {filteredData.net >= 0 ? '+' : '−'}
+          {fmtCurrency(Math.abs(filteredData.net))}
+        </div>
+        <div className="ledger-hero-cards">
+          <div className="ledger-hero-card">
+            <div className="ledger-hero-card-label">வருவாய் (Revenue)</div>
+            <div className="ledger-hero-card-val" style={{ color: '#54D6C4' }}>
+              {fmtCurrency(filteredData.totalRev)}
+            </div>
           </div>
-          <button
-            className="btn-sm"
-            onClick={() => shareSettlementWhatsApp(settlement)}
-            title="WhatsApp-ல் பகிர"
-          >
-            <Icon name="whatsapp" size={13} /> பகிர
-          </button>
+          <div className="ledger-hero-card">
+            <div className="ledger-hero-card-label">செலவு (Expenses)</div>
+            <div className="ledger-hero-card-val" style={{ color: '#FFB299' }}>
+              {fmtCurrency(filteredData.totalExp)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons: + Expense and + Revenue */}
+      <div className="ledger-action-row">
+        <button
+          type="button"
+          className="ledger-btn expense-btn"
+          onClick={onOpenExpense}
+        >
+          + செலவு (Expense)
+        </button>
+        <button
+          type="button"
+          className="ledger-btn revenue-btn"
+          onClick={onOpenRevenue}
+        >
+          + வருவாய் (Revenue)
+        </button>
+      </div>
+
+      {/* Entries Section */}
+      <div className="section-card">
+        <div className="section-card-header">
+          <div className="section-card-title">பதிவுகள் · {scopeLabel}</div>
+          <div className="section-card-meta">{filteredData.entries.length} பதிவுகள்</div>
         </div>
 
-        {settlement.transactions.length === 0 ? (
-          <div style={{
-            fontSize: 13,
-            color: 'var(--ok)',
-            padding: '12px',
-            background: 'var(--ok-soft)',
-            borderRadius: 'var(--r-sm)',
-            fontWeight: 600,
-            textAlign: 'center',
-          }}>
-            ✓ அனைத்துப் பங்குதாரர்களின் செலவுகளும் சமமாக உள்ளன!
+        {filteredData.entries.length === 0 ? (
+          <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+            இந்தப் பகுதியில் இதுவரை பதிவுகள் எதுவும் இல்லை.
           </div>
         ) : (
-          <div>
-            {settlement.transactions.map((tx, idx) => (
-              <div key={idx} className="settle-txn">
-                <span className={`chip ${partnerChipCls(tx.from)}`}>{tx.from}</span>
-                <span className="settle-arrow" aria-hidden="true">→</span>
-                <span className={`chip ${partnerChipCls(tx.to)}`}>{tx.to}</span>
-                <span className="settle-amount mono">{fmtCurrency(tx.amount)}</span>
+          filteredData.entries.map((entry) => (
+            <div key={`${entry.kind}-${entry.id}`} className="entry-row">
+              <div className={`entry-sign-chip ${entry.kind}`}>
+                {entry.sign}
               </div>
-            ))}
-          </div>
+              <div className="entry-info">
+                <div className="entry-label">{entry.label}</div>
+                <div className="entry-meta">
+                  {entry.partner} &middot; {fmtDate(entry.date)} &middot; {entry.category}
+                </div>
+              </div>
+              <div className={`entry-amount ${entry.kind}`}>
+                {entry.sign}{fmtCurrency(entry.amount)}
+              </div>
+              {entry.proof && (
+                <button
+                  type="button"
+                  onClick={() => onOpenLightbox?.(entry.proof, entry.partner, entry.label, entry.createdAt)}
+                  title="சான்று படம் பார்"
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    background: 'var(--input-bg)',
+                    fontSize: '11px',
+                    color: 'var(--text-sec)',
+                  }}
+                >
+                  📷
+                </button>
+              )}
+            </div>
+          ))
         )}
       </div>
 
-      <div>
-        <div className="ledger-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <h4>பணப் பரிவர்த்தனைகள்</h4>
-            <span className="count-badge">({transactions.length})</span>
+      {/* Founder Capital Section */}
+      <div className="section-card">
+        <div className="section-card-header">
+          <div className="section-card-title">பங்குதாரர் மூலதனம் (Founder Capital)</div>
+          <div className="section-card-meta" style={{ color: 'var(--teal-dark)', fontWeight: 600 }}>
+            {fmtCurrency(capitalData.total)} total
           </div>
-          <button
-            className="btn-sm"
-            onClick={() => exportLedgerCSV(store)}
-            title="CSV கோப்பாக சேமி"
-          >
-            <Icon name="download" size={13} /> CSV
-          </button>
         </div>
 
-        {transactions.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">
-              <Icon name="credit-card" size={32} />
-            </div>
-            <h3>பரிவர்த்தனைகள் எதுவும் இல்லை</h3>
-            <p>முதலீடு அல்லது செலவு பதிவு செய்ய கீழே உள்ள <strong>+</strong> பொத்தானைத் தட்டுங்கள்.</p>
-          </div>
-        ) : (
-          <div>
-            {transactions.map((tx) => (
-              <div key={tx.id} className="tx-card">
-                <span className="tx-icon" aria-hidden="true">
-                  {tx.isCredit ? <Icon name="credit-card" size={16} /> : <Icon name="dollar" size={16} />}
-                </span>
-                <div className="tx-body">
-                  <div className="tx-title">{tx.title}</div>
-                  <div className="tx-sub">{tx.sub}</div>
+        <div style={{ padding: '4px 0 10px' }}>
+          {capitalData.partnerList.map((p) => (
+            <div key={p.name} className="capital-row">
+              <div className={`partner-monogram partner-monogram-sm ${p.cls}`}>
+                {p.initial}
+              </div>
+              <div className="capital-info">
+                <div className="capital-name-row">
+                  <span className="capital-name">{p.name}</span>
+                  <span className="capital-amount">{fmtCurrency(p.amount)}</span>
                 </div>
-                {tx.proof && (
-                  <img
-                    src={tx.proof}
-                    alt="Receipt Proof"
-                    className="proof-thumb"
-                    style={{ margin: '0 8px' }}
-                    onClick={() =>
-                      onOpenLightbox?.(
-                        tx.proof,
-                        tx.partner,
-                        'செலவு ரசீது',
-                        tx.proofAddedAt
-                      )
-                    }
-                    title="ரசீதைப் பார்க்க தட்டவும்"
-                  />
-                )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div className={`tx-amount mono ${tx.isCredit ? 'capital' : ''}`}>
-                    {tx.isCredit ? '+' : '−'}{fmtCurrency(tx.amount)}
+                <div className="capital-bar-row">
+                  <div className="capital-bar-track">
+                    <div
+                      className="capital-bar-fill"
+                      style={{ width: `${p.pctNum}%`, background: p.color }}
+                    />
                   </div>
-                  {tx.partner === currentPartner?.name && (
-                    <button
-                      className="btn-sm danger"
-                      style={{ padding: '3px 7px', fontSize: 11 }}
-                      onClick={() => {
-                        const typeLabel = tx.isCredit ? 'மூலதனப் பதிவை' : 'செலவுப் பதிவை';
-                        if (window.confirm(`இப் ${typeLabel} நீக்க வேண்டுமா?`)) {
-                          if (tx.isCredit) {
-                            deleteCapital?.(tx.rawId);
-                          } else {
-                            deleteExpense?.(tx.rawId);
-                          }
-                        }
-                      }}
-                      title="நீக்கு"
-                      aria-label="Delete transaction"
-                    >
-                      <Icon name="trash" size={12} />
-                    </button>
-                  )}
+                  <span className="capital-share">{p.share}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 16px 14px', display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            className="section-card-link"
+            onClick={onOpenCapital}
+            style={{ fontWeight: 600 }}
+          >
+            + மூலதனம் சேர்க்க
+          </button>
+          <span style={{ color: 'var(--card-border)' }}>|</span>
+          <button
+            type="button"
+            className="section-card-link"
+            onClick={() => shareSettlementWhatsApp(settlement)}
+          >
+            WhatsApp தீர்வு பகிர்வு
+          </button>
+          <span style={{ color: 'var(--card-border)' }}>|</span>
+          <button
+            type="button"
+            className="section-card-link"
+            onClick={() => exportLedgerCSV(store)}
+          >
+            CSV ஏற்றுமதி
+          </button>
+        </div>
       </div>
     </div>
   );

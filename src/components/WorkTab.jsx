@@ -1,245 +1,280 @@
-import React, { useState, useMemo } from 'react';
-import { fmtDate, compressImage, TAMIL_MONTHS, getLocalDateStr } from '../utils/calculations';
-import Icon from './Icons';
+import React, { useState, useEffect, useRef } from 'react';
+import { getLocalDateStr } from '../utils/calculations';
 
-const PARTNER_PILLS = [
-  { id: 'all',    label: 'அனைவரும்' },
-  { id: 'Balaji', label: 'Balaji', cls: 'balaji' },
-  { id: 'Nagoor', label: 'Nagoor', cls: 'nagoor' },
-  { id: 'JP',     label: 'JP',     cls: 'jp' },
+/* ── Partner config ─────────────────────────────────────── */
+const PARTNERS = [
+  { name: 'Balaji', initial: 'BA', cls: 'balaji', color: '#1B2A5B' },
+  { name: 'Nagoor', initial: 'NA', cls: 'nagoor', color: '#0F9E8E' },
+  { name: 'JP',     initial: 'JP', cls: 'jp',     color: '#B4531F' },
 ];
 
-const FOUNDER_ICONS = {
-  Balaji: 'laptop',
-  Nagoor: 'fish',
-  JP: 'bike',
-};
-
-function groupByDate(logs) {
-  const groups = new Map();
-  const todayStr = getLocalDateStr();
-  const yesterdayStr = getLocalDateStr(new Date(Date.now() - 86400000));
-
-  logs.forEach((w) => {
-    const key = w.date || 'other';
-    if (key === 'other') {
-      if (!groups.has(key)) groups.set(key, { label: 'மற்றவை', items: [] });
-      groups.get(key).items.push(w);
-      return;
-    }
-    const d = new Date(w.date);
-    let label;
-    if (key === todayStr) label = 'இன்று';
-    else if (key === yesterdayStr) label = 'நேற்று';
-    else label = `${d.getDate()} ${TAMIL_MONTHS[d.getMonth()]}`;
-    if (!groups.has(key)) groups.set(key, { label, items: [] });
-    groups.get(key).items.push(w);
-  });
-  return Array.from(groups.entries())
-    .sort(([a], [b]) => (a === 'other' ? 1 : b === 'other' ? -1 : b.localeCompare(a)))
-    .map(([, v]) => v);
+/* ── Helpers ─────────────────────────────────────────────── */
+function fmtHMS(ms) {
+  if (ms <= 0) return '0:00:00';
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+function fmtClockTime(ts) {
+  if (!ts) return '--:--';
+  const d = new Date(ts);
+  return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function fmtEntryTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function hoursToHM(hours) {
+  const totalMin = Math.round(Number(hours || 0) * 60);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return `${h}:${String(m).padStart(2, '0')}`;
+}
+
+/* ── Component ───────────────────────────────────────────── */
 export default function WorkTab({
   store,
   partnerFilter,
-  setPartnerFilter,
-  selectedDate,
-  deleteWorklog,
-  addProof,
-  onOpenLightbox,
   onOpenWork,
-  currentPartner,
 }) {
-  const [search, setSearch] = useState('');
+  const [clockedIn, setClockedIn]     = useState(false);
+  const [clockInTime, setClockInTime] = useState(null);
+  const [now, setNow]                 = useState(() => Date.now());
+  const intervalRef                   = useRef(null);
 
-  const filteredLogs = useMemo(() => {
-    let list = store.worklogs || [];
-
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter((w) =>
-        (w.desc || w.description || '').toLowerCase().includes(q) ||
-        (w.category || '').toLowerCase().includes(q) ||
-        (w.partner || '').toLowerCase().includes(q)
-      );
+  /* Tick every second while clocked in */
+  useEffect(() => {
+    if (clockedIn) {
+      intervalRef.current = setInterval(() => setNow(Date.now()), 1000);
+    } else {
+      clearInterval(intervalRef.current);
     }
+    return () => clearInterval(intervalRef.current);
+  }, [clockedIn]);
 
-    if (partnerFilter !== 'all') {
-      list = list.filter((w) => w.partner === partnerFilter);
+  const todayStr = getLocalDateStr();
+
+  /* ── Derived data ───────────────────────────────────────── */
+  const todayLogs = (store.worklogs || []).filter((w) => {
+    const matchDate    = w.date === todayStr;
+    const matchPartner = partnerFilter === 'all' || w.partner === partnerFilter;
+    return matchDate && matchPartner;
+  });
+
+  /* Elapsed display */
+  const elapsedDisplay = clockedIn
+    ? fmtHMS(now - clockInTime)
+    : (() => {
+        const lastLog = (store.worklogs || [])
+          .filter((w) => partnerFilter === 'all' || w.partner === partnerFilter)
+          .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0];
+        return lastLog ? hoursToHM(lastLog.hours) : '0:00';
+      })();
+
+  /* Week hours per partner */
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Sunday
+  const weekStartStr = getLocalDateStr(weekStart);
+
+  const weekHours = PARTNERS.map((p) => {
+    const hrs = (store.worklogs || [])
+      .filter((w) => w.partner === p.name && w.date >= weekStartStr)
+      .reduce((s, w) => s + Number(w.hours || 0), 0);
+    return { ...p, hrs: Number(hrs.toFixed(1)) };
+  });
+  const maxWeekHrs = Math.max(...weekHours.map((p) => p.hrs), 1);
+  const totalWeekHrs = weekHours.reduce((s, p) => s + p.hrs, 0);
+
+  /* Today per-partner performance */
+  const todayPerf = PARTNERS.map((p) => {
+    const logs     = (store.worklogs || []).filter((w) => w.partner === p.name && w.date === todayStr);
+    const hrs      = logs.reduce((s, w) => s + Number(w.hours || 0), 0);
+    const allTasks = (store.tasks || []).filter((t) => t.to === p.name);
+    const doneTasks = allTasks.filter((t) => t.status === 'completed').length;
+    const cap = (store.capitals || [])
+      .filter((c) => c.partner === p.name)
+      .reduce((s, c) => s + Number(c.amount || 0), 0);
+    const exp = (store.expenses || [])
+      .filter((e) => e.partner === p.name)
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
+    return { ...p, hrs: Number(hrs.toFixed(1)), doneTasks, allTasks: allTasks.length, net: cap - exp };
+  });
+  const maxPerfHrs = Math.max(...todayPerf.map((p) => p.hrs), 1);
+
+  function handleClockToggle() {
+    if (clockedIn) {
+      setClockedIn(false);
+      setClockInTime(null);
+    } else {
+      const ts = Date.now();
+      setClockedIn(true);
+      setClockInTime(ts);
+      setNow(ts);
     }
+  }
 
-    if (selectedDate) {
-      list = list.filter((w) => w.date === selectedDate);
-    }
-
-    return list;
-  }, [store.worklogs, search, partnerFilter, selectedDate]);
-
-  const grouped = useMemo(() => groupByDate(filteredLogs), [filteredLogs]);
-
-  const totalHours = useMemo(() => {
-    const raw = filteredLogs.reduce((s, w) => s + Number(w.hours || 0), 0);
-    return Number(raw.toFixed(1));
-  }, [filteredLogs]);
-
-  const handleFileUpload = async (logId, e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const compressed = await compressImage(file);
-      addProof('work', logId, compressed);
-    } catch (err) {
-      console.error('Work proof upload error:', err);
-    }
-  };
-
+  /* ── Render ─────────────────────────────────────────────── */
   return (
     <div className="tab-content">
-      <div className="filter-bar">
-        <div className="search-wrap">
-          <Icon name="search" size={15} className="search-icon" />
-          <input
-            type="text"
-            placeholder="உழைப்புப் பதிவுகளைத் தேடுங்கள்..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label="Search work logs"
-          />
-        </div>
 
-        <div className="pill-group partner-group" aria-label="Partner filter">
-          {PARTNER_PILLS.map(({ id, label, cls }) => (
-            <button
-              key={id}
-              className={`pill ${partnerFilter === id ? `active ${cls || ''}` : ''}`}
-              onClick={() => setPartnerFilter(id)}
-              aria-pressed={partnerFilter === id}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {filteredLogs.length > 0 && (
-          <div className="section-header" style={{ marginBottom: 0 }}>
-            <span className="text-secondary" style={{ fontSize: 12, fontWeight: 600 }}>
-              மொத்தம் {filteredLogs.length} பதிவுகள்
+      {/* 1 ── Shift card ─────────────────────────────────── */}
+      <div className={`shift-card${clockedIn ? ' clocked-in' : ''}`}>
+        <div className="shift-card-top">
+          <div className="shift-card-left">
+            <span className="shift-kicker">
+              {clockedIn ? 'On shift now' : 'Shift closed'}
             </span>
-            <span className="mono" style={{ fontSize: 14, fontWeight: 800 }}>
-              {totalHours}h
-            </span>
+            <span className="shift-elapsed">{elapsedDisplay}</span>
           </div>
+          <div className="shift-card-right">
+            <span className="shift-in-label">In</span>
+            <span className="shift-in-time">{fmtClockTime(clockInTime)}</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          className={`shift-btn ${clockedIn ? 'check-out' : 'check-in'}`}
+          onClick={handleClockToggle}
+        >
+          {clockedIn ? 'Check out' : 'Check in'}
+        </button>
+      </div>
+
+      {/* 2 ── Activity log today ──────────────────────────── */}
+      <div className="section-card">
+        <div className="section-card-header">
+          <span className="section-card-title">Activity log · today</span>
+          <button type="button" className="section-card-link" onClick={onOpenWork}>
+            + Log activity
+          </button>
+        </div>
+
+        {todayLogs.length === 0 ? (
+          <div
+            className="empty-state"
+            style={{ margin: '0 16px 16px', borderRadius: 12 }}
+          >
+            <p className="empty-state-text">இன்று எந்த செயல்பாடும் பதியவில்லை</p>
+            <button type="button" className="empty-state-action" onClick={onOpenWork}>
+              + Log activity
+            </button>
+          </div>
+        ) : (
+          todayLogs.map((log) => {
+            const partner  = PARTNERS.find((p) => p.name === log.partner) || PARTNERS[0];
+            const startTime = fmtEntryTime(log.createdAt || null);
+            const endTs     = log.createdAt
+              ? log.createdAt + Number(log.hours || 0) * 3600000
+              : null;
+            const endTime   = endTs ? fmtEntryTime(endTs) : '';
+
+            return (
+              <div key={log.id} className="activity-row">
+                <div className="activity-time-col">
+                  <span className="activity-time">{startTime}</span>
+                  <div className="activity-time-line" />
+                  <span className="activity-time-end">{endTime}</span>
+                </div>
+                <div className="activity-body">
+                  <div className="activity-what">
+                    {log.activity || log.desc || log.description || '—'}
+                  </div>
+                  <div className="activity-meta">
+                    <span
+                      className="activity-who-badge"
+                      style={{ background: partner.color }}
+                    >
+                      {partner.name}
+                    </span>
+                    <span className="activity-dur">{log.hours}h</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
 
-      {filteredLogs.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">
-            <Icon name="clock" size={32} />
+      {/* 3 ── Hours this week ────────────────────────────── */}
+      <div className="section-card">
+        <div className="section-card-header">
+          <span className="section-card-title">Hours this week</span>
+        </div>
+        <div style={{ padding: '0 16px 16px' }}>
+          <div className="week-bars">
+            {weekHours.map((p) => {
+              const pxHeight = maxWeekHrs > 0 ? Math.max(4, (p.hrs / maxWeekHrs) * 88) : 4;
+              const dimmed   = partnerFilter !== 'all' && partnerFilter !== p.name;
+              return (
+                <div
+                  key={p.name}
+                  className="week-bar-col"
+                  style={{ opacity: dimmed ? 0.28 : 1 }}
+                >
+                  <span className="week-bar-val">{p.hrs}h</span>
+                  <div
+                    className="week-bar-fill"
+                    style={{ height: `${pxHeight}px`, background: p.color }}
+                  />
+                  <span className="week-bar-name">{p.initial}</span>
+                </div>
+              );
+            })}
           </div>
-          <h3>உழைப்புப் பதிவுகள் இல்லை</h3>
-          <p>கீழே உள்ள <strong>+</strong> பொத்தானைத் தட்டி இன்றைய வேலையை பதிவு செய்யுங்கள்.</p>
-          {onOpenWork && (
-            <button className="empty-cta" onClick={onOpenWork}>
-              <Icon name="plus" size={15} /> உழைப்பு பதிவு
-            </button>
-          )}
+          <div className="week-note">
+            இந்த வாரம் மொத்தம் <strong>{totalWeekHrs.toFixed(1)}h</strong> உழைப்பு பதிவு செய்யப்பட்டது.{' '}
+            {weekHours.reduce((top, p) => (p.hrs > top.hrs ? p : top), weekHours[0]).name} leads this week.
+          </div>
         </div>
-      ) : (
-        <div className="tasks-feed">
-          {grouped.map((group) => (
-            <React.Fragment key={group.label}>
-              <div className="date-group-header">
-                {group.label} <span className="count-badge">({group.items.length})</span>
-              </div>
-              {group.items.map((log) => {
-                const iconName = FOUNDER_ICONS[log.partner] || 'work';
-                const partnerLower = (log.partner || '').toLowerCase();
-                const isOwner = log.partner === currentPartner?.name;
+      </div>
 
-                return (
-                  <div key={log.id} className="worklog-card">
-                    <div className="work-top">
-                      <div className={`work-avatar-icon ${partnerLower}`}>
-                        <Icon name={iconName} size={16} />
-                      </div>
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--ink)' }}>
-                          {log.partner}
-                          {!isOwner && <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.5 }} title="Private">🔒</span>}
-                        </div>
-                        <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-                          <span className={`chip ${partnerLower}`}>{log.category}</span>
-                          <span className="chip gray">{fmtDate(log.date)}</span>
-                        </div>
-                      </div>
-                      <div className={`work-hours ${partnerLower}-c`}>
-                        {log.hours}h
-                      </div>
-                    </div>
-
-                    <div className="work-desc">{log.desc || log.description}</div>
-
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginTop: 12,
-                      gap: 8,
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        {log.proof && (
-                          <img
-                            src={log.proof}
-                            alt="Work Proof"
-                            className="proof-thumb"
-                            onClick={() =>
-                              onOpenLightbox(
-                                log.proof,
-                                log.partner,
-                                'உழைப்பு சான்று',
-                                log.proofAddedAt
-                              )
-                            }
-                            title="சான்றைப் பெரிதாக்கிப் பார்க்க தட்டவும்"
-                          />
-                        )}
-                        {isOwner && (
-                          <label className="btn-sm">
-                            <Icon name="camera" size={12} /> {log.proof ? 'மாற்று' : 'சான்று'}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="file-hidden"
-                              onChange={(e) => handleFileUpload(log.id, e)}
-                            />
-                          </label>
-                        )}
-                      </div>
-
-                      {isOwner && (
-                        <button
-                          className="btn-sm danger"
-                          onClick={() => {
-                            if (window.confirm('இப்பதிவை நீக்க வேண்டுமா?')) {
-                              deleteWorklog(log.id);
-                            }
-                          }}
-                          title="நீக்கு"
-                          aria-label="Delete work log"
-                        >
-                          <Icon name="trash" size={12} />
-                        </button>
-                      )}
-                    </div>
+      {/* 4 ── Partner performance today ──────────────────── */}
+      <div className="section-card" style={{ overflow: 'visible' }}>
+        <div className="section-card-header">
+          <span className="section-card-title">Partner performance · today</span>
+        </div>
+        <div style={{ padding: '0 16px 16px' }}>
+          {todayPerf.map((p) => {
+            const barPct = maxPerfHrs > 0 ? Math.round((p.hrs / maxPerfHrs) * 100) : 0;
+            const netStr = `₹${Math.abs(Math.round(p.net)).toLocaleString('en-IN')}`;
+            return (
+              <div key={p.name} className="perf-row">
+                <div className={`partner-monogram partner-monogram-lg ${p.cls}`}>
+                  {p.initial}
+                </div>
+                <div className="perf-info">
+                  <div className="perf-name-row">
+                    <span className="perf-name">{p.name}</span>
+                    <span className="perf-hours">{p.hrs}h</span>
                   </div>
-                );
-              })}
-            </React.Fragment>
-          ))}
+                  <div className="perf-bar-row">
+                    <div className="perf-bar-track">
+                      <div
+                        className="perf-bar-fill"
+                        style={{ width: `${barPct}%`, background: p.color }}
+                      />
+                    </div>
+                    <span className="perf-tasks-label">
+                      {p.doneTasks}/{p.allTasks} done
+                    </span>
+                  </div>
+                </div>
+                <div className="perf-right">
+                  <span className="perf-net-label">net</span>
+                  <span className="perf-net">{netStr}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
+
     </div>
   );
 }

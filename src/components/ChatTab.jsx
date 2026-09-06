@@ -1,11 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { compressImage } from '../utils/calculations';
-import Icon from './Icons';
+﻿import React, { useState, useRef, useEffect } from 'react';
 
-const FOUNDER_ICONS = {
-  Balaji: 'laptop',
-  Nagoor: 'fish',
-  JP: 'bike',
+const PARTNER_COLORS = {
+  Balaji: '#1B2A5B',
+  Nagoor: '#0F9E8E',
+  JP:     '#B4531F',
+};
+
+const PARTNER_INITIALS = {
+  Balaji: 'BA',
+  Nagoor: 'NA',
+  JP:     'JP',
 };
 
 function formatChatTime(ts) {
@@ -14,62 +18,35 @@ function formatChatTime(ts) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function ChatTab({
-  store,
-  sendMessage,
-  currentPartner,
-  onOpenLightbox,
-}) {
-  const [text, setText] = useState('');
-  const [attachment, setAttachment] = useState(null);
-  const [isCompressing, setIsCompressing] = useState(false);
+function formatTodayDate() {
+  const d = new Date();
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+export default function ChatTab({ store, sendMessage, currentPartner, onOpenLightbox }) {
+  const [draft, setDraft] = useState('');
   const messagesEndRef = useRef(null);
-  const fileInputRef = useRef(null);
+  const inputRef = useRef(null);
 
   const messages = store?.messages || [];
   const myName = currentPartner?.name || 'Balaji';
 
-  // Auto scroll to bottom
-  const scrollToBottom = (smooth = true) => {
-    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
-  };
-
+  // Auto-scroll to bottom on mount
   useEffect(() => {
-    scrollToBottom(false);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
   }, []);
 
+  // Auto-scroll to bottom on new messages
   useEffect(() => {
-    scrollToBottom(true);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
 
-  const handleFileAttach = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setIsCompressing(true);
-    try {
-      const compressed = await compressImage(file);
-      setAttachment(compressed);
-    } catch (err) {
-      console.error('Chat image compression failed:', err);
-    } finally {
-      setIsCompressing(false);
-    }
-  };
-
-  const handleSend = (e) => {
-    e?.preventDefault?.();
-    const trimmed = text.trim();
-    if (!trimmed && !attachment) return;
-
-    sendMessage({
-      partner: myName,
-      text: trimmed,
-      proof: attachment || null,
-    });
-
-    setText('');
-    setAttachment(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+  const handleSend = () => {
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    sendMessage({ partner: myName, text: trimmed });
+    setDraft('');
+    inputRef.current?.focus();
   };
 
   const handleKeyDown = (e) => {
@@ -80,139 +57,93 @@ export default function ChatTab({
   };
 
   return (
-    <div className="tab-content chat-tab-container">
-      <div className="chat-header-banner">
-        <div className="chat-header-title">
-          <span className="chat-header-icon">
-            <Icon name="chat" size={18} color="var(--accent)" />
-          </span>
-          <div>
-            <h4>உடனுக்குடன் உரையாடல் (Co-Founders Chat)</h4>
-            <small>Balaji • Nagoor • JP நேரலை அரட்டை</small>
-          </div>
-        </div>
-      </div>
+    <div className="tab-content">
+      <div className="chat-date-header">Today &middot; {formatTodayDate()}</div>
 
-      <div className="chat-feed-area">
-        {messages.length === 0 ? (
-          <div className="empty-state chat-empty">
-            <div className="empty-icon">
-              <Icon name="chat" size={32} />
-            </div>
-            <h3>உரையாடலைத் தொடங்குங்கள்</h3>
-            <p>பங்குதாரர்களுடன் உடனடித் தகவல்களைப் பகிர கீழே உள்ள உள்ளீட்டுப் பட்டியைப் பயன்படுத்தவும்.</p>
+      {/* Scrollable messages — padded so fixed input bar does not overlap */}
+      <div className="chat-messages" style={{ paddingBottom: '80px' }}>
+        {messages.length === 0 && (
+          <div className="empty-state" style={{ paddingTop: '40px' }}>
+            <div className="empty-icon">&#128172;</div>
+            <h3>&#2909;&#2992;&#3016;&#2991;&#3006;&#2975;&#2994;&#3016;&#2980;&#3021; &#2980;&#3018;&#2975;&#2969;&#3021;&#2965;&#3009;&#2969;&#3021;&#2965;&#2995;&#3021;</h3>
+            <p>&#2986;&#2919;&#3021;&#2965;&#3009;&#2980;&#3006;&#2992;&#2992;&#3021;&#2965;&#2995;&#3009;&#2975;&#2985;&#3021; &#2909;&#2975;&#2985;&#3016;&#2980;&#3021; &#2980;&#2965;&#2997;&#2994;&#3021;&#2965;&#2995;&#3016;&#2986;&#3021; &#2986;&#2965;&#2991;&#2992; &#2965;&#3008;&#2996;&#3014; &#2989;&#2995;&#3021;&#2995; &#2989;&#2995;&#3021;&#2995;&#3008;&#2975;&#3021;&#2975;&#3009;&#2986;&#3021; &#2986;&#2975;&#3021;&#2975;&#3007;&#2991;&#3016;&#2986;&#3021; &#2986;&#2991;&#2985;&#3021;&#2986;&#2975;&#3009;&#2980;&#3021;&#2980;&#2997;&#3009;&#2990;&#3021;.</p>
           </div>
-        ) : (
-          <div className="chat-messages-list">
-            {messages.map((msg) => {
-              const isMe = msg.partner === myName;
-              const iconName = FOUNDER_ICONS[msg.partner] || 'chat';
-              const partnerCls = (msg.partner || '').toLowerCase();
+        )}
 
-              return (
-                <div
-                  key={msg.id}
-                  className={`chat-bubble-row ${isMe ? 'outgoing' : 'incoming'}`}
-                >
-                  {!isMe && (
-                    <div className={`chat-avatar-bubble ${partnerCls}`}>
-                      <Icon name={iconName} size={14} />
-                    </div>
+        {messages.map((msg) => {
+          const isMe = msg.partner === myName;
+          const color = PARTNER_COLORS[msg.partner] || '#5A6480';
+          const initials = PARTNER_INITIALS[msg.partner] || (msg.partner || '?').slice(0, 2).toUpperCase();
+
+          return (
+            <div key={msg.id} className={`chat-msg-row${isMe ? ' me' : ''}`}>
+              <div
+                className="chat-msg-avatar"
+                style={{ background: color }}
+                aria-label={msg.partner}
+              >
+                {initials}
+              </div>
+
+              <div className={`chat-msg-content${isMe ? ' me' : ''}`}>
+                <div className={`chat-bubble${isMe ? ' me' : ' them'}`}>
+                  {msg.proof && (
+                    <img
+                      src={msg.proof}
+                      alt="Attachment"
+                      style={{
+                        width: '100%',
+                        borderRadius: '10px',
+                        marginBottom: msg.text ? '8px' : 0,
+                        cursor: 'pointer',
+                        display: 'block',
+                      }}
+                      onClick={() =>
+                        onOpenLightbox?.(msg.proof, msg.partner, 'அரட்டை படம்', msg.createdAt)
+                      }
+                    />
                   )}
-
-                  <div className={`chat-bubble ${isMe ? 'my-bubble' : `their-bubble ${partnerCls}`}`}>
-                    {!isMe && (
-                      <div className="chat-sender-name">
-                        <Icon name={iconName} size={12} className="inline-msg-icon" /> {msg.partner}
-                      </div>
-                    )}
-
-                    {msg.proof && (
-                      <div className="chat-image-wrap">
-                        <img
-                          src={msg.proof}
-                          alt="Attachment"
-                          className="chat-bubble-img"
-                          onClick={() =>
-                            onOpenLightbox?.(
-                              msg.proof,
-                              msg.partner,
-                              'அரட்டை படம்',
-                              msg.createdAt
-                            )
-                          }
-                        />
-                      </div>
-                    )}
-
-                    {msg.text && <div className="chat-bubble-text">{msg.text}</div>}
-
-                    <div className="chat-bubble-time">
-                      {formatChatTime(msg.createdAt)}
-                    </div>
-                  </div>
+                  {msg.text}
                 </div>
-              );
-            })}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
+                <div className="chat-msg-meta">
+                  <span className="who">{isMe ? 'You' : msg.partner}</span>
+                  <span className="at">{formatChatTime(msg.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input bar */}
-      <div className="chat-bottom-bar-wrap">
-        {attachment && (
-          <div className="chat-attachment-preview">
-            <img src={attachment} alt="Preview" className="chat-preview-thumb" />
-            <span className="chat-preview-text">படம் இணைக்கப்பட்டுள்ளது</span>
-            <button
-              type="button"
-              className="chat-remove-attach-btn"
-              onClick={() => {
-                setAttachment(null);
-                if (fileInputRef.current) fileInputRef.current.value = '';
-              }}
-              aria-label="Remove image"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
-        <form className="chat-input-form" onSubmit={handleSend}>
-          <label className="chat-attach-btn" title="புகைப்படம் இணைக்க" aria-label="Attach photo">
-            {isCompressing ? <Icon name="hourglass" size={16} /> : <Icon name="camera" size={16} />}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="file-hidden"
-              onChange={handleFileAttach}
-              disabled={isCompressing}
-            />
-          </label>
-
-          <input
-            type="text"
-            className="chat-input-field"
-            placeholder={`${myName} ஆக செய்தி தட்டச்சு செய்க...`}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-
-          <button
-            type="submit"
-            className="chat-send-btn"
-            disabled={(!text.trim() && !attachment) || isCompressing}
-            aria-label="Send message"
+      {/* Fixed input bar */}
+      <div className="chat-input-bar">
+        <input
+          ref={inputRef}
+          type="text"
+          className="chat-input"
+          placeholder={`${myName} ஆக செய்தி அனுப்புங்கள்...`}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <button
+          type="button"
+          className="chat-send-btn"
+          onClick={handleSend}
+          disabled={!draft.trim()}
+          aria-label="Send message"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-          </button>
-        </form>
+            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#fff" />
+          </svg>
+        </button>
       </div>
     </div>
   );

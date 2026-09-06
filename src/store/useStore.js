@@ -21,6 +21,7 @@ function loadLocal() {
       return {
         tasks:    toArray(parsed.tasks),
         expenses: toArray(parsed.expenses).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
+        revenues: toArray(parsed.revenues).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
         capitals: toArray(parsed.capitals).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
         worklogs: toArray(parsed.worklogs).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
         messages: toArray(parsed.messages),
@@ -41,7 +42,7 @@ export function useStore() {
     return seed;
   });
 
-  const [activeTab, setActiveTab] = useState('tasks');
+  const [activeTab, setActiveTab] = useState('home');
   const [activeModal, setActiveModal] = useState(null);
   const [lightboxProof, setLightboxProof] = useState(null);
   const [toast, setToast] = useState(null);
@@ -67,6 +68,7 @@ export function useStore() {
         const canonical = {
           tasks:    toArray(remote.tasks),
           expenses: toArray(remote.expenses).map((e) => ({ ...e, amount: Number(e.amount || 0) })),
+          revenues: toArray(remote.revenues).map((r) => ({ ...r, amount: Number(r.amount || 0) })),
           capitals: toArray(remote.capitals).map((c) => ({ ...c, amount: Number(c.amount || 0) })),
           worklogs: toArray(remote.worklogs).map((w) => ({ ...w, hours: Number(w.hours || 0) })),
           messages: toArray(remote.messages),
@@ -103,6 +105,7 @@ export function useStore() {
         set(fbRef.current, {
           tasks:    pruned.tasks,
           expenses: pruned.expenses,
+          revenues: pruned.revenues || [],
           capitals: pruned.capitals,
           worklogs: pruned.worklogs,
           messages: pruned.messages || [],
@@ -200,6 +203,29 @@ export function useStore() {
       expenses: (prev.expenses || []).filter((e) => e.id !== id),
     }));
     showToast('🗑️ செலவு நீக்கப்பட்டது');
+  }, [updateStore, showToast]);
+
+  const addRevenue = useCallback((revenue) => {
+    const now = Date.now();
+    const newRev = {
+      id: generateId(),
+      ...revenue,
+      amount: Number(revenue.amount || 0),
+      createdAt: now,
+    };
+    updateStore((prev) => ({
+      ...prev,
+      revenues: [newRev, ...(prev.revenues || [])],
+    }));
+    showToast('💚 வருவாய் பதிவு செய்யப்பட்டது!');
+  }, [updateStore, showToast]);
+
+  const deleteRevenue = useCallback((id) => {
+    updateStore((prev) => ({
+      ...prev,
+      revenues: (prev.revenues || []).filter((r) => r.id !== id),
+    }));
+    showToast('🗑️ வருவாய் பதிவு நீக்கப்பட்டது');
   }, [updateStore, showToast]);
 
   const addCapital = useCallback((capital) => {
@@ -336,6 +362,7 @@ export function useStore() {
     // Actions
     addTask, completeTask, completeTaskWithProof, deleteTask,
     addExpense, deleteExpense,
+    addRevenue, deleteRevenue,
     addCapital, deleteCapital,
     addWorklog, deleteWorklog,
     addProof, sendMessage,

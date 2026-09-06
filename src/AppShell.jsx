@@ -1,23 +1,18 @@
 import React, { lazy, Suspense } from 'react';
 import { useStore } from './store/useStore';
-import { shareDaySummaryWhatsApp } from './utils/calculations';
-
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
-import TaskPerformanceHero from './components/TaskPerformanceHero';
-import CalendarStrip from './components/CalendarStrip';
-import QuickActions from './components/QuickActions';
 import NavigationTabs from './components/NavigationTabs';
-import TasksTab from './components/TasksTab';
 import Toast from './components/Toast';
 
-// Lazy load secondary tabs to shrink initial bundle size (especially Analytics with Chart.js)
+// Lazy load tabs
+const HomeTab = lazy(() => import('./components/HomeTab'));
+const TasksTab = lazy(() => import('./components/TasksTab'));
 const WorkTab = lazy(() => import('./components/WorkTab'));
-const ChatTab = lazy(() => import('./components/ChatTab'));
-const AnalyticsTab = lazy(() => import('./components/AnalyticsTab'));
 const FinanceTab = lazy(() => import('./components/FinanceTab'));
+const ChatTab = lazy(() => import('./components/ChatTab'));
 
-// Lazy load modals on demand
+// Lazy load modals
 const TaskModal = lazy(() => import('./components/modals/TaskModal'));
 const TaskCompleteModal = lazy(() => import('./components/modals/TaskCompleteModal'));
 const ExpenseModal = lazy(() => import('./components/modals/ExpenseModal'));
@@ -28,16 +23,26 @@ const LightboxModal = lazy(() => import('./components/modals/LightboxModal'));
 
 function TabLoadingFallback() {
   return (
-    <div className="tab-content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '220px', color: 'var(--text-secondary)' }}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '260px',
+        color: 'var(--text-muted)',
+      }}
+    >
       <div style={{ textAlign: 'center', padding: '32px 0' }}>
         <div style={{ fontSize: '28px', marginBottom: '8px' }}>⏳</div>
-        <div style={{ fontSize: '14px', fontWeight: 500 }}>ஏற்றப்படுகிறது...</div>
+        <div style={{ fontSize: '13.5px', fontWeight: 500 }}>ஏற்றப்படுகிறது...</div>
       </div>
     </div>
   );
 }
 
-export default function AppShell({ user, partner, onSignOut }) {
+const PARTNER_CYCLE = ['Balaji', 'Nagoor', 'JP'];
+
+export default function AppShell({ _user, partner, onSignOut }) {
   const {
     store,
     activeTab,
@@ -49,8 +54,6 @@ export default function AppShell({ user, partner, onSignOut }) {
     toast,
     partnerFilter,
     setPartnerFilter,
-    weekOffset,
-    setWeekOffset,
     selectedDate,
     setSelectedDate,
     completingTask,
@@ -61,6 +64,8 @@ export default function AppShell({ user, partner, onSignOut }) {
     deleteTask,
     addExpense,
     deleteExpense,
+    addRevenue,
+    deleteRevenue,
     addCapital,
     deleteCapital,
     addWorklog,
@@ -74,7 +79,7 @@ export default function AppShell({ user, partner, onSignOut }) {
   } = useStore();
 
   const pendingCount = (store.tasks || []).filter(
-    (t) => t.status !== 'completed'
+    (t) => t.status !== 'completed' && t.s !== 'done'
   ).length;
 
   const handleOpenLightbox = (imgUrl, partnerName, title, addedAt) => {
@@ -83,129 +88,175 @@ export default function AppShell({ user, partner, onSignOut }) {
 
   const openTask = () => setActiveModal('task');
   const openExpense = () => setActiveModal('expense');
+  const openRevenue = () => setActiveModal('revenue');
   const openWork = () => setActiveModal('work');
   const closeModal = () => setActiveModal(null);
 
+  // Cycle user filter or avatar
+  const handleCycleUser = () => {
+    const currentName = partner?.name || 'Balaji';
+    const currentIndex = PARTNER_CYCLE.indexOf(currentName);
+    const nextPartnerName = PARTNER_CYCLE[(currentIndex + 1) % PARTNER_CYCLE.length];
+    setPartnerFilter(nextPartnerName);
+  };
+
+  // Header kicker & title per active tab
+  const getHeaderInfo = () => {
+    switch (activeTab) {
+      case 'home':
+        return {
+          kicker: 'Operations Hub',
+          title: `Vanakkam, ${partner?.name || 'Partner'}`,
+        };
+      case 'tasks':
+        return {
+          kicker: 'Task agenda',
+          title: 'பணிகள் (Tasks)',
+        };
+      case 'hours':
+        return {
+          kicker: 'Shift & workload',
+          title: 'உழைப்பு (Shifts)',
+        };
+      case 'ledger':
+        return {
+          kicker: 'Cashflow & capital',
+          title: 'நிதிப் பதிவேடு (Ledger)',
+        };
+      case 'chat':
+        return {
+          kicker: '3 partners · MeenMart',
+          title: 'அரட்டை (Stream)',
+        };
+      default:
+        return {
+          kicker: 'MeenMart Hub',
+          title: 'Operations Portal',
+        };
+    }
+  };
+
+  const { kicker, title } = getHeaderInfo();
+
   return (
     <div className="app-shell-layout">
-      {/* Desktop Left Sidebar (hidden on mobile via CSS) */}
+      {/* Desktop Sidebar (hidden on mobile) */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         pendingCount={pendingCount}
-        partnerFilter={partnerFilter}
-        setPartnerFilter={setPartnerFilter}
-        onOpenTask={openTask}
-        user={user}
         partner={partner}
         onSignOut={onSignOut}
-        onOpenData={() => setActiveModal('data')}
-        onShareWA={() => shareDaySummaryWhatsApp(store)}
       />
 
+      {/* Main Workspace */}
       <div className="app-main-workspace">
-        {/* Mobile Header (hidden on desktop via CSS) */}
-        <div className="mobile-header-bar">
-          <Header
-            user={user}
-            partner={partner}
-            onSignOut={onSignOut}
-            onOpenData={() => setActiveModal('data')}
-            onShareWA={() => shareDaySummaryWhatsApp(store)}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            pendingCount={pendingCount}
-          />
-        </div>
+        {/* Navy Header */}
+        <Header
+          kicker={kicker}
+          title={title}
+          partnerFilter={partnerFilter}
+          setPartnerFilter={setPartnerFilter}
+          partner={partner}
+          onCycleUser={handleCycleUser}
+        />
 
+        {/* Workspace Body */}
         <main className="workspace-body">
-          {(activeTab === 'tasks' || activeTab === 'work') && (
-            <div className="dashboard-overview-area">
-              <TaskPerformanceHero
+          <Suspense fallback={<TabLoadingFallback />}>
+            {activeTab === 'home' && (
+              <HomeTab
                 store={store}
                 partnerFilter={partnerFilter}
                 setPartnerFilter={setPartnerFilter}
+                onOpenTask={openTask}
               />
-              <CalendarStrip
+            )}
+
+            {activeTab === 'tasks' && (
+              <TasksTab
                 store={store}
-                weekOffset={weekOffset}
-                setWeekOffset={setWeekOffset}
+                partnerFilter={partnerFilter}
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
+                completeTask={completeTask}
+                deleteTask={deleteTask}
+                addProof={addProof}
+                onOpenLightbox={handleOpenLightbox}
+                onOpenTask={openTask}
+                onOpenCompleteTask={setCompletingTask}
+                currentPartner={partner}
               />
-            </div>
-          )}
+            )}
 
-      <Suspense fallback={<TabLoadingFallback />}>
+            {activeTab === 'hours' && (
+              <WorkTab
+                store={store}
+                partnerFilter={partnerFilter}
+                setPartnerFilter={setPartnerFilter}
+                selectedDate={selectedDate}
+                deleteWorklog={deleteWorklog}
+                addProof={addProof}
+                onOpenLightbox={handleOpenLightbox}
+                onOpenWork={openWork}
+                currentPartner={partner}
+              />
+            )}
+
+            {activeTab === 'ledger' && (
+              <FinanceTab
+                store={store}
+                onOpenCapital={() => setActiveModal('capital')}
+                onOpenExpense={openExpense}
+                onOpenRevenue={openRevenue}
+                onOpenLightbox={handleOpenLightbox}
+                deleteExpense={deleteExpense}
+                deleteRevenue={deleteRevenue}
+                deleteCapital={deleteCapital}
+                currentPartner={partner}
+              />
+            )}
+
+            {activeTab === 'chat' && (
+              <ChatTab
+                store={store}
+                sendMessage={sendMessage}
+                currentPartner={partner}
+                onOpenLightbox={handleOpenLightbox}
+              />
+            )}
+          </Suspense>
+        </main>
+
+        {/* Floating Action Button (FAB) — only on Tasks tab */}
         {activeTab === 'tasks' && (
-          <TasksTab
-            store={store}
-            partnerFilter={partnerFilter}
-            selectedDate={selectedDate}
-            completeTask={completeTask}
-            deleteTask={deleteTask}
-            addProof={addProof}
-            onOpenLightbox={handleOpenLightbox}
-            onOpenTask={openTask}
-            onOpenCompleteTask={setCompletingTask}
-            currentPartner={partner}
-          />
+          <button
+            type="button"
+            className="fab-btn"
+            onClick={openTask}
+            aria-label="புதிய பணி சேர்க்க"
+            title="Add task"
+          >
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <path
+                d="M11 4.5v13M4.5 11h13"
+                stroke="#fff"
+                strokeWidth="2.1"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
         )}
 
-        {activeTab === 'work' && (
-          <WorkTab
-            store={store}
-            partnerFilter={partnerFilter}
-            setPartnerFilter={setPartnerFilter}
-            selectedDate={selectedDate}
-            deleteWorklog={deleteWorklog}
-            addProof={addProof}
-            onOpenLightbox={handleOpenLightbox}
-            onOpenWork={openWork}
-            currentPartner={partner}
-          />
-        )}
-
-        {activeTab === 'chat' && (
-          <ChatTab
-            store={store}
-            sendMessage={sendMessage}
-            currentPartner={partner}
-            onOpenLightbox={handleOpenLightbox}
-          />
-        )}
-
-        {activeTab === 'analytics' && <AnalyticsTab store={store} />}
-
-        {activeTab === 'finance' && (
-          <FinanceTab
-            store={store}
-            onOpenCapital={() => setActiveModal('capital')}
-            onOpenLightbox={handleOpenLightbox}
-            deleteExpense={deleteExpense}
-            deleteCapital={deleteCapital}
-            currentPartner={partner}
-          />
-        )}
-      </Suspense>
-      </main>
-
-        {/* Mobile quick actions and bottom nav bar (hidden on desktop via CSS) */}
-        <div className="mobile-bottom-bar">
-          <QuickActions
-            onOpenTask={openTask}
-            onOpenExpense={openExpense}
-            onOpenWork={openWork}
-          />
-
-          <NavigationTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            pendingCount={pendingCount}
-          />
-        </div>
+        {/* Mobile Bottom Bar (hidden on desktop) */}
+        <NavigationTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          pendingCount={pendingCount}
+        />
       </div>
 
+      {/* Modals & Bottom Sheets */}
       <Suspense fallback={null}>
         {activeModal === 'task' && (
           <TaskModal
@@ -215,6 +266,7 @@ export default function AppShell({ user, partner, onSignOut }) {
             currentPartner={partner}
           />
         )}
+
         {completingTask && (
           <TaskCompleteModal
             isOpen={true}
@@ -223,14 +275,27 @@ export default function AppShell({ user, partner, onSignOut }) {
             onComplete={completeTaskWithProof}
           />
         )}
+
         {activeModal === 'expense' && (
           <ExpenseModal
             isOpen={true}
             onClose={closeModal}
             onAddExpense={addExpense}
             currentPartner={partner}
+            kind="expense"
           />
         )}
+
+        {activeModal === 'revenue' && (
+          <ExpenseModal
+            isOpen={true}
+            onClose={closeModal}
+            onAddExpense={addRevenue}
+            currentPartner={partner}
+            kind="revenue"
+          />
+        )}
+
         {activeModal === 'work' && (
           <WorkModal
             isOpen={true}
@@ -239,6 +304,7 @@ export default function AppShell({ user, partner, onSignOut }) {
             currentPartner={partner}
           />
         )}
+
         {activeModal === 'capital' && (
           <CapitalModal
             isOpen={true}
@@ -247,6 +313,7 @@ export default function AppShell({ user, partner, onSignOut }) {
             currentPartner={partner}
           />
         )}
+
         {activeModal === 'data' && (
           <DataModal
             isOpen={true}
@@ -257,6 +324,7 @@ export default function AppShell({ user, partner, onSignOut }) {
             onWipeAll={wipeAll}
           />
         )}
+
         {lightboxProof && (
           <LightboxModal
             proofData={lightboxProof}
@@ -269,4 +337,3 @@ export default function AppShell({ user, partner, onSignOut }) {
     </div>
   );
 }
-

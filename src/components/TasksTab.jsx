@@ -1,268 +1,296 @@
-import React, { useState, useMemo } from 'react';
-import { fmtDate, compressImage, TAMIL_MONTHS, getLocalDateStr } from '../utils/calculations';
-import Icon from './Icons';
+import React, { useMemo } from 'react';
+import { getLocalDateStr } from '../utils/calculations';
 
-const STATUS_TABS = [
-  { id: 'all',       label: 'அனைத்தும்' },
-  { id: 'pending',   label: 'நிலுவை' },
-  { id: 'completed', label: 'முடிந்தவை' },
-];
+/* -- Partner meta ------------------------------------------------ */
+const PARTNER_INITIALS  = { Balaji: 'BA', Nagoor: 'NA', JP: 'JP', Shared: 'ALL' };
+const PARTNER_MONO_CLASS= { Balaji: 'balaji', Nagoor: 'nagoor', JP: 'jp', Shared: 'shared' };
 
-function groupByDate(tasks) {
-  const groups = new Map();
-  const todayStr = getLocalDateStr();
-  const yesterdayStr = getLocalDateStr(new Date(Date.now() - 86400000));
-  const tomorrowStr = getLocalDateStr(new Date(Date.now() + 86400000));
+const PRIORITY_COLORS   = { urgent: '#D93A3A', high: '#E08A0B', normal: '#6B7590' };
 
-  tasks.forEach((t) => {
-    const raw = t.dueDateTime || t.dueAt || t.createdAt || '';
-    const key = raw ? getLocalDateStr(raw) : '';
-    if (!key) {
-      const fallbackKey = 'other';
-      if (!groups.has(fallbackKey)) groups.set(fallbackKey, { label: 'மற்றவை', items: [] });
-      groups.get(fallbackKey).items.push(t);
-      return;
-    }
-    const d = new Date(raw);
-    let label;
-    if (key === todayStr) label = 'இன்று (Today)';
-    else if (key === tomorrowStr) label = 'நாளை (Tomorrow)';
-    else if (key === yesterdayStr) label = 'நேற்று (Yesterday)';
-    else label = `${d.getDate()} ${TAMIL_MONTHS[d.getMonth()]}`;
-    if (!groups.has(key)) groups.set(key, { label, items: [] });
-    groups.get(key).items.push(t);
-  });
-  return Array.from(groups.entries())
-    .sort(([a], [b]) => (a === 'other' ? 1 : b === 'other' ? -1 : b.localeCompare(a)))
-    .map(([, v]) => v);
+/* -- Day helpers ------------------------------------------------- */
+const DOW_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function buildCalDays() {
+  const today = new Date();
+  const days  = [];
+  for (let i = -3; i <= 3; i++) {
+    const d   = new Date(today);
+    d.setDate(today.getDate() + i);
+    days.push({
+      dateStr: getLocalDateStr(d),
+      dow:     DOW_LABELS[d.getDay()],
+      dom:     d.getDate(),
+    });
+  }
+  return days;
 }
 
+function taskDateStr(task) {
+  const raw = task.dueDateTime || task.dueAt || task.createdAt || '';
+  return raw ? getLocalDateStr(raw) : '';
+}
+
+function fmtTaskMeta(task) {
+  const raw = task.dueDateTime || task.dueAt;
+  if (!raw) return null;
+  const d = new Date(raw);
+  return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+/* -- Checkmark SVG ---------------------------------------------- */
+function CheckSVG() {
+  return (
+    <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+      <path d="M1 4.5L4 7.5L10 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/* -- Calendar SVG for empty state ------------------------------- */
+function CalendarSVG() {
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <rect x="4" y="8" width="28" height="24" rx="5" stroke="#C3CADB" strokeWidth="1.8" />
+      <path d="M4 14h28" stroke="#C3CADB" strokeWidth="1.6" />
+      <rect x="11" y="4" width="2.5" height="8" rx="1.25" fill="#C3CADB" />
+      <rect x="22.5" y="4" width="2.5" height="8" rx="1.25" fill="#C3CADB" />
+      <rect x="10" y="20" width="5" height="5" rx="2" fill="#DFE4EF" />
+      <rect x="21" y="20" width="5" height="5" rx="2" fill="#DFE4EF" />
+    </svg>
+  );
+}
+
+/* ================================================================ */
 export default function TasksTab({
   store,
   partnerFilter,
   selectedDate,
+  setSelectedDate,
   completeTask,
-  deleteTask,
-  addProof,
-  onOpenLightbox,
+  _deleteTask,
+  _addProof,
+  _onOpenLightbox,
   onOpenTask,
   onOpenCompleteTask,
-  currentPartner,
+  _currentPartner,
 }) {
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const calDays  = useMemo(() => buildCalDays(), []);
+  const today    = getLocalDateStr();
 
+  /* Active day — default to today */
+  const activeDateStr = selectedDate || today;
+
+  /* All tasks */
   const allTasks = useMemo(() => store.tasks || [], [store.tasks]);
 
-  const counts = useMemo(() => ({
-    all: allTasks.length,
-    pending: allTasks.filter((t) => t.status !== 'completed').length,
-    completed: allTasks.filter((t) => t.status === 'completed').length,
-  }), [allTasks]);
+  /* Tasks that have activity on a given date (for dot) */
+  const tasksByDate = useMemo(() => {
+    const map = {};
+    allTasks.forEach((t) => {
+      const ds = taskDateStr(t);
+      if (ds) {
+        if (!map[ds]) map[ds] = [];
+        map[ds].push(t);
+      }
+    });
+    return map;
+  }, [allTasks]);
 
-  const filteredTasks = useMemo(() => {
-    let list = allTasks;
-
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter((t) =>
-        (t.title || '').toLowerCase().includes(q) ||
-        (t.to || '').toLowerCase().includes(q) ||
-        (t.from || '').toLowerCase().includes(q)
-      );
-    }
-
-    if (statusFilter === 'pending') list = list.filter((t) => t.status !== 'completed');
-    else if (statusFilter === 'completed') list = list.filter((t) => t.status === 'completed');
-
+  /* Tasks filtered by selected date + partner */
+  const dateTasks = useMemo(() => {
+    let list = allTasks.filter((t) => taskDateStr(t) === activeDateStr);
     if (partnerFilter !== 'all') {
       list = list.filter((t) => t.to === partnerFilter || t.from === partnerFilter);
     }
-
-    if (selectedDate) {
-      list = list.filter((t) => {
-        const raw = t.dueDateTime || t.dueAt || t.createdAt;
-        return raw ? getLocalDateStr(raw) === selectedDate : false;
-      });
-    }
-
     return list;
-  }, [allTasks, search, statusFilter, partnerFilter, selectedDate]);
+  }, [allTasks, activeDateStr, partnerFilter]);
 
-  const grouped = useMemo(() => groupByDate(filteredTasks), [filteredTasks]);
+  const inProgress  = dateTasks.filter((t) => t.status === 'in_progress');
+  const pending     = dateTasks.filter((t) => t.status === 'pending' || (!t.status || t.status === 'active'));
+  const completed   = dateTasks.filter((t) => t.status === 'completed');
 
-  const handleFileUpload = async (taskId, e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const compressed = await compressImage(file);
-      addProof('task', taskId, compressed);
-    } catch (err) {
-      console.error('Proof upload error:', err);
-    }
+  const handleComplete = (task) => {
+    if (onOpenCompleteTask) onOpenCompleteTask(task);
+    else completeTask(task.id);
   };
 
-  const handleTriggerComplete = (task) => {
-    if (onOpenCompleteTask) {
-      onOpenCompleteTask(task);
-    } else {
-      completeTask(task.id);
-    }
-  };
-
+  /* ── Render ─────────────────────────────────────────────── */
   return (
-    <div className="tasks-workspace">
-      {/* Control Bar: Search & Status Filter */}
-      <div className="tasks-toolbar">
-        <div className="search-box">
-          <Icon name="search" size={14} className="search-box-icon" />
-          <input
-            type="text"
-            placeholder="பணிகளைத் தேடுங்கள்..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          {search && (
-            <button className="clear-search-btn" onClick={() => setSearch('')} aria-label="Clear">✕</button>
-          )}
-        </div>
+    <div className="tab-content">
 
-        <div className="status-tabs" role="tablist">
-          {STATUS_TABS.map(({ id, label }) => (
+      {/* Calendar strip */}
+      <div className="cal-strip">
+        {calDays.map(({ dateStr, dow, dom }) => {
+          const isActive   = dateStr === activeDateStr;
+          const hasTasks   = !!(tasksByDate[dateStr]?.length);
+          return (
             <button
-              key={id}
-              className={`status-tab-btn ${statusFilter === id ? 'active' : ''}`}
-              onClick={() => setStatusFilter(id)}
-              role="tab"
-              aria-selected={statusFilter === id}
+              key={dateStr}
+              type="button"
+              className={`cal-day-pill${isActive ? ' active' : ''}`}
+              onClick={() => setSelectedDate(dateStr)}
             >
-              <span>{label}</span>
-              <span className="status-count">{counts[id]}</span>
+              <span className="cal-day-dow">{dow}</span>
+              <span className="cal-day-dom">{dom}</span>
+              <span className={`cal-day-dot${hasTasks ? ' has-tasks' : ''}`} />
             </button>
-          ))}
-        </div>
-
-        {onOpenTask && (
-          <button className="btn-primary-add" onClick={onOpenTask} type="button">
-            <Icon name="plus" size={14} />
-            <span>புதிய பணி</span>
-          </button>
-        )}
+          );
+        })}
       </div>
 
-      {/* Task List Items */}
-      {filteredTasks.length === 0 ? (
-        <div className="todoist-empty">
-          <div className="empty-circle-icon">
-            <Icon name="check" size={24} />
-          </div>
-          <h4>அனைத்துப் பணிகளும் முடிந்தது!</h4>
-          <p>புதிய பணிகளை ஒதுக்க மேலே உள்ள <strong>+ புதிய பணி</strong> பொத்தானைப் பயன்படுத்தவும்.</p>
+      {/* Empty state */}
+      {dateTasks.length === 0 && (
+        <div className="empty-state">
+          <CalendarSVG />
+          <p className="empty-state-text">
+            {activeDateStr === today
+              ? 'இன்று பணிகள் எதுவும் இல்லை.'
+              : `${activeDateStr} அன்று பணிகள் எதுவும் இல்லை.`}
+          </p>
+          <button className="empty-state-action" type="button" onClick={onOpenTask}>
+            + Add a task for this day
+          </button>
         </div>
-      ) : (
-        <div className="todoist-list">
-          {grouped.map((group) => (
-            <div key={group.label} className="date-group-section">
-              <div className="group-heading">
-                <span>{group.label}</span>
-                <span className="group-count">{group.items.length}</span>
-              </div>
+      )}
 
-              <div className="group-items">
-                {group.items.map((task) => {
-                  const isDone = task.status === 'completed';
-                  const toCls = (task.to || '').toLowerCase();
-                  const me = currentPartner?.name;
-                  const isAssignee = task.to === me;
-                  const isCreator = task.from === me;
-                  const isMine = isAssignee || isCreator;
-                  const canComplete = isAssignee || isCreator;
-
-                  return (
-                    <div
-                      key={task.id}
-                      className={`todoist-row ${isDone ? 'is-completed' : ''}`}
-                    >
-                      {/* Todoist Circular Checkbox */}
-                      <button
-                        className={`todoist-checkbox ${isDone ? 'checked' : ''} ${!canComplete && !isDone ? 'disabled' : ''}`}
-                        onClick={() => !isDone && canComplete && handleTriggerComplete(task)}
-                        title={isDone ? 'முடிந்தது' : canComplete ? 'முடிக்க தட்டவும்' : `${task.to} மட்டுமே முடிக்க முடியும்`}
-                        aria-label={isDone ? 'Completed' : 'Mark task complete'}
-                        type="button"
-                      >
-                        {isDone && <Icon name="check" size={11} />}
-                      </button>
-
-                      {/* Content */}
-                      <div className="todoist-content">
-                        <div className="todoist-title">
-                          {task.title}
-                        </div>
-
-                        <div className="todoist-meta-row">
-                          <span className={`partner-tag ${toCls}`}>
-                            {task.from === task.to ? task.to : `${task.from} → ${task.to}`}
-                          </span>
-
-                          {(task.dueDateTime || task.dueAt) && (
-                            <span className="due-date-tag">
-                              <Icon name="calendar" size={11} />
-                              <span>{fmtDate(task.dueDateTime || task.dueAt)}</span>
-                            </span>
-                          )}
-
-                          {task.proof && (
-                            <button
-                              type="button"
-                              className="proof-badge-btn"
-                              onClick={() => onOpenLightbox(task.proof, task.to, 'பணி சான்று', task.proofAddedAt)}
-                              title="சான்றைப் பார்க்க"
-                            >
-                              <Icon name="camera" size={11} />
-                              <span>சான்று</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Hover Actions */}
-                      <div className="todoist-row-actions">
-                        {isMine && (
-                          <label className="row-action-btn" title="புகைப்படச் சான்று இணைக்க">
-                            <Icon name="camera" size={13} />
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="file-hidden"
-                              onChange={(e) => handleFileUpload(task.id, e)}
-                            />
-                          </label>
-                        )}
-
-                        {isCreator && (
-                          <button
-                            className="row-action-btn danger"
-                            onClick={() => {
-                              if (window.confirm('இப்பணியை நீக்க வேண்டுமா?')) {
-                                deleteTask(task.id);
-                              }
-                            }}
-                            title="நீக்கு"
-                            type="button"
-                          >
-                            <Icon name="trash" size={13} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+      {/* In progress */}
+      {inProgress.length > 0 && (
+        <div className="section-group">
+          <div className="section-label-row">
+            <span className="section-label teal">In progress</span>
+            <div className="section-divider" />
+          </div>
+          {inProgress.map((task) => (
+            <TaskCardActive
+              key={task.id}
+              task={task}
+              isRunning
+              onComplete={handleComplete}
+            />
           ))}
         </div>
       )}
+
+      {/* Pending */}
+      {pending.length > 0 && (
+        <div className="section-group">
+          <div className="section-label-row">
+            <span className="section-label slate">Pending</span>
+            <div className="section-divider" />
+          </div>
+          {pending.map((task) => (
+            <TaskCardActive
+              key={task.id}
+              task={task}
+              isRunning={false}
+              onComplete={handleComplete}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Completed */}
+      {completed.length > 0 && (
+        <div className="section-group">
+          <div className="section-label-row">
+            <span className="section-label slate">Completed</span>
+            <div className="section-divider" />
+          </div>
+          {completed.map((task) => (
+            <TaskCardDone
+              key={task.id}
+              task={task}
+              onUncomplete={() => completeTask && completeTask(task.id, 'pending')}
+            />
+          ))}
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+/* ── Task card (active / in-progress) ─────────────────────── */
+function TaskCardActive({ task, isRunning, onComplete }) {
+  const partnerClass  = PARTNER_MONO_CLASS[task.to]  || 'shared';
+  const priorityColor = PRIORITY_COLORS[task.priority] ?? PRIORITY_COLORS.normal;
+  const timeStr       = fmtTaskMeta(task);
+  const initials      = PARTNER_INITIALS[task.to]  || 'ALL';
+
+  return (
+    <div className="task-card">
+      {/* Checkbox */}
+      <button
+        type="button"
+        className="task-card-checkbox"
+        onClick={() => onComplete(task)}
+        aria-label="Mark complete"
+      />
+
+      {/* Partner monogram */}
+      <div className={`partner-monogram partner-monogram-md ${partnerClass}`}>
+        {initials}
+      </div>
+
+      {/* Body */}
+      <div className="task-card-body">
+        <div className="task-card-top">
+          <span className="task-card-title">{task.title}</span>
+          <span
+            className="priority-badge"
+            style={{ background: priorityColor }}
+          >
+            {task.priority || 'normal'}
+          </span>
+        </div>
+
+        <div className="task-card-foot">
+          {timeStr && <span className="mono">{timeStr}</span>}
+          {timeStr && <span>·</span>}
+          <span>{task.to}</span>
+          {isRunning && (
+            <span className="running-badge" style={{ marginLeft: 'auto' }}>
+              <span className="running-dot" />
+              Running
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Done card ─────────────────────────────────────────────── */
+function TaskCardDone({ task, onUncomplete }) {
+  const partnerClass = PARTNER_MONO_CLASS[task.to] || 'shared';
+  const initials     = PARTNER_INITIALS[task.to]   || 'ALL';
+
+  return (
+    <div className="task-card done-card">
+      {/* Teal check */}
+      <button
+        type="button"
+        className="task-card-done-check"
+        onClick={onUncomplete}
+        aria-label="Mark incomplete"
+        title="Undo completion"
+      >
+        <CheckSVG />
+      </button>
+
+      {/* Body */}
+      <div className="task-card-body">
+        <span className="task-done-title">{task.title}</span>
+        <span className="task-done-meta">{task.from} → {task.to}</span>
+      </div>
+
+      {/* Right monogram */}
+      <div
+        className={`partner-monogram ${partnerClass}`}
+        style={{ width: 24, height: 24, fontSize: 10, borderRadius: 7, flexShrink: 0 }}
+      >
+        {initials}
+      </div>
     </div>
   );
 }

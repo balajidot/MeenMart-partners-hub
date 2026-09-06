@@ -2,11 +2,8 @@ import React from 'react';
 
 export default function Toast({ toast }) {
   if (!toast) return null;
-
-  const isError = toast.type === 'error';
-
   return (
-    <div className={`toast show ${isError ? 'error' : ''}`}>
+    <div className={`toast${toast.type === 'error' ? ' error' : ''}`} role="status" aria-live="polite">
       {toast.msg}
     </div>
   );
