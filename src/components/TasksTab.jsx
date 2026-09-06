@@ -1,17 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { fmtDate, compressImage, TAMIL_MONTHS, getLocalDateStr } from '../utils/calculations';
+import Icon from './Icons';
 
-const STATUS_PILLS = [
+const STATUS_TABS = [
   { id: 'all',       label: 'அனைத்தும்' },
   { id: 'pending',   label: 'நிலுவை' },
   { id: 'completed', label: 'முடிந்தவை' },
-];
-
-const PARTNER_PILLS = [
-  { id: 'all',    label: 'அனைவரும்' },
-  { id: 'Balaji', label: 'Balaji', cls: 'balaji' },
-  { id: 'Nagoor', label: 'Nagoor', cls: 'nagoor' },
-  { id: 'JP',     label: 'JP',     cls: 'jp' },
 ];
 
 function groupByDate(tasks) {
@@ -31,9 +25,9 @@ function groupByDate(tasks) {
     }
     const d = new Date(raw);
     let label;
-    if (key === todayStr) label = 'இன்று';
-    else if (key === tomorrowStr) label = 'நாளை';
-    else if (key === yesterdayStr) label = 'நேற்று';
+    if (key === todayStr) label = 'இன்று (Today)';
+    else if (key === tomorrowStr) label = 'நாளை (Tomorrow)';
+    else if (key === yesterdayStr) label = 'நேற்று (Yesterday)';
     else label = `${d.getDate()} ${TAMIL_MONTHS[d.getMonth()]}`;
     if (!groups.has(key)) groups.set(key, { label, items: [] });
     groups.get(key).items.push(t);
@@ -46,7 +40,6 @@ function groupByDate(tasks) {
 export default function TasksTab({
   store,
   partnerFilter,
-  setPartnerFilter,
   selectedDate,
   completeTask,
   deleteTask,
@@ -59,17 +52,16 @@ export default function TasksTab({
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const counts = useMemo(() => {
-    const list = store.tasks || [];
-    return {
-      all: list.length,
-      pending: list.filter((t) => t.status !== 'completed').length,
-      completed: list.filter((t) => t.status === 'completed').length,
-    };
-  }, [store.tasks]);
+  const allTasks = useMemo(() => store.tasks || [], [store.tasks]);
+
+  const counts = useMemo(() => ({
+    all: allTasks.length,
+    pending: allTasks.filter((t) => t.status !== 'completed').length,
+    completed: allTasks.filter((t) => t.status === 'completed').length,
+  }), [allTasks]);
 
   const filteredTasks = useMemo(() => {
-    let list = store.tasks || [];
+    let list = allTasks;
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -95,7 +87,7 @@ export default function TasksTab({
     }
 
     return list;
-  }, [store.tasks, search, statusFilter, partnerFilter, selectedDate]);
+  }, [allTasks, search, statusFilter, partnerFilter, selectedDate]);
 
   const grouped = useMemo(() => groupByDate(filteredTasks), [filteredTasks]);
 
@@ -119,171 +111,158 @@ export default function TasksTab({
   };
 
   return (
-    <div className="tab-content">
-      <div className="filter-bar">
-        <div className="search-wrap">
-          <span aria-hidden="true">🔍</span>
+    <div className="tasks-workspace">
+      {/* Control Bar: Search & Status Filter */}
+      <div className="tasks-toolbar">
+        <div className="search-box">
+          <Icon name="search" size={14} className="search-box-icon" />
           <input
             type="text"
             placeholder="பணிகளைத் தேடுங்கள்..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            aria-label="பணிகளைத் தேடுங்கள்"
           />
+          {search && (
+            <button className="clear-search-btn" onClick={() => setSearch('')} aria-label="Clear">✕</button>
+          )}
         </div>
 
-        <div className="pill-group status-group" role="tablist" aria-label="Task status filter">
-          {STATUS_PILLS.map(({ id, label }) => (
+        <div className="status-tabs" role="tablist">
+          {STATUS_TABS.map(({ id, label }) => (
             <button
               key={id}
-              className={`pill ${statusFilter === id ? 'active' : ''}`}
+              className={`status-tab-btn ${statusFilter === id ? 'active' : ''}`}
               onClick={() => setStatusFilter(id)}
               role="tab"
               aria-selected={statusFilter === id}
             >
-              {label}
-              <span className="pill-count">{counts[id]}</span>
+              <span>{label}</span>
+              <span className="status-count">{counts[id]}</span>
             </button>
           ))}
         </div>
 
-        <div className="pill-group partner-group" aria-label="Partner filter">
-          {PARTNER_PILLS.map(({ id, label, cls }) => (
-            <button
-              key={id}
-              className={`pill ${partnerFilter === id ? `active ${cls || ''}` : ''}`}
-              onClick={() => setPartnerFilter(id)}
-              aria-pressed={partnerFilter === id}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        {onOpenTask && (
+          <button className="btn-primary-add" onClick={onOpenTask} type="button">
+            <Icon name="plus" size={14} />
+            <span>புதிய பணி</span>
+          </button>
+        )}
       </div>
 
+      {/* Task List Items */}
       {filteredTasks.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">📋</div>
-          <h3>பணிகள் எதுவும் இல்லை</h3>
-          <p>கீழே உள்ள <strong>+</strong> பொத்தானைத் தட்டி புதிய பணியை ஒதுக்குங்கள்.</p>
-          {onOpenTask && (
-            <button className="empty-cta" onClick={onOpenTask}>
-              📋 புதிய பணி ஒதுக்கு
-            </button>
-          )}
+        <div className="todoist-empty">
+          <div className="empty-circle-icon">
+            <Icon name="check" size={24} />
+          </div>
+          <h4>அனைத்துப் பணிகளும் முடிந்தது!</h4>
+          <p>புதிய பணிகளை ஒதுக்க மேலே உள்ள <strong>+ புதிய பணி</strong> பொத்தானைப் பயன்படுத்தவும்.</p>
         </div>
       ) : (
-        <div className="tasks-feed">
+        <div className="todoist-list">
           {grouped.map((group) => (
-            <React.Fragment key={group.label}>
-              <div className="date-group-header">
-                {group.label} <span className="count-badge">({group.items.length})</span>
+            <div key={group.label} className="date-group-section">
+              <div className="group-heading">
+                <span>{group.label}</span>
+                <span className="group-count">{group.items.length}</span>
               </div>
-              {group.items.map((task) => {
-                const isDone = task.status === 'completed';
-                const toCls = (task.to || '').toLowerCase();
-                const me = currentPartner?.name;
-                const isAssignee = task.to === me;
-                const isCreator = task.from === me;
-                const isMine = isAssignee || isCreator;
-                const canComplete = isAssignee || isCreator;
 
-                return (
-                  <div
-                    key={task.id}
-                    className={`task-card ${isDone ? 'completed' : ''}`}
-                  >
-                    <div className="task-top">
+              <div className="group-items">
+                {group.items.map((task) => {
+                  const isDone = task.status === 'completed';
+                  const toCls = (task.to || '').toLowerCase();
+                  const me = currentPartner?.name;
+                  const isAssignee = task.to === me;
+                  const isCreator = task.from === me;
+                  const isMine = isAssignee || isCreator;
+                  const canComplete = isAssignee || isCreator;
+
+                  return (
+                    <div
+                      key={task.id}
+                      className={`todoist-row ${isDone ? 'is-completed' : ''}`}
+                    >
+                      {/* Todoist Circular Checkbox */}
                       <button
-                        className={`task-check ${isDone ? 'done' : ''} ${!canComplete && !isDone ? 'disabled' : ''}`}
+                        className={`todoist-checkbox ${isDone ? 'checked' : ''} ${!canComplete && !isDone ? 'disabled' : ''}`}
                         onClick={() => !isDone && canComplete && handleTriggerComplete(task)}
-                        title={isDone ? 'முடிந்தது' : canComplete ? 'முடிக்க தட்டவும்' : `${task.to} அல்லது உருவாக்கியவர் மட்டுமே முடிக்க முடியும்`}
-                        aria-label={isDone ? 'Completed' : 'Mark complete'}
-                        aria-disabled={!canComplete && !isDone}
-                      />
+                        title={isDone ? 'முடிந்தது' : canComplete ? 'முடிக்க தட்டவும்' : `${task.to} மட்டுமே முடிக்க முடியும்`}
+                        aria-label={isDone ? 'Completed' : 'Mark task complete'}
+                        type="button"
+                      >
+                        {isDone && <Icon name="check" size={11} />}
+                      </button>
 
-                      <div className="task-body">
-                        <div className={`task-title ${isDone ? 'done-text' : ''}`}>
+                      {/* Content */}
+                      <div className="todoist-content">
+                        <div className="todoist-title">
                           {task.title}
                         </div>
 
-                        <div className="task-meta">
-                          <span className={`chip ${toCls}`}>
-                            {task.from === task.to ? `${task.to} (சுயம்)` : `${task.from} → ${task.to}`}
+                        <div className="todoist-meta-row">
+                          <span className={`partner-tag ${toCls}`}>
+                            {task.from === task.to ? task.to : `${task.from} → ${task.to}`}
                           </span>
+
                           {(task.dueDateTime || task.dueAt) && (
-                            <span className="chip gray">
-                              🕒 {fmtDate(task.dueDateTime || task.dueAt)}
+                            <span className="due-date-tag">
+                              <Icon name="calendar" size={11} />
+                              <span>{fmtDate(task.dueDateTime || task.dueAt)}</span>
                             </span>
                           )}
-                          {!isMine && (
-                            <span className="chip gray">🔒</span>
-                          )}
+
                           {task.proof && (
-                            <img
-                              src={task.proof}
-                              alt="Proof"
-                              className="proof-thumb"
-                              onClick={() =>
-                                onOpenLightbox(
-                                  task.proof,
-                                  task.to,
-                                  'பணி சான்று',
-                                  task.proofAddedAt
-                                )
-                              }
-                              title="சான்றைப் பெரிதாக்கிப் பார்க்க தட்டவும்"
-                            />
-                          )}
-                        </div>
-
-                        <div className="task-actions">
-                          {!isDone && canComplete && (
                             <button
-                              className="btn-sm success"
-                              onClick={() => handleTriggerComplete(task)}
+                              type="button"
+                              className="proof-badge-btn"
+                              onClick={() => onOpenLightbox(task.proof, task.to, 'பணி சான்று', task.proofAddedAt)}
+                              title="சான்றைப் பார்க்க"
                             >
-                              ✓ முடிந்தது
-                            </button>
-                          )}
-
-                          {isMine && (
-                            <label className="btn-sm">
-                              📷 {task.proof ? 'மாற்று' : 'சான்று'}
-                              <input
-                                type="file"
-                                accept="image/*"
-                                className="file-hidden"
-                                onChange={(e) => handleFileUpload(task.id, e)}
-                              />
-                            </label>
-                          )}
-
-                          {isCreator && (
-                            <button
-                              className="btn-sm danger"
-                              onClick={() => {
-                                if (window.confirm('இப்பணியை நீக்க வேண்டுமா?')) {
-                                  deleteTask(task.id);
-                                }
-                              }}
-                              title="நீக்கு"
-                              aria-label="Delete task"
-                            >
-                              🗑️
+                              <Icon name="camera" size={11} />
+                              <span>சான்று</span>
                             </button>
                           )}
                         </div>
                       </div>
+
+                      {/* Hover Actions */}
+                      <div className="todoist-row-actions">
+                        {isMine && (
+                          <label className="row-action-btn" title="புகைப்படச் சான்று இணைக்க">
+                            <Icon name="camera" size={13} />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="file-hidden"
+                              onChange={(e) => handleFileUpload(task.id, e)}
+                            />
+                          </label>
+                        )}
+
+                        {isCreator && (
+                          <button
+                            className="row-action-btn danger"
+                            onClick={() => {
+                              if (window.confirm('இப்பணியை நீக்க வேண்டுமா?')) {
+                                deleteTask(task.id);
+                              }
+                            }}
+                            title="நீக்கு"
+                            type="button"
+                          >
+                            <Icon name="trash" size={13} />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </React.Fragment>
+                  );
+                })}
+              </div>
+            </div>
           ))}
         </div>
       )}
     </div>
   );
 }
-

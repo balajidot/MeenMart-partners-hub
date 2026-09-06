@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { TAMIL_DAYS, TAMIL_MONTHS, getLocalDateStr } from '../utils/calculations';
+import Icon from './Icons';
 
 export default function CalendarStrip({ store, weekOffset, setWeekOffset, selectedDate, setSelectedDate }) {
   const todayStr = useMemo(() => getLocalDateStr(), []);
@@ -36,7 +37,6 @@ export default function CalendarStrip({ store, weekOffset, setWeekOffset, select
     return list;
   }, [weekOffset, store]);
 
-  // Display Month & Year of the middle day
   const midDay = days[3]?.dateObj || new Date();
   const monthTitle = `${TAMIL_MONTHS[midDay.getMonth()]} ${midDay.getFullYear()}`;
 
@@ -50,63 +50,65 @@ export default function CalendarStrip({ store, weekOffset, setWeekOffset, select
   };
 
   return (
-    <section className="calendar-card">
-      <div className="cal-topbar">
-        <div className="cal-title">
-          <span>📅</span>
-          <span>{monthTitle}</span>
+    <div className="cal-clean-bar">
+      <div className="cal-header">
+        <div className="cal-title-wrap">
+          <span className="cal-month-title">{monthTitle}</span>
           {selectedDate && (
             <button
-              className="cal-today-btn"
+              className="cal-reset-pill"
               onClick={() => setSelectedDate(null)}
               title="தேதி வடிகட்டலை நீக்கு"
-              style={{ marginLeft: 8 }}
             >
-              வடிகட்டலை நீக்கு ✕
+              அனைத்தும் ✕
             </button>
           )}
         </div>
 
-        <div className="cal-controls">
-          <button className="cal-today-btn" onClick={jumpToToday}>
+        <div className="cal-actions">
+          <button className="cal-today-link" onClick={jumpToToday}>
             இன்று
           </button>
-          <button
-            className="cal-arrow"
-            onClick={() => setWeekOffset((w) => w - 1)}
-            title="முந்தைய வாரம்"
-          >
-            ‹
-          </button>
-          <button
-            className="cal-arrow"
-            onClick={() => setWeekOffset((w) => w + 1)}
-            title="அடுத்த வாரம்"
-          >
-            ›
-          </button>
+          <div className="cal-nav-arrows">
+            <button
+              className="cal-nav-btn"
+              onClick={() => setWeekOffset((w) => w - 1)}
+              title="முந்தைய வாரம்"
+              aria-label="Previous Week"
+            >
+              <Icon name="chevron-left" size={13} />
+            </button>
+            <button
+              className="cal-nav-btn"
+              onClick={() => setWeekOffset((w) => w + 1)}
+              title="அடுத்த வாரம்"
+              aria-label="Next Week"
+            >
+              <Icon name="chevron-right" size={13} />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="cal-strip">
+      <div className="cal-days-row">
         {days.map(({ dateStr, dayNum, dayName, hasActivity }) => {
           const isToday = dateStr === todayStr;
           const isSelected = dateStr === selectedDate;
 
           return (
-            <div
+            <button
               key={dateStr}
-              className={`cal-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}
+              type="button"
+              className={`cal-day-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}`}
               onClick={() => handleDayClick(dateStr)}
-              title={`${dateStr} பதிவுகளை பார்க்க`}
             >
-              <span className="cal-day-name">{dayName}</span>
-              <span className="cal-day-num">{dayNum}</span>
-              {hasActivity && <span className="cal-dot" />}
-            </div>
+              <span className="day-name">{dayName}</span>
+              <span className="day-number">{dayNum}</span>
+              {hasActivity && <span className="day-activity-dot" />}
+            </button>
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }

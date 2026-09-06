@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import KpiTicker from './KpiTicker';
+import Icon from './Icons';
 import {
   calcSettlement,
   fmtCurrency,
@@ -90,7 +91,7 @@ export default function FinanceTab({
             <p>மூலதனம் + நேரடி செலவுகள்</p>
           </div>
           <button className="btn-sm success" onClick={onOpenCapital}>
-            ➕ மூலதனம் சேர்
+            <Icon name="plus" size={12} /> மூலதனம் சேர்
           </button>
         </div>
 
@@ -117,7 +118,7 @@ export default function FinanceTab({
       <div className="settlement-card">
         <div className="fin-header">
           <div>
-            <h3>⚖️ சம பங்கு கணக்கு தீர்வு</h3>
+            <h3>சம பங்கு கணக்கு தீர்வு</h3>
             <p>தலா 33.3% வீதம் சமமாக பிரிக்கப்பட்டது</p>
           </div>
           <button
@@ -125,16 +126,16 @@ export default function FinanceTab({
             onClick={() => shareSettlementWhatsApp(settlement)}
             title="WhatsApp-ல் பகிர"
           >
-            💬 பகிர
+            <Icon name="whatsapp" size={13} /> பகிர
           </button>
         </div>
 
         {settlement.transactions.length === 0 ? (
           <div style={{
             fontSize: 13,
-            color: 'var(--accent-green)',
+            color: 'var(--ok)',
             padding: '12px',
-            background: 'var(--nagoor-bg)',
+            background: 'var(--ok-soft)',
             borderRadius: 'var(--r-sm)',
             fontWeight: 600,
             textAlign: 'center',
@@ -166,13 +167,15 @@ export default function FinanceTab({
             onClick={() => exportLedgerCSV(store)}
             title="CSV கோப்பாக சேமி"
           >
-            📥 CSV
+            <Icon name="download" size={13} /> CSV
           </button>
         </div>
 
         {transactions.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">💳</div>
+            <div className="empty-icon">
+              <Icon name="credit-card" size={32} />
+            </div>
             <h3>பரிவர்த்தனைகள் எதுவும் இல்லை</h3>
             <p>முதலீடு அல்லது செலவு பதிவு செய்ய கீழே உள்ள <strong>+</strong> பொத்தானைத் தட்டுங்கள்.</p>
           </div>
@@ -180,7 +183,9 @@ export default function FinanceTab({
           <div>
             {transactions.map((tx) => (
               <div key={tx.id} className="tx-card">
-                <span className="tx-icon" aria-hidden="true">{tx.isCredit ? '🏦' : '💰'}</span>
+                <span className="tx-icon" aria-hidden="true">
+                  {tx.isCredit ? <Icon name="credit-card" size={16} /> : <Icon name="dollar" size={16} />}
+                </span>
                 <div className="tx-body">
                   <div className="tx-title">{tx.title}</div>
                   <div className="tx-sub">{tx.sub}</div>
@@ -223,7 +228,7 @@ export default function FinanceTab({
                       title="நீக்கு"
                       aria-label="Delete transaction"
                     >
-                      🗑️
+                      <Icon name="trash" size={12} />
                     </button>
                   )}
                 </div>

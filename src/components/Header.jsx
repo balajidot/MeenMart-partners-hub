@@ -1,6 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
+import Icon from './Icons';
 
 const THEME_KEY = 'meenmart_theme';
+
+const NAV_TABS = [
+  { id: 'tasks',     label: 'பணிகள்',    sub: 'Tasks',     icon: 'tasks', hasBadge: true },
+  { id: 'work',      label: 'உழைப்பு',   sub: 'Work',      icon: 'work' },
+  { id: 'chat',      label: 'அரட்டை',    sub: 'Chat',      icon: 'chat' },
+  { id: 'finance',   label: 'நிதி',      sub: 'Finance',   icon: 'finance' },
+  { id: 'analytics', label: 'பகுப்பாய்வு', sub: 'Analytics', icon: 'analytics' },
+];
 
 function readInitialTheme() {
   try { return localStorage.getItem(THEME_KEY) || 'system'; }
@@ -13,7 +22,16 @@ function applyTheme(mode) {
   else root.setAttribute('data-theme', mode);
 }
 
-export default function Header({ onOpenData, onShareWA, user, partner, onSignOut }) {
+export default function Header({
+  onOpenData,
+  onShareWA,
+  user,
+  partner,
+  onSignOut,
+  activeTab,
+  setActiveTab,
+  pendingCount = 0
+}) {
   const [theme, setTheme] = useState(readInitialTheme);
   const [menuOpen, setMenuOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -59,50 +77,78 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
   const cycleTheme = () => {
     setTheme((t) => (t === 'system' ? 'light' : t === 'light' ? 'dark' : 'system'));
   };
-  const themeIcon = theme === 'light' ? '☀️' : theme === 'dark' ? '🌙' : '🖥️';
-  const themeTitle =
-    theme === 'light' ? 'Light theme — tap to switch to Dark'
-    : theme === 'dark' ? 'Dark theme — tap to switch to System'
-    : 'System theme — tap to switch to Light';
 
   const initial = (partner?.name || user?.displayName || 'U').charAt(0).toUpperCase();
 
   return (
     <header className="app-header">
       <div className="brand-area">
-        <div className="brand-badge" aria-hidden="true">M</div>
+        <div className="brand-logo-icon">
+          <Icon name="fish" size={20} />
+        </div>
         <div className="brand-name">
           MeenMart <span className="brand-portal-pill">Partners</span>
         </div>
       </div>
+
+      {/* Desktop Navigation Bar (shown on >= 768px) */}
+      {activeTab && setActiveTab && (
+        <nav className="desktop-nav-tabs" aria-label="Desktop Primary Navigation">
+          {NAV_TABS.map(({ id, label, icon, hasBadge }) => {
+            const isActive = activeTab === id;
+            return (
+              <button
+                key={id}
+                className={`dnav-btn ${isActive ? 'active' : ''}`}
+                onClick={() => setActiveTab(id)}
+                type="button"
+              >
+                <Icon name={icon} size={16} className="dnav-icon" />
+                <span>{label}</span>
+                {hasBadge && pendingCount > 0 && (
+                  <span className="dnav-badge">{pendingCount > 99 ? '99+' : pendingCount}</span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+      )}
 
       <div className="header-actions">
         {deferredPrompt && (
           <button
             className="pwa-install-btn"
             onClick={handleInstallClick}
-            title="ஆப்பை மொபைலில் நிறுவவும் (Install PWA)"
+            title="ஆப்பை நிறுவவும் (Install PWA)"
             aria-label="Install App"
           >
-            📲 <span className="pwa-install-text">நிறுவு</span>
+            <Icon name="download" size={14} />
+            <span className="pwa-install-text">நிறுவு</span>
           </button>
         )}
 
         <button
           className="btn-icon"
           onClick={cycleTheme}
-          title={themeTitle}
-          aria-label={themeTitle}
+          title={`Theme: ${theme}`}
+          aria-label="Toggle Theme"
         >
-          {themeIcon}
+          {theme === 'light' ? (
+            <Icon name="sun" size={16} />
+          ) : theme === 'dark' ? (
+            <Icon name="moon" size={16} />
+          ) : (
+            <Icon name="monitor" size={16} />
+          )}
         </button>
+
         <button
-          className="btn-icon"
+          className="btn-icon wa-btn"
           onClick={onShareWA}
-          title="WhatsApp Share"
+          title="WhatsApp பகிர்வு (Day Summary)"
           aria-label="WhatsApp Share"
         >
-          💬
+          <Icon name="whatsapp" size={16} />
         </button>
 
         {user ? (
@@ -119,7 +165,7 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
               ) : (
                 <span className="user-avatar-fallback" aria-hidden="true">{initial}</span>
               )}
-              <span className="user-chip-name">{partner?.name || 'User'}</span>
+              <span className="user-name-text">{partner?.name || 'User'}</span>
             </button>
 
             {menuOpen && (
@@ -132,29 +178,36 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
                 <div className="user-menu" role="menu">
                   <div className="user-menu-header">
                     <div className="user-menu-name">
-                      {partner?.avatar} {partner?.name} — {partner?.role}
+                      <span className={`partner-dot ${partner?.name?.toLowerCase() || ''}`} />
+                      {partner?.name} — <span className="user-role-text">{partner?.role}</span>
                     </div>
                     <div className="user-menu-email">{user.email}</div>
                   </div>
+
                   {deferredPrompt && (
                     <button
                       className="user-menu-item"
                       onClick={() => { setMenuOpen(false); handleInstallClick(); }}
                     >
-                      📲 ஆப்பை நிறுவு (Install App)
+                      <Icon name="download" size={15} />
+                      <span>ஆப்பை நிறுவு (Install App)</span>
                     </button>
                   )}
+
                   <button
                     className="user-menu-item"
                     onClick={() => { setMenuOpen(false); onOpenData(); }}
                   >
-                    ⚙️ தரவு மேலாண்மை
+                    <Icon name="database" size={15} />
+                    <span>தரவு மேலாண்மை (Data Backup)</span>
                   </button>
+
                   <button
                     className="user-menu-item danger"
                     onClick={() => { setMenuOpen(false); onSignOut?.(); }}
                   >
-                    🚪 வெளியேறு (Sign out)
+                    <Icon name="logout" size={15} />
+                    <span>வெளியேறு (Sign out)</span>
                   </button>
                 </div>
               </>
@@ -167,11 +220,10 @@ export default function Header({ onOpenData, onShareWA, user, partner, onSignOut
             title="தரவு மேலாண்மை"
             aria-label="தரவு மேலாண்மை"
           >
-            ⚙️
+            <Icon name="database" size={16} />
           </button>
         )}
       </div>
     </header>
   );
 }
-

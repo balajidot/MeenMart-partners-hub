@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { compressImage } from '../utils/calculations';
-import { PARTNER_CONFIG } from '../config/partners';
+import Icon from './Icons';
+
+const FOUNDER_ICONS = {
+  Balaji: 'laptop',
+  Nagoor: 'fish',
+  JP: 'bike',
+};
 
 function formatChatTime(ts) {
   if (!ts) return '';
@@ -77,7 +83,9 @@ export default function ChatTab({
     <div className="tab-content chat-tab-container">
       <div className="chat-header-banner">
         <div className="chat-header-title">
-          <span>💬</span>
+          <span className="chat-header-icon">
+            <Icon name="chat" size={18} color="var(--accent)" />
+          </span>
           <div>
             <h4>உடனுக்குடன் உரையாடல் (Co-Founders Chat)</h4>
             <small>Balaji • Nagoor • JP நேரலை அரட்டை</small>
@@ -88,7 +96,9 @@ export default function ChatTab({
       <div className="chat-feed-area">
         {messages.length === 0 ? (
           <div className="empty-state chat-empty">
-            <div className="empty-icon">💬</div>
+            <div className="empty-icon">
+              <Icon name="chat" size={32} />
+            </div>
             <h3>உரையாடலைத் தொடங்குங்கள்</h3>
             <p>பங்குதாரர்களுடன் உடனடித் தகவல்களைப் பகிர கீழே உள்ள உள்ளீட்டுப் பட்டியைப் பயன்படுத்தவும்.</p>
           </div>
@@ -96,7 +106,7 @@ export default function ChatTab({
           <div className="chat-messages-list">
             {messages.map((msg) => {
               const isMe = msg.partner === myName;
-              const meta = PARTNER_CONFIG[msg.partner] || { avatar: '👤', role: 'Partner' };
+              const iconName = FOUNDER_ICONS[msg.partner] || 'chat';
               const partnerCls = (msg.partner || '').toLowerCase();
 
               return (
@@ -106,14 +116,14 @@ export default function ChatTab({
                 >
                   {!isMe && (
                     <div className={`chat-avatar-bubble ${partnerCls}`}>
-                      {meta.avatar}
+                      <Icon name={iconName} size={14} />
                     </div>
                   )}
 
                   <div className={`chat-bubble ${isMe ? 'my-bubble' : `their-bubble ${partnerCls}`}`}>
                     {!isMe && (
                       <div className="chat-sender-name">
-                        {meta.avatar} {msg.partner}
+                        <Icon name={iconName} size={12} className="inline-msg-icon" /> {msg.partner}
                       </div>
                     )}
 
@@ -171,7 +181,7 @@ export default function ChatTab({
 
         <form className="chat-input-form" onSubmit={handleSend}>
           <label className="chat-attach-btn" title="புகைப்படம் இணைக்க" aria-label="Attach photo">
-            {isCompressing ? '⏳' : '📷'}
+            {isCompressing ? <Icon name="hourglass" size={16} /> : <Icon name="camera" size={16} />}
             <input
               ref={fileInputRef}
               type="file"
@@ -197,7 +207,10 @@ export default function ChatTab({
             disabled={(!text.trim() && !attachment) || isCompressing}
             aria-label="Send message"
           >
-            ➤
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
           </button>
         </form>
       </div>

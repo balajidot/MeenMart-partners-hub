@@ -1,11 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { fmtDate, compressImage, TAMIL_MONTHS, getLocalDateStr } from '../utils/calculations';
-
-const AVATARS = {
-  Balaji: '💻',
-  Nagoor: '🐟',
-  JP:     '🛵',
-};
+import Icon from './Icons';
 
 const PARTNER_PILLS = [
   { id: 'all',    label: 'அனைவரும்' },
@@ -14,25 +9,31 @@ const PARTNER_PILLS = [
   { id: 'JP',     label: 'JP',     cls: 'jp' },
 ];
 
+const FOUNDER_ICONS = {
+  Balaji: 'laptop',
+  Nagoor: 'fish',
+  JP: 'bike',
+};
+
 function groupByDate(logs) {
   const groups = new Map();
   const todayStr = getLocalDateStr();
   const yesterdayStr = getLocalDateStr(new Date(Date.now() - 86400000));
 
-  logs.forEach((l) => {
-    const key = l.date || 'other';
-    if (!groups.has(key)) {
-      let label;
-      if (key === 'other') label = 'மற்றவை';
-      else {
-        const d = new Date(key);
-        if (key === todayStr) label = 'இன்று';
-        else if (key === yesterdayStr) label = 'நேற்று';
-        else label = `${d.getDate()} ${TAMIL_MONTHS[d.getMonth()]}`;
-      }
-      groups.set(key, { label, items: [] });
+  logs.forEach((w) => {
+    const key = w.date || 'other';
+    if (key === 'other') {
+      if (!groups.has(key)) groups.set(key, { label: 'மற்றவை', items: [] });
+      groups.get(key).items.push(w);
+      return;
     }
-    groups.get(key).items.push(l);
+    const d = new Date(w.date);
+    let label;
+    if (key === todayStr) label = 'இன்று';
+    else if (key === yesterdayStr) label = 'நேற்று';
+    else label = `${d.getDate()} ${TAMIL_MONTHS[d.getMonth()]}`;
+    if (!groups.has(key)) groups.set(key, { label, items: [] });
+    groups.get(key).items.push(w);
   });
   return Array.from(groups.entries())
     .sort(([a], [b]) => (a === 'other' ? 1 : b === 'other' ? -1 : b.localeCompare(a)))
@@ -97,7 +98,7 @@ export default function WorkTab({
     <div className="tab-content">
       <div className="filter-bar">
         <div className="search-wrap">
-          <span aria-hidden="true">🔍</span>
+          <Icon name="search" size={15} className="search-icon" />
           <input
             type="text"
             placeholder="உழைப்புப் பதிவுகளைத் தேடுங்கள்..."
@@ -134,12 +135,14 @@ export default function WorkTab({
 
       {filteredLogs.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">⏱️</div>
+          <div className="empty-icon">
+            <Icon name="clock" size={32} />
+          </div>
           <h3>உழைப்புப் பதிவுகள் இல்லை</h3>
           <p>கீழே உள்ள <strong>+</strong> பொத்தானைத் தட்டி இன்றைய வேலையை பதிவு செய்யுங்கள்.</p>
           {onOpenWork && (
             <button className="empty-cta" onClick={onOpenWork}>
-              ⏱️ உழைப்பு பதிவு
+              <Icon name="plus" size={15} /> உழைப்பு பதிவு
             </button>
           )}
         </div>
@@ -151,18 +154,20 @@ export default function WorkTab({
                 {group.label} <span className="count-badge">({group.items.length})</span>
               </div>
               {group.items.map((log) => {
-                const avatar = AVATARS[log.partner] || '👤';
+                const iconName = FOUNDER_ICONS[log.partner] || 'work';
                 const partnerLower = (log.partner || '').toLowerCase();
                 const isOwner = log.partner === currentPartner?.name;
 
                 return (
                   <div key={log.id} className="worklog-card">
                     <div className="work-top">
-                      <div className="work-avatar" aria-hidden="true">{avatar}</div>
+                      <div className={`work-avatar-icon ${partnerLower}`}>
+                        <Icon name={iconName} size={16} />
+                      </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>
+                        <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--ink)' }}>
                           {log.partner}
-                          {!isOwner && <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.5 }}>🔒</span>}
+                          {!isOwner && <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.5 }} title="Private">🔒</span>}
                         </div>
                         <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                           <span className={`chip ${partnerLower}`}>{log.category}</span>
@@ -202,7 +207,7 @@ export default function WorkTab({
                         )}
                         {isOwner && (
                           <label className="btn-sm">
-                            📷 {log.proof ? 'மாற்று' : 'சான்று'}
+                            <Icon name="camera" size={12} /> {log.proof ? 'மாற்று' : 'சான்று'}
                             <input
                               type="file"
                               accept="image/*"
@@ -224,7 +229,7 @@ export default function WorkTab({
                           title="நீக்கு"
                           aria-label="Delete work log"
                         >
-                          🗑️
+                          <Icon name="trash" size={12} />
                         </button>
                       )}
                     </div>

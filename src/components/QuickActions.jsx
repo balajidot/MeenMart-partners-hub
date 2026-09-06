@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import Icon from './Icons';
 
 export default function QuickActions({ onOpenTask, onOpenExpense, onOpenWork }) {
   const [open, setOpen] = useState(false);
@@ -33,7 +34,7 @@ export default function QuickActions({ onOpenTask, onOpenExpense, onOpenWork }) 
             onClick={() => fire(onOpenWork)}
             aria-label="Log work hours"
           >
-            ⏱️
+            <Icon name="clock" size={18} />
           </button>
         </div>
 
@@ -44,7 +45,7 @@ export default function QuickActions({ onOpenTask, onOpenExpense, onOpenWork }) 
             onClick={() => fire(onOpenExpense)}
             aria-label="Add expense"
           >
-            💰
+            <Icon name="dollar" size={18} />
           </button>
         </div>
 
@@ -55,7 +56,7 @@ export default function QuickActions({ onOpenTask, onOpenExpense, onOpenWork }) 
             onClick={() => fire(onOpenTask)}
             aria-label="Add task"
           >
-            📋
+            <Icon name="tasks" size={18} />
           </button>
         </div>
 
@@ -65,7 +66,7 @@ export default function QuickActions({ onOpenTask, onOpenExpense, onOpenWork }) 
           aria-label={open ? 'Close quick actions' : 'Open quick actions'}
           aria-expanded={open}
         >
-          +
+          {open ? <Icon name="close" size={20} /> : <Icon name="plus" size={20} />}
         </button>
       </div>
     </>

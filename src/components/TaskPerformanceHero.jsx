@@ -1,10 +1,10 @@
 import React, { memo, useMemo } from 'react';
-import { calcFounderStats } from '../utils/calculations';
+import Icon from './Icons';
 
 const FOUNDERS = [
-  { name: 'Balaji', role: 'Tech & Product',   avatar: '💻', key: 'balaji', valClass: 'balaji-c' },
-  { name: 'Nagoor', role: 'Procure & Pack',   avatar: '🐟', key: 'nagoor', valClass: 'nagoor-c' },
-  { name: 'JP',     role: 'Delivery & Sales', avatar: '🛵', key: 'jp',     valClass: 'jp-c' },
+  { name: 'Balaji', role: 'Tech',     icon: 'laptop', key: 'balaji' },
+  { name: 'Nagoor', role: 'Procure',  icon: 'fish',   key: 'nagoor' },
+  { name: 'JP',     role: 'Delivery', icon: 'bike',   key: 'jp' },
 ];
 
 function TaskPerformanceHero({ store, partnerFilter, setPartnerFilter }) {
@@ -19,129 +19,63 @@ function TaskPerformanceHero({ store, partnerFilter, setPartnerFilter }) {
     return Math.round((completedTasks.length / allTasks.length) * 100);
   }, [allTasks.length, completedTasks.length]);
 
-  const handleSelect = (name) => {
-    setPartnerFilter((prev) => (prev === name ? 'all' : name));
-  };
-
   return (
-    <div className="task-performance-hero-wrap">
-      {/* Main Task Performance Summary Card */}
-      <section className="task-hero-card">
-        <div className="task-hero-top">
-          <div className="task-hero-label-wrap">
-            <span className="task-hero-icon">🎯</span>
-            <div>
-              <span className="task-hero-label">பணி செயல்திறன் (Task Performance)</span>
-              <span className="task-hero-sublabel">Co-Founders Daily Execution</span>
-            </div>
-          </div>
-          <div className={`task-hero-rate-badge ${completionRate === 100 ? 'perfect' : ''}`}>
-            {completionRate}% நிறைவு
-          </div>
+    <div className="task-summary-strip">
+      <div className="summary-row">
+        <div className="summary-left">
+          <span className="summary-title">செயல்திறன்</span>
+          <span className="summary-badge">
+            {completedTasks.length}/{allTasks.length} ({completionRate}%)
+          </span>
         </div>
 
-        <div className="task-progress-track">
-          <div
-            className="task-progress-bar"
-            style={{ width: `${completionRate}%` }}
-            role="progressbar"
-            aria-valuenow={completionRate}
-            aria-valuemin="0"
-            aria-valuemax="100"
-          />
+        <div className="summary-right">
+          <span className="metric-tag pending">
+            <Icon name="hourglass" size={12} /> {pendingTasks.length} நிலுவை
+          </span>
+          <span className="metric-tag hours">
+            <Icon name="clock" size={12} /> {totalHours}h உழைப்பு
+          </span>
         </div>
+      </div>
 
-        <div className="task-hero-stats-grid">
-          <div className="task-stat-tile">
-            <span className="task-stat-num">{allTasks.length}</span>
-            <span className="task-stat-lbl">📋 மொத்த பணிகள்</span>
-          </div>
-          <div className="task-stat-tile pending">
-            <span className="task-stat-num orange">{pendingTasks.length}</span>
-            <span className="task-stat-lbl">⏳ நிலுவை</span>
-          </div>
-          <div className="task-stat-tile done">
-            <span className="task-stat-num green">{completedTasks.length}</span>
-            <span className="task-stat-lbl">✅ முடிந்தது</span>
-          </div>
-          <div className="task-stat-tile hours">
-            <span className="task-stat-num blue">{totalHours}h</span>
-            <span className="task-stat-lbl">⏱️ உழைப்பு</span>
-          </div>
-        </div>
-      </section>
+      <div className="summary-progress-track">
+        <div
+          className="summary-progress-fill"
+          style={{ width: `${completionRate}%` }}
+        />
+      </div>
 
-      {/* Co-Founders Accountability & Task Cards */}
-      <div className="founders-section">
-        <div className="founders-section-head">
-          <span className="founders-section-title">பங்குதாரர்கள் பணி நிலை (Founders Workload)</span>
-          {partnerFilter !== 'all' && (
+      {/* Founder Filter Pills */}
+      <div className="founder-filter-strip">
+        <button
+          className={`founder-pill ${partnerFilter === 'all' ? 'active' : ''}`}
+          onClick={() => setPartnerFilter('all')}
+          type="button"
+        >
+          அனைவரும்
+          <span className="pill-num">{allTasks.length}</span>
+        </button>
+
+        {FOUNDERS.map(({ name, role, icon, key }) => {
+          const partnerTasks = allTasks.filter((t) => t.to === name);
+          const pDone = partnerTasks.filter((t) => t.status === 'completed').length;
+          const isActive = partnerFilter === name;
+
+          return (
             <button
-              className="filter-reset-btn"
-              onClick={() => setPartnerFilter('all')}
+              key={name}
+              className={`founder-pill ${key} ${isActive ? 'active' : ''}`}
+              onClick={() => setPartnerFilter((prev) => (prev === name ? 'all' : name))}
               type="button"
+              title={`${name} (${role}): ${pDone}/${partnerTasks.length} முடிந்தது`}
             >
-              அனைத்தும் காண்க ✕
+              <Icon name={icon} size={13} className="pill-icon" />
+              <span>{name}</span>
+              <span className="pill-num">{pDone}/{partnerTasks.length}</span>
             </button>
-          )}
-        </div>
-
-        <div className="founders-grid" role="group" aria-label="Co-founders Task Performance">
-          {FOUNDERS.map(({ name, role, avatar, key }) => {
-            const stats = calcFounderStats(store, name);
-            const isActive = partnerFilter === name;
-
-            const partnerTasks = allTasks.filter((t) => t.to === name);
-            const partnerDone = partnerTasks.filter((t) => t.status === 'completed').length;
-            const partnerPending = partnerTasks.length - partnerDone;
-            const partnerRate = partnerTasks.length > 0 ? Math.round((partnerDone / partnerTasks.length) * 100) : 0;
-
-            return (
-              <button
-                key={name}
-                className={`founder-card ${key} ${isActive ? 'active-filter' : ''}`}
-                onClick={() => handleSelect(name)}
-                title={`${name} பணிகளை மட்டும் பார்க்க தட்டவும்`}
-                aria-pressed={isActive}
-                type="button"
-              >
-                <div className="founder-avatar-wrap">
-                  <span className="founder-avatar" aria-hidden="true">{avatar}</span>
-                  {isActive && <span className="founder-active-dot" aria-hidden="true" />}
-                </div>
-                <div className="founder-name">{name}</div>
-                <div className="founder-role">{role}</div>
-
-                <div className="founder-metrics">
-                  <div className="f-metric">
-                    <span className="f-metric-lbl">பணிகள்</span>
-                    <span className="f-metric-val">{partnerDone}/{partnerTasks.length}</span>
-                  </div>
-                  <div className="f-metric">
-                    <span className="f-metric-lbl">உழைப்பு</span>
-                    <span className="f-metric-val">{stats.hours}h</span>
-                  </div>
-                </div>
-
-                <div className="founder-card-progress">
-                  <div className="founder-card-bar" style={{ width: `${partnerRate}%` }} />
-                </div>
-
-                <div className="founder-status-badge">
-                  {partnerTasks.length === 0 ? (
-                    <span className="status-done-tag" style={{ background: 'var(--card-subtle, #f0f3f8)', color: 'var(--text-muted)' }}>
-                      பணிகள் இல்லை
-                    </span>
-                  ) : partnerPending > 0 ? (
-                    <span className="status-pending-tag">{partnerPending} நிலுவை</span>
-                  ) : (
-                    <span className="status-done-tag">✓ அனைத்தும் முடிந்தது</span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
+          );
+        })}
       </div>
     </div>
   );

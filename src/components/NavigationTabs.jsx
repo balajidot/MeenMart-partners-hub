@@ -1,16 +1,17 @@
 import React from 'react';
+import Icon from './Icons';
 
 const TABS = [
-  { id: 'tasks',     label: 'பணிகள்',    icon: '📋', hasBadge: true },
-  { id: 'work',      label: 'உழைப்பு',   icon: '⏱️' },
-  { id: 'chat',      label: 'அரட்டை',    icon: '💬' },
-  { id: 'finance',   label: 'நிதி',      icon: '💳' },
-  { id: 'analytics', label: 'பகுப்பாய்வு', icon: '📊' },
+  { id: 'tasks',     label: 'பணிகள்',    icon: 'tasks', hasBadge: true },
+  { id: 'work',      label: 'உழைப்பு',   icon: 'work' },
+  { id: 'chat',      label: 'அரட்டை',    icon: 'chat' },
+  { id: 'finance',   label: 'நிதி',      icon: 'finance' },
+  { id: 'analytics', label: 'பகுப்பாய்வு', icon: 'analytics' },
 ];
 
 export default function NavigationTabs({ activeTab, setActiveTab, pendingCount }) {
   return (
-    <nav className="bottom-nav" aria-label="Primary Navigation">
+    <nav className="bottom-nav" aria-label="Primary Mobile Navigation">
       {TABS.map(({ id, label, icon, hasBadge }) => {
         const isActive = activeTab === id;
         return (
@@ -23,7 +24,7 @@ export default function NavigationTabs({ activeTab, setActiveTab, pendingCount }
             type="button"
           >
             <div className="bnav-icon-wrap">
-              <span className="bnav-icon" aria-hidden="true">{icon}</span>
+              <Icon name={icon} size={20} className="bnav-icon" />
               {hasBadge && pendingCount > 0 && (
                 <span className="bnav-badge" aria-label={`${pendingCount} pending`}>
                   {pendingCount > 99 ? '99+' : pendingCount}

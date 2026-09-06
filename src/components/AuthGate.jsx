@@ -1,14 +1,16 @@
 import React from 'react';
+import Icon from './Icons';
 
 export default function AuthGate({ status, error, onSignIn }) {
   if (status === 'loading') {
     return (
       <div className="auth-screen">
         <div className="auth-card">
-          <div className="auth-header">
-            <h1 className="auth-title">MeenMart</h1>
-            <p className="auth-sub">Partners Portal</p>
+          <div className="auth-brand-badge">
+            <Icon name="fish" size={26} color="var(--accent)" />
           </div>
+          <h1 className="auth-title">MeenMart</h1>
+          <p className="auth-sub">Partners Portal</p>
           <div className="auth-spinner" aria-hidden="true" />
         </div>
       </div>
@@ -20,20 +22,20 @@ export default function AuthGate({ status, error, onSignIn }) {
   return (
     <div className="auth-screen">
       <div className="auth-card">
-        {/* Brand Header */}
-        <div className="auth-header">
-          <h1 className="auth-title">MeenMart</h1>
-          <p className="auth-sub">Partners Portal</p>
+        <div className="auth-brand-badge">
+          <Icon name="fish" size={28} color="var(--accent)" />
         </div>
 
-        {/* Error Alert */}
+        <h1 className="auth-title">MeenMart</h1>
+        <p className="auth-sub">Co-Founders Operations & Management Portal</p>
+
         {error && (
           <div className="auth-error">
-            <span className="auth-error-icon">⚠️</span>
+            <span className="auth-error-icon"><Icon name="close" size={14} /></span>
             <div className="auth-error-text">
               {isDomainError ? (
                 <span>
-                  <strong>Firebase Domain Error:</strong> Netlify domain (<code>meenmart-partners-hub.netlify.app</code>) ஐ Firebase Console &gt; Authentication &gt; Settings &gt; Authorized Domains-ல் சேர்க்க வேண்டும்.
+                  <strong>Domain Error:</strong> Netlify domain ஐ Firebase Authorized Domains-ல் சேர்க்க வேண்டும்.
                 </span>
               ) : (
                 error
@@ -42,7 +44,6 @@ export default function AuthGate({ status, error, onSignIn }) {
           </div>
         )}
 
-        {/* Google Sign In Button */}
         <button className="auth-google-btn" onClick={onSignIn} type="button">
           <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
@@ -53,13 +54,10 @@ export default function AuthGate({ status, error, onSignIn }) {
           <span>Continue with Google</span>
         </button>
 
-        {/* Minimal Footer */}
         <div className="auth-footer">
-          <div className="auth-founders-dots">
-            <span className="dot dot-b" />Balaji ·{' '}
-            <span className="dot dot-n" />Nagoor ·{' '}
-            <span className="dot dot-j" />JP
-          </div>
+          <span className="founder-dot dot-b" />Balaji ·{' '}
+          <span className="founder-dot dot-n" />Nagoor ·{' '}
+          <span className="founder-dot dot-j" />JP
         </div>
       </div>
     </div>

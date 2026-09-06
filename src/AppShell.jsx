@@ -3,6 +3,7 @@ import { useStore } from './store/useStore';
 import { shareDaySummaryWhatsApp } from './utils/calculations';
 
 import Header from './components/Header';
+import Sidebar from './components/Sidebar';
 import TaskPerformanceHero from './components/TaskPerformanceHero';
 import CalendarStrip from './components/CalendarStrip';
 import QuickActions from './components/QuickActions';
@@ -86,8 +87,15 @@ export default function AppShell({ user, partner, onSignOut }) {
   const closeModal = () => setActiveModal(null);
 
   return (
-    <div className="app-wrap">
-      <Header
+    <div className="app-shell-layout">
+      {/* Desktop Left Sidebar (hidden on mobile via CSS) */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        pendingCount={pendingCount}
+        partnerFilter={partnerFilter}
+        setPartnerFilter={setPartnerFilter}
+        onOpenTask={openTask}
         user={user}
         partner={partner}
         onSignOut={onSignOut}
@@ -95,32 +103,44 @@ export default function AppShell({ user, partner, onSignOut }) {
         onShareWA={() => shareDaySummaryWhatsApp(store)}
       />
 
-      {(activeTab === 'tasks' || activeTab === 'work') && (
-        <>
-          <div className="hero">
-            <TaskPerformanceHero
-              store={store}
-              partnerFilter={partnerFilter}
-              setPartnerFilter={setPartnerFilter}
-            />
-          </div>
-
-          <CalendarStrip
-            store={store}
-            weekOffset={weekOffset}
-            setWeekOffset={setWeekOffset}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
+      <div className="app-main-workspace">
+        {/* Mobile Header (hidden on desktop via CSS) */}
+        <div className="mobile-header-bar">
+          <Header
+            user={user}
+            partner={partner}
+            onSignOut={onSignOut}
+            onOpenData={() => setActiveModal('data')}
+            onShareWA={() => shareDaySummaryWhatsApp(store)}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            pendingCount={pendingCount}
           />
-        </>
-      )}
+        </div>
+
+        <main className="workspace-body">
+          {(activeTab === 'tasks' || activeTab === 'work') && (
+            <div className="dashboard-overview-area">
+              <TaskPerformanceHero
+                store={store}
+                partnerFilter={partnerFilter}
+                setPartnerFilter={setPartnerFilter}
+              />
+              <CalendarStrip
+                store={store}
+                weekOffset={weekOffset}
+                setWeekOffset={setWeekOffset}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+              />
+            </div>
+          )}
 
       <Suspense fallback={<TabLoadingFallback />}>
         {activeTab === 'tasks' && (
           <TasksTab
             store={store}
             partnerFilter={partnerFilter}
-            setPartnerFilter={setPartnerFilter}
             selectedDate={selectedDate}
             completeTask={completeTask}
             deleteTask={deleteTask}
@@ -168,18 +188,23 @@ export default function AppShell({ user, partner, onSignOut }) {
           />
         )}
       </Suspense>
+      </main>
 
-      <QuickActions
-        onOpenTask={openTask}
-        onOpenExpense={openExpense}
-        onOpenWork={openWork}
-      />
+        {/* Mobile quick actions and bottom nav bar (hidden on desktop via CSS) */}
+        <div className="mobile-bottom-bar">
+          <QuickActions
+            onOpenTask={openTask}
+            onOpenExpense={openExpense}
+            onOpenWork={openWork}
+          />
 
-      <NavigationTabs
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        pendingCount={pendingCount}
-      />
+          <NavigationTabs
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            pendingCount={pendingCount}
+          />
+        </div>
+      </div>
 
       <Suspense fallback={null}>
         {activeModal === 'task' && (
