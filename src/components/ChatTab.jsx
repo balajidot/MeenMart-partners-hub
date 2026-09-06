@@ -345,6 +345,8 @@ export default function ChatTab({
         <input
           ref={inputRef}
           type="text"
+          name="team_chat_message"
+          id="team_chat_message"
           className="chat-input"
           placeholder={`${myName}, update sollunga...`}
           value={draft}
@@ -353,6 +355,13 @@ export default function ChatTab({
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="sentences"
+          spellCheck="false"
+          enterKeyHint="send"
+          data-form-type="other"
+          data-lpignore="true"
+          data-1p-ignore="true"
         />
 
         {/* Send Button */}

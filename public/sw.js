@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meenmart-partners-pwa-v1';
+const CACHE_NAME = 'meenmart-partners-pwa-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -38,11 +38,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip Firebase RTDB / Google auth / external API requests
+  // Skip Firebase RTDB / Google auth / external API requests entirely
   if (
+    url.hostname.includes('firebasedatabase.app') ||
     url.hostname.includes('firebaseio.com') ||
     url.hostname.includes('googleapis.com') ||
     url.hostname.includes('identitytoolkit') ||
+    url.hostname.includes('firebase.google.com') ||
+    url.pathname.includes('/.lp') ||
+    url.pathname.includes('/.ws') ||
     request.method !== 'GET'
   ) {
     return;

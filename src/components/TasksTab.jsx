@@ -174,9 +174,21 @@ export default function TasksTab({
     return list;
   }, [allTasks, activeDateStr, partnerFilter]);
 
-  const completed  = dateTasks.filter((t) => t.status === 'completed' || t.s === 'done');
-  const inProgress = dateTasks.filter((t) => t.status === 'in_progress' && t.s !== 'done');
-  const pending    = dateTasks.filter((t) => (t.status === 'pending' || !t.status || t.status === 'active') && t.status !== 'in_progress' && t.s !== 'done');
+  const { completed, inProgress, pending } = useMemo(() => {
+    const comp = [];
+    const inProg = [];
+    const pend = [];
+    dateTasks.forEach((t) => {
+      if (t.status === 'completed' || t.s === 'done') {
+        comp.push(t);
+      } else if (t.status === 'in_progress') {
+        inProg.push(t);
+      } else {
+        pend.push(t);
+      }
+    });
+    return { completed: comp, inProgress: inProg, pending: pend };
+  }, [dateTasks]);
 
   const handleComplete = (task) => {
     triggerHaptic('success');

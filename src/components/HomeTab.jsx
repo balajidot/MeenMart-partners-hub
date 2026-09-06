@@ -63,35 +63,48 @@ export default function HomeTab({
   const [cashflowScope, setCashflowScope] = useState('today'); // 'today' | 'total'
   const [selectedTaskPartner, setSelectedTaskPartner] = useState(currentPartner?.name || 'Balaji');
 
-  /* Tasks KPI */
-  const allTasks = store.tasks || [];
-  const activeTasks =
-    partnerFilter === 'all'
-      ? allTasks
-      : allTasks.filter((t) => t.to === partnerFilter || t.from === partnerFilter || !t.to || t.to === 'Shared');
+  /* Tasks KPI (Memoized) */
+  const { pendingTasks, pendingCount, urgentCount, completionPct } = useMemo(() => {
+    const allTasks = store.tasks || [];
+    const activeTasks =
+      partnerFilter === 'all'
+        ? allTasks
+        : allTasks.filter((t) => t.to === partnerFilter || t.from === partnerFilter || !t.to || t.to === 'Shared');
 
-  const isDone = (t) => t.status === 'completed' || t.s === 'done';
-  const pendingTasks  = activeTasks.filter((t) => !isDone(t));
-  const doneTasks     = activeTasks.filter(isDone);
-  const pendingCount  = pendingTasks.length;
-  const urgentCount   = pendingTasks.filter((t) => (t.priority || '').toLowerCase() === 'urgent').length;
-  const totalTasks    = pendingCount + doneTasks.length;
-  const completionPct = totalTasks > 0 ? Math.round((doneTasks.length / totalTasks) * 100) : 0;
+    const isDone = (t) => t.status === 'completed' || t.s === 'done';
+    const pending = activeTasks.filter((t) => !isDone(t));
+    const done = activeTasks.filter(isDone);
+    const total = pending.length + done.length;
+    const pct = total > 0 ? Math.round((done.length / total) * 100) : 0;
+    const urgent = pending.filter((t) => (t.priority || '').toLowerCase() === 'urgent').length;
 
-  /* Hours KPI */
-  const todayLogs = (store.worklogs || []).filter(
-    (w) => (w.date || getLocalDateStr(w.createdAt)) === today && (partnerFilter === 'all' || w.partner === partnerFilter)
-  );
-  const todayHours = todayLogs.reduce((s, w) => s + Number(w.hours || 0), 0);
+    return {
+      pendingTasks: pending,
+      pendingCount: pending.length,
+      urgentCount: urgent,
+      completionPct: pct,
+    };
+  }, [store.tasks, partnerFilter]);
 
-  /* Cashflow KPI: Today vs Total */
-  const todayExpenses = (store.expenses || [])
-    .filter((e) => (e.date || getLocalDateStr(e.createdAt)) === today && (partnerFilter === 'all' || e.partner === partnerFilter))
-    .reduce((s, e) => s + Number(e.amount || 0), 0);
+  /* Hours KPI (Memoized) */
+  const todayHours = useMemo(() => {
+    return (store.worklogs || [])
+      .filter((w) => (w.date || getLocalDateStr(w.createdAt)) === today && (partnerFilter === 'all' || w.partner === partnerFilter))
+      .reduce((s, w) => s + Number(w.hours || 0), 0);
+  }, [store.worklogs, today, partnerFilter]);
 
-  const todayRevenue = (store.revenues || [])
-    .filter((r) => (r.date || getLocalDateStr(r.createdAt)) === today && (partnerFilter === 'all' || r.partner === partnerFilter))
-    .reduce((s, r) => s + Number(r.amount || 0), 0);
+  /* Cashflow KPI: Today vs Total (Memoized) */
+  const todayExpenses = useMemo(() => {
+    return (store.expenses || [])
+      .filter((e) => (e.date || getLocalDateStr(e.createdAt)) === today && (partnerFilter === 'all' || e.partner === partnerFilter))
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
+  }, [store.expenses, today, partnerFilter]);
+
+  const todayRevenue = useMemo(() => {
+    return (store.revenues || [])
+      .filter((r) => (r.date || getLocalDateStr(r.createdAt)) === today && (partnerFilter === 'all' || r.partner === partnerFilter))
+      .reduce((s, r) => s + Number(r.amount || 0), 0);
+  }, [store.revenues, today, partnerFilter]);
 
   const netToday = todayRevenue - todayExpenses;
 
@@ -124,20 +137,23 @@ export default function HomeTab({
     });
   }, [store.tasks, selectedTaskPartner]);
 
-  /* Workload balance (weekly hours per partner) */
-  const weekLogs = (store.worklogs || []).filter(
-    (w) => (w.date || getLocalDateStr(w.createdAt)) >= weekStartStr
-  );
-  const workloadHours = { Nagoor: 0, JP: 0, Balaji: 0 };
-  weekLogs.forEach((w) => {
-    if (workloadHours[w.partner] !== undefined) {
-      workloadHours[w.partner] += Number(w.hours || 0);
-    }
-  });
-  const maxWkHours = Math.max(...Object.values(workloadHours), 1);
-  const topWorker  = Object.keys(workloadHours).reduce((a, b) =>
-    workloadHours[a] >= workloadHours[b] ? a : b
-  );
+  /* Workload balance (weekly hours per partner, memoized) */
+  const { workloadHours, maxWkHours, topWorker } = useMemo(() => {
+    const logs = (store.worklogs || []).filter(
+      (w) => (w.date || getLocalDateStr(w.createdAt)) >= weekStartStr
+    );
+    const hours = { Nagoor: 0, JP: 0, Balaji: 0 };
+    logs.forEach((w) => {
+      if (hours[w.partner] !== undefined) {
+        hours[w.partner] += Number(w.hours || 0);
+      }
+    });
+    const max = Math.max(...Object.values(hours), 1);
+    const top = Object.keys(hours).reduce((a, b) =>
+      hours[a] >= hours[b] ? a : b
+    );
+    return { workloadHours: hours, maxWkHours: max, topWorker: top };
+  }, [store.worklogs, weekStartStr]);
 
   /* Up next: up to 3 active tasks */
   const upNextTasks = useMemo(() => {

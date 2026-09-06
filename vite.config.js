@@ -9,9 +9,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('chart.js') || id.includes('react-chartjs-2')) {
-              return 'vendor-charts';
-            }
             if (id.includes('firebase')) {
               return 'vendor-firebase';
             }

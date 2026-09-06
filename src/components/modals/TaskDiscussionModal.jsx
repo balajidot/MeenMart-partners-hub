@@ -193,7 +193,11 @@ export default function TaskDiscussionModal({
         </div>
 
         {/* Input Bar */}
-        <form className="task-disc-input-form" onSubmit={handleSend}>
+        <form
+          className="task-disc-input-form"
+          onSubmit={handleSend}
+          autoComplete="off"
+        >
           <div className="task-disc-options-row">
             <button
               type="button"
@@ -212,10 +216,20 @@ export default function TaskDiscussionModal({
             <input
               ref={inputRef}
               type="text"
+              name="task_comment_message"
+              id="task_comment_message"
               className={`task-disc-input ${isProblemFlag ? 'is-flagged' : ''}`}
               placeholder={isProblemFlag ? 'Describe the problem / blocker...' : 'Type message / update here...'}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="sentences"
+              spellCheck="false"
+              enterKeyHint="send"
+              data-form-type="other"
+              data-lpignore="true"
+              data-1p-ignore="true"
             />
             <button
               type="submit"
