@@ -201,6 +201,19 @@ input, textarea, select { font-family: inherit; }
   white-space: nowrap;
 }
 
+/* A small, persistent cue prevents users from mistaking a filtered view for
+   the complete team workspace. */
+.header-context {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
 .user-avatar-btn {
   flex-shrink: 0;
   width: 34px;
@@ -265,6 +278,15 @@ input, textarea, select { font-family: inherit; }
   font-weight: 600;
   border: none;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.filter-chip:focus-visible,
+.user-avatar-btn:focus-visible,
+.task-filter-clear-btn:focus-visible,
+.fab-btn:focus-visible,
+.sheet-submit-btn:focus-visible {
+  outline: 3px solid rgba(77, 123, 243, 0.45);
+  outline-offset: 2px;
 }
 
 .filter-chip-dot {
@@ -4610,5 +4632,4 @@ input, textarea, select { font-family: inherit; }
 .task-disc-send-btn.can-send:active {
   transform: scale(0.95);
 }
-
 

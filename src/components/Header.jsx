@@ -27,12 +27,16 @@ export default function Header({
   const avatarBg = PARTNER_COLORS[partner?.name] ?? '#5A6480';
   const initials = partner?.initials || (partner?.name || '??').slice(0, 2).toUpperCase();
   const avatarUrl = profiles?.[partner?.name]?.avatarUrl;
+  const filterLabel = partnerFilter === 'all' ? 'All partners' : partnerFilter;
 
   return (
     <header className="app-header">
       <div className="header-top-row">
         <div className="header-titles">
           <h1 className="header-title">{title}</h1>
+          <span className="header-context" aria-live="polite">
+            Viewing {filterLabel}
+          </span>
         </div>
         <button
           type="button"
@@ -66,6 +70,7 @@ export default function Header({
                 triggerHaptic('light');
                 setPartnerFilter(value);
               }}
+              aria-pressed={isActive}
               title={isCurrentUser ? `${label} (Your workspace)` : `Filter by ${label}`}
             >
               {dot && (

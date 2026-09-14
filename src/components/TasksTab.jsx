@@ -268,8 +268,9 @@ export default function TasksTab({
                 triggerHaptic('light');
                 setPartnerFilter('all');
               }}
+              aria-label={`Clear ${partnerFilter} filter and show all partners`}
             >
-              Show All
+              Show all
             </button>
           )}
         </div>
