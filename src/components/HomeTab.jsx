@@ -1,14 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { getLocalDateStr, getTaskDeadlineStatus } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
+import { PARTNER_NAMES, metaFor } from '../config/partners';
 import PartnerDetailModal from './modals/PartnerDetailModal';
 
-/* -- Partner meta ------------------------------------------------ */
-const PARTNER_COLORS    = { Balaji: '#1B2A5B', Nagoor: '#0F9E8E', JP: '#B4531F', Shared: '#5A6480' };
-const PARTNER_INITIALS  = { Balaji: 'BA', Nagoor: 'NA', JP: 'JP', Shared: 'ALL' };
-const PARTNER_MONO_CLASS= { Balaji: 'balaji', Nagoor: 'nagoor', JP: 'jp', Shared: 'shared' };
-
-const PRIORITY_COLORS   = { urgent: '#D93A3A', high: '#E08A0B', normal: '#6B7590' };
+const PRIORITY_COLORS = { urgent: '#D93A3A', high: '#E08A0B', normal: '#6B7590' };
 
 /* -- Helpers ----------------------------------------------------- */
 function fmtTaskTime(task) {
@@ -28,8 +24,6 @@ function fmtTaskTime(task) {
   return '';
 }
 
-const WORKLOAD_ORDER = ['Nagoor', 'JP', 'Balaji'];
-const PARTNER_ROLES  = { Nagoor: 'Procure & Pack', JP: 'Delivery & Sales', Balaji: 'Tech & Product' };
 
 /* ---------------------------------------------------------------- */
 export default function HomeTab({
@@ -95,7 +89,8 @@ export default function HomeTab({
     const logs = (store.worklogs || []).filter(
       (w) => (w.date || getLocalDateStr(w.createdAt)) >= weekStartStr
     );
-    const hours = { Nagoor: 0, JP: 0, Balaji: 0 };
+    const hours = {};
+    PARTNER_NAMES.forEach((name) => { hours[name] = 0; });
     logs.forEach((w) => {
       if (hours[w.partner] !== undefined) {
         hours[w.partner] += Number(w.hours || 0);
@@ -227,14 +222,15 @@ export default function HomeTab({
           <span className="section-card-meta">Tap partner for insights</span>
         </div>
         <div className="live-partners-grid">
-          {['Balaji', 'Nagoor', 'JP'].map((pName) => {
+          {PARTNER_NAMES.map((pName) => {
             const isMe = pName === currentPartner?.name;
             const isOnline = !!onlinePartners?.[pName] || isMe;
             const isOnShift = !!store.activeShifts?.[pName];
             const isFilterSelected = partnerFilter === pName;
             const avatarUrl = profiles?.[pName]?.avatarUrl;
-            const initials = PARTNER_INITIALS[pName];
-            const pColor = PARTNER_COLORS[pName];
+            const pMeta = metaFor(pName);
+            const initials = pMeta.initials;
+            const pColor = pMeta.color;
 
             return (
               <div
@@ -246,7 +242,7 @@ export default function HomeTab({
                 }}
                 role="button"
                 tabIndex={0}
-                title={`${pName} (${PARTNER_ROLES[pName] || 'Partner'}) — Performance & Insights${isFilterSelected ? ' (Filtered)' : ''}`}
+                title={`${pName} (${pMeta.role}) — Performance & Insights${isFilterSelected ? ' (Filtered)' : ''}`}
                 style={{ cursor: 'pointer' }}
               >
                 <div className="live-avatar-wrap" style={{ backgroundColor: pColor }}>
@@ -333,7 +329,7 @@ export default function HomeTab({
         ) : (
           <div className="upnext-tasks-list">
             {upNextTasks.map((task) => {
-              const priorityColor = PRIORITY_COLORS[task.priority] ?? PRIORITY_COLORS.normal;
+              const priorityColor = PRIORITY_COLORS[(task.priority || '').toLowerCase()] ?? PRIORITY_COLORS.normal;
               const timeStr       = fmtTaskTime(task);
               const deadlineAlert = getTaskDeadlineStatus(task);
               const assignerName  = task.assignedBy || task.from;
@@ -361,7 +357,7 @@ export default function HomeTab({
                     className="task-priority-dot"
                     style={{
                       background: priorityColor,
-                      boxShadow: task.priority === 'urgent' ? '0 0 6px rgba(217, 58, 58, 0.4)' : 'none',
+                      boxShadow: (task.priority || '').toLowerCase() === 'urgent' ? '0 0 6px rgba(217, 58, 58, 0.4)' : 'none',
                     }}
                   />
                   <div className="task-info">
@@ -408,24 +404,24 @@ export default function HomeTab({
           )}
         </div>
         <div className="workload-rows">
-          {WORKLOAD_ORDER.map((partner) => {
+          {PARTNER_NAMES.map((partner) => {
             const hrs       = workloadHours[partner] || 0;
             const pct       = Math.round((hrs / maxWkHours) * 100);
             const isFiltered = partnerFilter !== 'all' && partnerFilter !== partner;
             return (
               <div key={partner} className="workload-row" style={{ opacity: isFiltered ? 0.35 : 1 }}>
-                <div className={`partner-monogram partner-monogram-sm ${PARTNER_MONO_CLASS[partner]}`}>
-                  {PARTNER_INITIALS[partner]}
+                <div className={`partner-monogram partner-monogram-sm ${metaFor(partner).monoClass}`}>
+                  {metaFor(partner).initials}
                 </div>
                 <div className="workload-info">
                   <div className="workload-name-row">
-                    <span className="workload-name">{partner} · {PARTNER_ROLES[partner]}</span>
+                    <span className="workload-name">{partner} · {metaFor(partner).role}</span>
                     <span className="workload-label">{hrs.toFixed(1)}h / wk</span>
                   </div>
                   <div className="progress-bar">
                     <div
                       className="progress-bar-fill"
-                      style={{ width: `${pct}%`, background: PARTNER_COLORS[partner] }}
+                      style={{ width: `${pct}%`, background: metaFor(partner).color }}
                     />
                   </div>
                 </div>

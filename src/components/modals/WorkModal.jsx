@@ -1,14 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { getLocalDateStr } from '../../utils/calculations';
+import { PARTNERS, PARTNER_NAMES } from '../../config/partners';
 
-const PARTNER_CHIPS = [
-  { label: 'Balaji', value: 'Balaji', activeClass: 'active-balaji' },
-  { label: 'Nagoor', value: 'Nagoor', activeClass: 'active-nagoor' },
-  { label: 'JP',     value: 'JP',     activeClass: 'active-jp'     },
-];
+const PARTNER_CHIPS = PARTNERS.map((p) => ({
+  label: p.name, value: p.name, activeClass: `active-${p.monoClass}`,
+}));
 
 export default function WorkModal({ isOpen, onClose, onAddWorklog, currentPartner }) {
-  const partner = currentPartner?.name || 'Balaji';
+  const partner = currentPartner?.name || PARTNER_NAMES[0];
 
   const [desc, setDesc] = useState('');
   const [hours, setHours] = useState('');

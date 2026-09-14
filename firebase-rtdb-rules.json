@@ -1,11 +1,15 @@
 {
   "rules": {
     "meenmart": {
-      ".read":  "auth != null && (auth.token.email == 'itzbalajir@gmail.com' || auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'abdulfaizal66786@gmail.com' || auth.token.email == 'jaya84008@gmail.com')",
+      ".read": "auth != null && (auth.token.email == 'itzbalajir@gmail.com' || auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'abdulfaizal66786@gmail.com' || auth.token.email == 'jaya84008@gmail.com')",
       ".write": "auth != null && (auth.token.email == 'itzbalajir@gmail.com' || auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'abdulfaizal66786@gmail.com' || auth.token.email == 'jaya84008@gmail.com')"
     },
     "presence": {
-      ".read":  "auth != null && (auth.token.email == 'itzbalajir@gmail.com' || auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'abdulfaizal66786@gmail.com' || auth.token.email == 'jaya84008@gmail.com')",
+      ".read": "auth != null && (auth.token.email == 'itzbalajir@gmail.com' || auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'abdulfaizal66786@gmail.com' || auth.token.email == 'jaya84008@gmail.com')",
+      ".write": "auth != null && (auth.token.email == 'itzbalajir@gmail.com' || auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'abdulfaizal66786@gmail.com' || auth.token.email == 'jaya84008@gmail.com')"
+    },
+    "profiles": {
+      ".read": "auth != null && (auth.token.email == 'itzbalajir@gmail.com' || auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'abdulfaizal66786@gmail.com' || auth.token.email == 'jaya84008@gmail.com')",
       ".write": "auth != null && (auth.token.email == 'itzbalajir@gmail.com' || auth.token.email == 'balajibala93843@gmail.com' || auth.token.email == 'abdulfaizal66786@gmail.com' || auth.token.email == 'jaya84008@gmail.com')"
     }
   }

@@ -1,6 +1,7 @@
-const CACHE_NAME = 'meenmart-partners-pwa-v7';
+const CACHE_NAME = 'meenmart-partners-pwa-v8';
 const STATIC_ASSETS = [
   '/',
+  '/index.html',
   '/manifest.webmanifest',
   '/favicon.svg',
   '/pwa-192x192.png',
@@ -70,8 +71,14 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => {
-          return caches.match('/index.html') || caches.match('/');
+        .catch(async () => {
+          // caches.match() resolves to undefined on a miss, and a Promise is
+          // always truthy, so these must be awaited rather than chained with ||.
+          return (
+            (await caches.match('/index.html')) ||
+            (await caches.match('/')) ||
+            Response.error()
+          );
         })
     );
     return;

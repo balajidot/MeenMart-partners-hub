@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getLocalDateStr } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
+import { PARTNERS as PARTNER_LIST } from '../config/partners';
 
-/* ── Partner config ─────────────────────────────────────── */
-const PARTNERS = [
-  { name: 'Balaji', initial: 'BA', cls: 'balaji', color: '#1B2A5B' },
-  { name: 'Nagoor', initial: 'NA', cls: 'nagoor', color: '#0F9E8E' },
-  { name: 'JP',     initial: 'JP', cls: 'jp',     color: '#B4531F' },
-];
+const PARTNERS = PARTNER_LIST.map((p) => ({
+  name: p.name, initial: p.initials, cls: p.monoClass, color: p.color,
+}));
+
+/** Namespaced so two partners sharing one device never inherit each other's shift. */
+const shiftKey = (name) => `meenmart_shift_in_${name}`;
 
 /* ── Helpers ─────────────────────────────────────────────── */
 function fmtHMS(ms) {
@@ -62,21 +63,38 @@ export default function WorkTab({
   onOpenWork,
   currentPartner,
   toggleShift,
+  isOnline = true,
 }) {
   const partnerName = currentPartner?.name || 'Balaji';
 
-  // Read shift time from realtime cloud store or fallback to local storage
-  const cloudShiftTime = store.activeShifts?.[partnerName];
-  const localShiftTime = (() => {
+  // The cloud record is authoritative: clocking out on another device must end
+  // the shift here too, so the local copy is only a fallback while offline.
+  const cloudShiftTime = store.activeShifts?.[partnerName] ?? null;
+  const [localShiftTime, setLocalShiftTime] = useState(() => {
     try {
-      const s = localStorage.getItem('meenmart_shift_in');
-      return s ? Number(s) : null;
+      const raw = localStorage.getItem(shiftKey(partnerName));
+      return raw ? Number(raw) : null;
     } catch {
       return null;
     }
-  })();
+  });
 
-  const clockInTime = cloudShiftTime || localShiftTime;
+  // Keep the offline fallback in step with the cloud rather than letting it linger.
+  useEffect(() => {
+    try {
+      if (cloudShiftTime) {
+        localStorage.setItem(shiftKey(partnerName), String(cloudShiftTime));
+        setLocalShiftTime(cloudShiftTime);
+      } else if (isOnline) {
+        localStorage.removeItem(shiftKey(partnerName));
+        setLocalShiftTime(null);
+      }
+    } catch {
+      // Private mode — the cloud value still drives the UI.
+    }
+  }, [cloudShiftTime, partnerName, isOnline]);
+
+  const clockInTime = cloudShiftTime ?? (isOnline ? null : localShiftTime);
   const clockedIn = !!clockInTime;
 
   const todayStr = getLocalDateStr();
@@ -137,22 +155,14 @@ export default function WorkTab({
   function handleClockToggle() {
     triggerHaptic('success');
     if (clockedIn) {
-      try {
-        localStorage.removeItem('meenmart_shift_in');
-      } catch (e) {
-        console.warn(e);
-      }
+      try { localStorage.removeItem(shiftKey(partnerName)); } catch { /* private mode */ }
+      setLocalShiftTime(null);
       toggleShift?.(partnerName, false);
-      if (onOpenWork) {
-        onOpenWork();
-      }
+      if (onOpenWork) onOpenWork();
     } else {
       const ts = Date.now();
-      try {
-        localStorage.setItem('meenmart_shift_in', String(ts));
-      } catch (e) {
-        console.warn(e);
-      }
+      try { localStorage.setItem(shiftKey(partnerName), String(ts)); } catch { /* private mode */ }
+      setLocalShiftTime(ts);
       toggleShift?.(partnerName, true);
     }
   }
@@ -272,7 +282,7 @@ export default function WorkTab({
                     type="button"
                     onClick={() => {
                       if (window.confirm('Are you sure you want to delete this activity log?')) {
-                        deleteWorklog(log.id);
+                        deleteWorklog(log.id, partnerName);
                       }
                     }}
                     title="Delete"

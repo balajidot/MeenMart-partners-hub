@@ -1,24 +1,7 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { compressImage } from '../utils/calculations';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { compressImage, getLocalDateStr } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
-
-const PARTNER_COLORS = {
-  Balaji: '#1B2A5B',
-  Nagoor: '#0F9E8E',
-  JP:     '#B4531F',
-};
-
-const PARTNER_INITIALS = {
-  Balaji: 'BA',
-  Nagoor: 'NA',
-  JP:     'JP',
-};
-
-const PARTNER_ROLES = {
-  Balaji: 'Tech & Product',
-  Nagoor: 'Procure & Pack',
-  JP:     'Delivery & Sales',
-};
+import { PARTNER_NAMES, metaFor } from '../config/partners';
 
 const QUICK_OPS_CHIPS = [
   { label: '🐟 Pazhaverkaadu Stock', text: '🐟 Pazhaverkaadu: Fresh meen stock eduthaachu.' },
@@ -34,15 +17,41 @@ function formatChatTime(ts) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-function formatTodayDate() {
-  const d = new Date();
-  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+/** Labels a day separator relative to today, so older messages are never
+ *  presented as if they arrived today. */
+function formatDayLabel(dateStr) {
+  const today = getLocalDateStr();
+  if (dateStr === today) return `Today · ${formatLongDate(dateStr)}`;
+  const yesterday = getLocalDateStr(new Date(Date.now() - 86400000));
+  if (dateStr === yesterday) return `Yesterday · ${formatLongDate(dateStr)}`;
+  return formatLongDate(dateStr);
+}
+
+function formatLongDate(dateStr) {
+  const [y, m, d] = (dateStr || '').split('-').map(Number);
+  if (!y) return dateStr;
+  return new Date(y, m - 1, d).toLocaleDateString('en-IN', {
+    day: '2-digit', month: 'long', year: 'numeric',
+  });
+}
+
+/** Splits a flat, chronologically sorted list into one block per calendar day. */
+function groupByDay(messages) {
+  const groups = [];
+  messages.forEach((msg) => {
+    const dateStr = getLocalDateStr(msg.createdAt);
+    const last = groups[groups.length - 1];
+    if (last && last.dateStr === dateStr) last.items.push(msg);
+    else groups.push({ dateStr, items: [msg] });
+  });
+  return groups;
 }
 
 const ChatMessageItem = React.memo(function ChatMessageItem({ msg, myName, onOpenLightbox, profiles }) {
   const isMine = msg.partner === myName;
-  const partnerColor = PARTNER_COLORS[msg.partner] || '#5A6480';
-  const partnerInitials = PARTNER_INITIALS[msg.partner] || (msg.partner ? msg.partner.slice(0, 2).toUpperCase() : '??');
+  const meta = metaFor(msg.partner);
+  const partnerColor = meta.color;
+  const partnerInitials = meta.initials;
   const avatarUrl = profiles?.[msg.partner]?.avatarUrl;
   const timeStr = formatChatTime(msg.createdAt);
   const hasProof = !!msg.proof;
@@ -54,7 +63,7 @@ const ChatMessageItem = React.memo(function ChatMessageItem({ msg, myName, onOpe
         <div
           className="chat-msg-avatar"
           style={{ backgroundColor: partnerColor }}
-          title={`${msg.partner} (${PARTNER_ROLES[msg.partner] || 'Partner'})`}
+          title={`${msg.partner} (${meta.role})`}
         >
           {avatarUrl ? (
             <img src={avatarUrl} alt={msg.partner} className="chat-avatar-thumb" />
@@ -130,12 +139,14 @@ export default function ChatTab({
   const fileInputRef = useRef(null);
 
   const messages = store?.messages || [];
-  const myName = currentPartner?.name || 'Balaji';
+  const myName = currentPartner?.name || PARTNER_NAMES[0];
 
   // Only show partners who are actively online (current user is always considered online)
-  const onlineList = ['Balaji', 'Nagoor', 'JP'].filter(
+  const onlineList = PARTNER_NAMES.filter(
     (pName) => onlinePartners?.[pName] || pName === myName
   );
+
+  const dayGroups = useMemo(() => groupByDay(messages), [messages]);
 
   const scrollToBottom = useCallback((smooth = true) => {
     if (messagesEndRef.current) {
@@ -251,13 +262,13 @@ export default function ChatTab({
               <span
                 key={pName}
                 className={`chat-channel-avatar-pill ${pName === myName ? 'is-me' : ''}`}
-                style={{ backgroundColor: PARTNER_COLORS[pName] }}
-                title={`${pName}: Online (${PARTNER_ROLES[pName]})`}
+                style={{ backgroundColor: metaFor(pName).color }}
+                title={`${pName}: Online (${metaFor(pName).role})`}
               >
                 {avatarUrl ? (
                   <img src={avatarUrl} alt={pName} className="chat-avatar-thumb" />
                 ) : (
-                  PARTNER_INITIALS[pName]
+                  metaFor(pName).initials
                 )}
                 <span className="channel-avatar-online-dot" />
               </span>
@@ -282,8 +293,6 @@ export default function ChatTab({
 
       {/* Scrollable Messages Stream */}
       <div className="chat-messages-container">
-        <div className="chat-date-header">Today &middot; {formatTodayDate()}</div>
-
         {messages.length === 0 && (
           <div className="empty-state" style={{ paddingTop: '32px' }}>
             <div className="empty-icon">💬</div>
@@ -293,14 +302,19 @@ export default function ChatTab({
         )}
 
         <div className="chat-messages-list">
-          {messages.map((msg) => (
-            <ChatMessageItem
-              key={msg.id}
-              msg={msg}
-              myName={myName}
-              onOpenLightbox={onOpenLightbox}
-              profiles={profiles}
-            />
+          {dayGroups.map((group) => (
+            <React.Fragment key={group.dateStr}>
+              <div className="chat-date-header">{formatDayLabel(group.dateStr)}</div>
+              {group.items.map((msg) => (
+                <ChatMessageItem
+                  key={msg.id}
+                  msg={msg}
+                  myName={myName}
+                  onOpenLightbox={onOpenLightbox}
+                  profiles={profiles}
+                />
+              ))}
+            </React.Fragment>
           ))}
           <div ref={messagesEndRef} style={{ height: '8px' }} />
         </div>

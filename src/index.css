@@ -1216,14 +1216,6 @@ input, textarea, select { font-family: inherit; }
   border-radius: 6px;
 }
 
-.running-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 4px;
-  background: var(--teal);
-  animation: mmpulse 1.6s infinite;
-}
-
 /* Done task card */
 .task-card.done-card {
   background: #FAFCFE;
@@ -1262,18 +1254,7 @@ input, textarea, select { font-family: inherit; }
   line-height: 1.34;
 }
 
-.task-done-meta {
-  font-size: 13px;
-  color: #9AA3B8;
-}
-
 /* ── Section Group Header ─────────────────────────────────── */
-.section-group {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-}
-
 .section-label-row {
   display: flex;
   align-items: center;
@@ -1462,14 +1443,6 @@ input, textarea, select { font-family: inherit; }
 }
 .shift-card.clocked-in .shift-kicker { color: #54D6C4; }
 
-.shift-elapsed {
-  font-family: var(--mono);
-  font-size: 34px;
-  font-weight: 600;
-  letter-spacing: -1px;
-  line-height: 1;
-  color: var(--navy);
-}
 .shift-card.clocked-in .shift-elapsed { color: #fff; }
 
 .shift-card-right { text-align: right; display: flex; flex-direction: column; gap: 3px; }
@@ -1494,13 +1467,6 @@ input, textarea, select { font-family: inherit; }
 .shift-btn.check-in  { background: var(--teal); }
 
 /* Activity Timeline */
-.activity-row {
-  display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  border-top: 1px solid var(--row-sep);
-}
-
 .activity-time-col {
   flex-shrink: 0;
   display: flex;
@@ -1534,47 +1500,12 @@ input, textarea, select { font-family: inherit; }
 .activity-body { flex: 1; min-width: 0; }
 .activity-what { font-size: 15px; font-weight: 550; font-weight: 500; color: var(--navy); line-height: 1.3; }
 .activity-meta { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-.activity-who-badge {
-  padding: 2px 7px;
-  border-radius: 6px;
-  font-weight: 650;
-  font-size: 12px;
-  color: #fff;
-}
 .activity-dur { font-family: var(--mono); }
 
 /* Week Bar Chart */
-.week-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  height: 112px;
-  padding: 0 4px;
-}
-
-.week-bar-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 7px;
-  height: 100%;
-  justify-content: flex-end;
-  transition: opacity .2s;
-}
-
 .week-bar-val { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--navy); }
 .week-bar-fill { width: 100%; border-radius: 9px 9px 4px 4px; }
 .week-bar-name { font-size: 13px; font-weight: 500; color: var(--text-sec); }
-
-.week-note {
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.45;
-  padding-top: 12px;
-  border-top: 1px solid var(--row-sep);
-  margin-top: 14px;
-}
 
 /* Partner Performance Row */
 .perf-row {
@@ -4633,3 +4564,141 @@ input, textarea, select { font-family: inherit; }
   transform: scale(0.95);
 }
 
+
+/* ============================================================
+   Header actions — sync state and data access
+   ============================================================ */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.header-net-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.header-net-pill.is-online {
+  color: #0B7E71;
+  background: rgba(15, 158, 142, 0.12);
+  border-color: rgba(15, 158, 142, 0.22);
+}
+
+.header-net-pill.is-offline {
+  color: #B45309;
+  background: rgba(255, 149, 0, 0.14);
+  border-color: rgba(255, 149, 0, 0.26);
+}
+
+.header-net-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.header-net-pill.is-online .header-net-dot {
+  box-shadow: 0 0 0 0 rgba(15, 158, 142, 0.5);
+  animation: net-pulse 2.4s ease-out infinite;
+}
+
+@keyframes net-pulse {
+  70%  { box-shadow: 0 0 0 5px rgba(15, 158, 142, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(15, 158, 142, 0); }
+}
+
+.header-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: var(--text-sec);
+  background: var(--chip-bg);
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+
+.header-icon-btn:hover { background: rgba(118, 118, 128, 0.2); }
+.header-icon-btn:active { transform: scale(0.94); }
+
+.header-icon-btn:focus-visible {
+  outline: 3px solid rgba(77, 123, 243, 0.45);
+  outline-offset: 2px;
+}
+
+/* On the narrowest phones the label is noise; the dot still carries the state. */
+@media (max-width: 380px) {
+  .header-net-pill { padding: 0 6px; font-size: 0; gap: 0; }
+  .header-net-pill .header-net-dot { width: 7px; height: 7px; }
+}
+
+/* ============================================================
+   Tasks dated outside the visible calendar strip
+   ============================================================ */
+.stray-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: calc(100% - 32px);
+  margin: 2px 16px 0;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px dashed var(--row-sep);
+  color: var(--text-sec);
+  font-size: 13px;
+  text-align: left;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.stray-toggle:hover {
+  border-color: rgba(15, 158, 142, 0.4);
+  background: var(--teal-light);
+}
+
+.stray-toggle:focus-visible {
+  outline: 3px solid rgba(77, 123, 243, 0.45);
+  outline-offset: 2px;
+}
+
+.stray-toggle-icon { font-size: 15px; line-height: 1; flex-shrink: 0; }
+.stray-toggle-text { flex: 1; font-weight: 500; }
+.stray-toggle-text strong { color: var(--navy); font-weight: 800; }
+
+.stray-toggle-chevron {
+  color: var(--text-muted);
+  font-size: 13px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.stray-toggle-chevron.open { transform: rotate(180deg); }
+
+/* A chip that moves the calendar strip to the task's own date. */
+.task-meta-chip.date-jump {
+  cursor: pointer;
+  color: var(--teal-dark);
+  background: var(--teal-light);
+  border-color: rgba(15, 158, 142, 0.22);
+  transition: background 0.16s ease;
+}
+
+.task-meta-chip.date-jump:hover { background: rgba(15, 158, 142, 0.18); }
+
+.task-meta-chip.date-jump:focus-visible {
+  outline: 2px solid rgba(15, 158, 142, 0.55);
+  outline-offset: 1px;
+}

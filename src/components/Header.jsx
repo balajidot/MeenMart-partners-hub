@@ -1,18 +1,6 @@
 import React from 'react';
 import { triggerHaptic } from '../utils/haptics';
-
-const PARTNER_COLORS = {
-  Balaji: '#1B2A5B',
-  Nagoor: '#0F9E8E',
-  JP: '#B4531F',
-};
-
-const FILTER_CHIPS = [
-  { label: 'All Partners', value: 'all', dot: null },
-  { label: 'Balaji', value: 'Balaji', dot: '#4D7BF3' },
-  { label: 'Nagoor', value: 'Nagoor', dot: '#0F9E8E' },
-  { label: 'JP', value: 'JP', dot: '#E08A0B' },
-];
+import { FILTER_OPTIONS, metaFor } from '../config/partners';
 
 export default function Header({
   title,
@@ -21,11 +9,12 @@ export default function Header({
   partner,
   onOpenSettings,
   profiles,
-  _onOpenData,
-  _isOnline,
+  onOpenData,
+  isOnline,
 }) {
-  const avatarBg = PARTNER_COLORS[partner?.name] ?? '#5A6480';
-  const initials = partner?.initials || (partner?.name || '??').slice(0, 2).toUpperCase();
+  const meta = metaFor(partner?.name);
+  const avatarBg = meta.color;
+  const initials = partner?.initials || meta.initials;
   const avatarUrl = profiles?.[partner?.name]?.avatarUrl;
   const filterLabel = partnerFilter === 'all' ? 'All partners' : partnerFilter;
 
@@ -38,6 +27,34 @@ export default function Header({
             Viewing {filterLabel}
           </span>
         </div>
+        <div className="header-actions">
+          <span
+            className={`header-net-pill ${isOnline ? 'is-online' : 'is-offline'}`}
+            title={isOnline ? 'Synced with the cloud' : 'Offline — changes are saved on this device'}
+          >
+            <span className="header-net-dot" />
+            {isOnline ? 'Live' : 'Offline'}
+          </span>
+
+          {onOpenData && (
+            <button
+              type="button"
+              className="header-icon-btn"
+              onClick={() => {
+                triggerHaptic('light');
+                onOpenData();
+              }}
+              aria-label="Open data and sync status"
+              title="Data & sync"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <ellipse cx="12" cy="5" rx="8" ry="3" />
+                <path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5" />
+                <path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" />
+              </svg>
+            </button>
+          )}
+
         <button
           type="button"
           className="user-avatar-btn"
@@ -55,10 +72,11 @@ export default function Header({
             initials
           )}
         </button>
+        </div>
       </div>
 
       <div className="filter-chips">
-        {FILTER_CHIPS.map(({ label, value, dot }) => {
+        {FILTER_OPTIONS.map(({ label, shortLabel, value, dot }) => {
           const isActive = partnerFilter === value;
           const isCurrentUser = partner?.name === value;
           return (
@@ -82,14 +100,10 @@ export default function Header({
                   }}
                 />
               )}
-              {value === 'all' ? (
-                <>
-                  <span className="chip-label-full">All Partners</span>
-                  <span className="chip-label-short">All</span>
-                </>
-              ) : (
-                <span className="filter-chip-label">{label}</span>
-              )}
+              {/* Both render; the stylesheet picks one per breakpoint, so a chip
+                  whose short and full labels match must still emit both. */}
+              <span className="chip-label-full">{label}</span>
+              <span className="chip-label-short">{shortLabel}</span>
               {isCurrentUser && <span className="filter-chip-you">You</span>}
             </button>
           );

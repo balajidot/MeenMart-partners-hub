@@ -1,24 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { compressImage } from '../../utils/calculations';
 import { triggerHaptic } from '../../utils/haptics';
-
-const PARTNER_ROLES = {
-  Balaji: 'Tech & Product',
-  Nagoor: 'Procure & Pack',
-  JP:     'Delivery & Sales',
-};
-
-const PARTNER_COLORS = {
-  Balaji: '#1B2A5B',
-  Nagoor: '#0F9E8E',
-  JP:     '#B4531F',
-};
-
-const PARTNER_INITIALS = {
-  Balaji: 'BA',
-  Nagoor: 'NA',
-  JP:     'JP',
-};
+import { PARTNER_NAMES, metaFor } from '../../config/partners';
 
 export default function SettingsModal({
   isOpen,
@@ -29,17 +12,18 @@ export default function SettingsModal({
   onlinePartners,
   onSignOut,
   onWipeAll,
-  _isOnline,
+  isOnline,
 }) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
 
   if (!isOpen) return null;
 
-  const currentName = partner?.name || 'Balaji';
-  const role = PARTNER_ROLES[currentName] || partner?.role || 'Co-Founder';
-  const color = PARTNER_COLORS[currentName] || '#16224A';
-  const initials = PARTNER_INITIALS[currentName] || currentName.slice(0, 2).toUpperCase();
+  const currentName = partner?.name || PARTNER_NAMES[0];
+  const meta = metaFor(currentName);
+  const role = meta.role || partner?.role || 'Co-Founder';
+  const color = meta.color;
+  const initials = meta.initials;
   const avatarUrl = profiles?.[currentName]?.avatarUrl;
   const isUserOnline = !!onlinePartners?.[currentName];
 

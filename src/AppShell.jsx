@@ -40,7 +40,7 @@ function TabLoadingFallback() {
   );
 }
 
-export default function AppShell({ _user, partner, onSignOut }) {
+export default function AppShell({ partner, onSignOut }) {
   const {
     store,
     activeTab,
@@ -211,6 +211,7 @@ export default function AppShell({ _user, partner, onSignOut }) {
                 onOpenWork={openWork}
                 currentPartner={partner}
                 toggleShift={toggleShift}
+                isOnline={isOnline}
               />
             )}
 

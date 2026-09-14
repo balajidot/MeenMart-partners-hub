@@ -1,11 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { getLocalDateStr, getTaskDeadlineStatus } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
+import { metaFor } from '../config/partners';
 import TaskDiscussionModal from './modals/TaskDiscussionModal';
-
-/* -- Partner meta ------------------------------------------------ */
-const PARTNER_INITIALS   = { Balaji: 'BA', Nagoor: 'NA', JP: 'JP', Shared: 'ALL' };
-const PARTNER_MONO_CLASS = { Balaji: 'balaji', Nagoor: 'nagoor', JP: 'jp', Shared: 'shared' };
 
 const PRIORITY_LABEL = { urgent: 'Urgent', high: 'High', normal: 'Normal' };
 const PRIORITY_CLASS = { urgent: 'urgent', high: 'high', normal: 'normal' };
@@ -131,8 +128,8 @@ export default function TasksTab({
   setSelectedDate,
   completeTask,
   deleteTask,
-  _addProof,
-  _onOpenLightbox,
+  addProof,
+  onOpenLightbox,
   onOpenTask,
   onOpenCompleteTask,
   currentPartner,
@@ -140,8 +137,10 @@ export default function TasksTab({
   toggleTaskProblem,
   profiles,
 }) {
-  const calDays = useMemo(() => buildCalDays(), []);
-  const today   = getLocalDateStr();
+  const today = getLocalDateStr();
+  // Recomputing on the date string keeps an all-night PWA session from showing
+  // yesterday's strip.
+  const calDays = useMemo(() => buildCalDays(), [today]);
 
   const [discussionTask, setDiscussionTask] = useState(null);
 
@@ -174,6 +173,21 @@ export default function TasksTab({
     }
     return list;
   }, [allTasks, activeDateStr, partnerFilter]);
+
+  /** Unfinished work dated outside the 7-day strip would otherwise be
+   *  unreachable: the Home tab counts it, but no date pill can select it. */
+  const strayPending = useMemo(() => {
+    const visible = new Set(calDays.map((d) => d.dateStr));
+    return allTasks.filter((t) => {
+      if (t.status === 'completed' || t.s === 'done') return false;
+      const ds = taskDateStr(t);
+      if (!ds || visible.has(ds)) return false;
+      if (partnerFilter === 'all') return true;
+      return t.to === partnerFilter || t.from === partnerFilter || !t.to || t.to === 'Shared';
+    });
+  }, [allTasks, calDays, partnerFilter]);
+
+  const [showStray, setShowStray] = useState(false);
 
   const { completed, inProgress, pending } = useMemo(() => {
     const comp = [];
@@ -375,6 +389,47 @@ export default function TasksTab({
         </div>
       )}
 
+      {/* Older / future unfinished work that the date strip cannot reach */}
+      {strayPending.length > 0 && (
+        <div className="section-group">
+          <button
+            type="button"
+            className="stray-toggle"
+            onClick={() => {
+              triggerHaptic('light');
+              setShowStray((v) => !v);
+            }}
+            aria-expanded={showStray}
+          >
+            <span className="stray-toggle-icon">🗂️</span>
+            <span className="stray-toggle-text">
+              <strong>{strayPending.length}</strong>{' '}
+              {strayPending.length === 1 ? 'task' : 'tasks'} vera dates-la pending
+            </span>
+            <span className={`stray-toggle-chevron${showStray ? ' open' : ''}`}>▾</span>
+          </button>
+
+          {showStray && strayPending.map((task) => {
+            const assigner = task.from || task.createdBy;
+            return (
+              <TaskCardActive
+                key={task.id}
+                task={task}
+                isRunning={false}
+                onComplete={handleComplete}
+                onDelete={deleteTask}
+                canDelete={!assigner || assigner === activeUser}
+                assigner={assigner}
+                activeUser={activeUser}
+                onOpenDiscussion={(t) => setDiscussionTask(t)}
+                dateBadge={taskDateStr(task)}
+                onJumpToDate={setSelectedDate}
+              />
+            );
+          })}
+        </div>
+      )}
+
       {/* Quick Add Button below tasks list (Fixed no double plus) */}
       {dateTasks.length > 0 && (
         <button
@@ -417,13 +472,15 @@ const TaskCardActive = React.memo(function TaskCardActive({
   assigner,
   activeUser,
   onOpenDiscussion,
+  dateBadge = null,
+  onJumpToDate = null,
 }) {
-  const partnerClass = PARTNER_MONO_CLASS[task.to] || 'shared';
+  const partnerClass = metaFor(task.to).monoClass;
   const rawPriority  = (task.priority || 'normal').toLowerCase();
   const prioClass    = PRIORITY_CLASS[rawPriority] || 'normal';
   const prioLabel    = PRIORITY_LABEL[rawPriority] || 'Normal';
   const timeStr      = fmtTaskMeta(task);
-  const initials     = PARTNER_INITIALS[task.to]   || 'ALL';
+  const initials     = metaFor(task.to).initials;
   const deadlineAlert = getTaskDeadlineStatus(task);
   const assignerName = task.assignedBy || task.from || assigner;
   const commentsCount = task.comments?.length || 0;
@@ -486,6 +543,20 @@ const TaskCardActive = React.memo(function TaskCardActive({
         {/* Neatly Aligned Single-Row Footer */}
         <div className="task-card-foot">
           <div className="task-card-foot-meta">
+            {dateBadge && (
+              <button
+                type="button"
+                className="task-meta-chip date-jump"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerHaptic('light');
+                  onJumpToDate?.(dateBadge);
+                }}
+                title={`Jump to ${dateBadge}`}
+              >
+                📅 {dateBadge}
+              </button>
+            )}
             {timeStr && (
               <span className="task-meta-chip time">
                 <ClockSVG /> {timeStr}
@@ -569,8 +640,8 @@ const TaskCardDone = React.memo(function TaskCardDone({
   activeUser,
   onOpenDiscussion,
 }) {
-  const partnerClass = PARTNER_MONO_CLASS[task.to] || 'shared';
-  const initials     = PARTNER_INITIALS[task.to]   || 'ALL';
+  const partnerClass = metaFor(task.to).monoClass;
+  const initials     = metaFor(task.to).initials;
   const commentsCount = task.comments?.length || 0;
 
   return (

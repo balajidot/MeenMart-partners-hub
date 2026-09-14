@@ -1,13 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { getLocalDateStr } from '../../utils/calculations';
-import { PARTNER_NAMES } from '../../config/partners';
+import { PARTNER_NAMES, ASSIGNEE_OPTIONS } from '../../config/partners';
 
-const PARTNER_CHIPS = [
-  { label: 'Balaji', value: 'Balaji', activeClass: 'active-balaji' },
-  { label: 'Nagoor', value: 'Nagoor', activeClass: 'active-nagoor' },
-  { label: 'JP',     value: 'JP',     activeClass: 'active-jp'     },
-  { label: 'Shared', value: 'Shared', activeClass: 'active-shared' },
-];
+const PARTNER_CHIPS = ASSIGNEE_OPTIONS.map((p) => ({
+  label: p.name, value: p.name, activeClass: `active-${p.monoClass}`,
+}));
 
 const PRIORITY_CHIPS = [
   { label: 'Urgent', value: 'urgent', activeClass: 'active-danger' },
