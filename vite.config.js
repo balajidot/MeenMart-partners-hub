@@ -9,8 +9,11 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('firebase')) {
-              return 'vendor-firebase';
+            // The sign-in screen needs auth only; the database SDK arrives
+            // with the shell, after a partner is through the gate.
+            if (id.includes('firebase') || id.includes('@firebase')) {
+              if (id.includes('database')) return 'vendor-firebase-db';
+              return 'vendor-firebase-auth';
             }
             if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
               return 'vendor-react';

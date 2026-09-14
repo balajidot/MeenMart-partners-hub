@@ -18,25 +18,6 @@ export function getLocalDateStr(d = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-export function pruneExpiredProofs(store) {
-  const now = Date.now();
-  const prune = (list) =>
-    (list || []).map((item) => {
-      if (item.proof && item.proofAddedAt && now - item.proofAddedAt > PROOF_EXPIRY_MS) {
-        return { ...item, proof: null, proofAddedAt: null };
-      }
-      return item;
-    });
-
-  return {
-    ...store,
-    tasks:    prune(store.tasks || []),
-    expenses: prune(store.expenses || []),
-    worklogs: prune(store.worklogs || []),
-    messages: prune(store.messages || []),
-  };
-}
-
 export function compressImage(file, maxKB = 80) {
   return new Promise((resolve, reject) => {
     if (!file) {

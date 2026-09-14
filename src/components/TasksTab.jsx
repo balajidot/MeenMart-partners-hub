@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { getLocalDateStr, getTaskDeadlineStatus } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
 import { metaFor } from '../config/partners';
@@ -205,11 +205,14 @@ export default function TasksTab({
     return { completed: comp, inProgress: inProg, pending: pend };
   }, [dateTasks]);
 
-  const handleComplete = (task) => {
+  const handleComplete = useCallback((task) => {
     triggerHaptic('success');
     if (onOpenCompleteTask) onOpenCompleteTask(task);
     else completeTask(task.id);
-  };
+  }, [onOpenCompleteTask, completeTask]);
+
+  const handleOpenDiscussion = useCallback((task) => setDiscussionTask(task), []);
+  const handleJumpToDate = useCallback((date) => setSelectedDate(date), [setSelectedDate]);
 
   const headerDateLabel = formatHeaderDate(activeDateStr, today);
 
@@ -327,7 +330,7 @@ export default function TasksTab({
                 canDelete={canDelete}
                 assigner={assigner}
                 activeUser={activeUser}
-                onOpenDiscussion={(t) => setDiscussionTask(t)}
+                onOpenDiscussion={handleOpenDiscussion}
               />
             );
           })}
@@ -355,7 +358,7 @@ export default function TasksTab({
                 canDelete={canDelete}
                 assigner={assigner}
                 activeUser={activeUser}
-                onOpenDiscussion={(t) => setDiscussionTask(t)}
+                onOpenDiscussion={handleOpenDiscussion}
               />
             );
           })}
@@ -382,7 +385,7 @@ export default function TasksTab({
                 canDelete={canDelete}
                 assigner={assigner}
                 activeUser={activeUser}
-                onOpenDiscussion={(t) => setDiscussionTask(t)}
+                onOpenDiscussion={handleOpenDiscussion}
               />
             );
           })}
@@ -421,9 +424,9 @@ export default function TasksTab({
                 canDelete={!assigner || assigner === activeUser}
                 assigner={assigner}
                 activeUser={activeUser}
-                onOpenDiscussion={(t) => setDiscussionTask(t)}
+                onOpenDiscussion={handleOpenDiscussion}
                 dateBadge={taskDateStr(task)}
-                onJumpToDate={setSelectedDate}
+                onJumpToDate={handleJumpToDate}
               />
             );
           })}

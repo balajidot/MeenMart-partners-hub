@@ -823,15 +823,6 @@ input, textarea, select { font-family: inherit; }
 .task-row:hover { background: #FAFBFE; }
 .task-row:last-child { border-bottom: none; }
 
-.task-checkbox {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  border: 2px solid #C9D1E4;
-  cursor: pointer;
-  transition: border-color .12s;
-}
 .task-checkbox:hover { border-color: var(--teal); }
 
 .task-priority-dot {
@@ -1204,18 +1195,6 @@ input, textarea, select { font-family: inherit; }
   cursor: not-allowed;
 }
 
-.running-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--teal-dark);
-  background: var(--teal-light);
-  padding: 2px 7px;
-  border-radius: 6px;
-}
-
 /* Done task card */
 .task-card.done-card {
   background: #FAFCFE;
@@ -1227,47 +1206,12 @@ input, textarea, select { font-family: inherit; }
   opacity: 1;
 }
 
-.task-card-done-check {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  margin-top: 3px;
-  border-radius: 7px;
-  background: var(--teal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: none;
-  transition: transform .12s ease;
-}
 .task-card-done-check:active {
   transform: scale(0.9);
 }
 
-.task-done-title {
-  font-size: 14px;
-  font-weight: 450;
-  color: var(--text-sec);
-  text-decoration: line-through;
-  text-decoration-color: #C3CADB;
-  line-height: 1.34;
-}
-
 /* ── Section Group Header ─────────────────────────────────── */
-.section-label-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 2px 2px;
-}
 
-.section-label {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-}
 .section-label.teal  { color: var(--teal); }
 .section-label.slate { color: var(--text-sec); }
 
@@ -1288,13 +1232,6 @@ input, textarea, select { font-family: inherit; }
 .section-count-badge.success {
   background: #E8F5E9;
   color: #2E7D32;
-}
-
-.section-divider {
-  height: 1px;
-  flex: 1;
-  background: #E4E8F2;
-  border-radius: 2px;
 }
 
 /* ── Calendar Strip (Tasks Tab) ───────────────────────────── */
@@ -1372,8 +1309,6 @@ input, textarea, select { font-family: inherit; }
   transform: scale(0.95);
 }
 
-
-
 .task-quick-add-btn {
   width: 100%;
   display: flex;
@@ -1403,44 +1338,16 @@ input, textarea, select { font-family: inherit; }
 }
 
 /* ── Empty State ──────────────────────────────────────────── */
-.empty-state {
-  background: var(--card);
-  border-radius: 16px;
-  border: 1px dashed #D6DCEA;
-  padding: 34px 22px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 9px;
-  text-align: center;
-}
 
 .empty-state-text { font-size: 13.5px; font-weight: 500; color: var(--text-sec); line-height: 1.4; }
 .empty-state-action { font-size: 12.5px; font-weight: 600; color: var(--teal); cursor: pointer; padding-top: 2px; background: none; border: none; }
 
 /* ── Shifts Tab ───────────────────────────────────────────── */
-.shift-card {
-  border-radius: 18px;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  border: 1px solid var(--card-border);
-  background: var(--card);
-  transition: background .2s, border-color .2s;
-}
 .shift-card.clocked-in { background: var(--navy); border-color: var(--navy); }
 
 .shift-card-top { display: flex; align-items: center; justify-content: space-between; }
 .shift-card-left { display: flex; flex-direction: column; gap: 4px; }
 
-.shift-kicker {
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
 .shift-card.clocked-in .shift-kicker { color: #54D6C4; }
 
 .shift-card.clocked-in .shift-elapsed { color: #fff; }
@@ -1451,51 +1358,11 @@ input, textarea, select { font-family: inherit; }
 .shift-in-time { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--navy); }
 .shift-card.clocked-in .shift-in-time { color: #fff; }
 
-.shift-btn {
-  padding: 15px;
-  border-radius: 14px;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  color: #fff;
-  transition: opacity .15s;
-}
 .shift-btn:hover { opacity: .9; }
 .shift-btn.check-out { background: var(--danger); }
 .shift-btn.check-in  { background: var(--teal); }
 
 /* Activity Timeline */
-.activity-time-col {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: 44px;
-}
-
-.activity-time {
-  font-family: var(--mono);
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--text-sec);
-}
-
-.activity-time-line {
-  width: 1.5px;
-  flex: 1;
-  background: var(--card-border);
-  border-radius: 2px;
-  min-height: 10px;
-}
-
-.activity-time-end {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: #9AA3B8;
-}
 
 .activity-body { flex: 1; min-width: 0; }
 .activity-what { font-size: 15px; font-weight: 550; font-weight: 500; color: var(--navy); line-height: 1.3; }
@@ -1508,13 +1375,6 @@ input, textarea, select { font-family: inherit; }
 .week-bar-name { font-size: 13px; font-weight: 500; color: var(--text-sec); }
 
 /* Partner Performance Row */
-.perf-row {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 11px 0;
-  border-top: 1px solid var(--row-sep);
-}
 
 .perf-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .perf-name-row { display: flex; justify-content: space-between; align-items: baseline; }
@@ -1530,52 +1390,12 @@ input, textarea, select { font-family: inherit; }
 .perf-net-label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
 .perf-net { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--teal-dark); }
 
-
-
 /* ── FAB ──────────────────────────────────────────────────── */
-.fab-btn {
-  position: fixed;
-  right: 18px;
-  bottom: 90px;
-  width: 54px;
-  height: 54px;
-  border-radius: 19px;
-  background: var(--navy);
-  box-shadow: var(--shadow-fab);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 25;
-  border: none;
-  color: #fff;
-  transition: background .15s;
-}
 .fab-btn:hover { background: var(--teal); }
 
 @media (min-width: 768px) { .fab-btn { bottom: 24px; right: 24px; } }
 
 /* ── Bottom Sheet ─────────────────────────────────────────── */
-.sheet-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(16,22,42,.42);
-  z-index: 40;
-  animation: mmfade .18s ease;
-}
-
-.bottom-sheet {
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  z-index: 45;
-  background: var(--card);
-  border-radius: 26px 26px 0 0;
-  padding: 12px 20px 34px;
-  animation: mmup .24s cubic-bezier(.32,.72,0,1);
-  max-height: 82%;
-  overflow-y: auto;
-  box-shadow: var(--shadow-sheet);
-}
 
 @media (min-width: 768px) {
   .bottom-sheet {
@@ -1584,42 +1404,6 @@ input, textarea, select { font-family: inherit; }
   }
 }
 
-.sheet-handle {
-  width: 38px;
-  height: 4px;
-  border-radius: 3px;
-  background: #DDE2ED;
-  margin: 0 auto 16px;
-}
-
-.sheet-title {
-  font-size: 19px;
-  font-weight: 600;
-  color: var(--navy);
-  letter-spacing: -.3px;
-  margin-bottom: 15px;
-}
-
-.sheet-field-label {
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.sheet-input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 13px;
-  border: 1px solid #DFE4EF;
-  font-size: 14.5px;
-  font-weight: 500;
-  color: var(--navy);
-  outline: none;
-  background: var(--card);
-}
 .sheet-input:focus { border-color: var(--teal); }
 
 .sheet-textarea {
@@ -1638,19 +1422,6 @@ input, textarea, select { font-family: inherit; }
 .sheet-textarea:focus { border-color: var(--teal); }
 
 .sheet-option-chips { display: flex; gap: 7px; }
-.sheet-option-chip {
-  flex: 1;
-  text-align: center;
-  padding: 11px 4px;
-  border-radius: 12px;
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid #DFE4EF;
-  background: var(--card);
-  color: var(--text-sec);
-  transition: background .12s, border-color .12s, color .12s;
-}
 .sheet-option-chip.active-navy  { background: var(--navy); border-color: var(--navy); color: #fff; }
 .sheet-option-chip.active-teal  { background: var(--teal); border-color: var(--teal); color: #fff; }
 .sheet-option-chip.active-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
@@ -1696,52 +1467,12 @@ input, textarea, select { font-family: inherit; }
   border: none;
 }
 
-.sheet-submit-btn {
-  width: 100%;
-  padding: 15px;
-  border-radius: 14px;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  cursor: pointer;
-  border: none;
-  transition: background .15s;
-}
 .sheet-submit-btn.navy { background: var(--navy); }
 .sheet-submit-btn.navy:hover { background: var(--teal); }
 .sheet-submit-btn.teal { background: var(--teal); }
 .sheet-submit-btn.teal:hover { opacity: .9; }
 
 /* Amount input */
-.sheet-amount-wrap {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: var(--input-bg);
-  border: 1px solid #EBEEF6;
-}
-
-.sheet-amount-symbol {
-  font-family: var(--mono);
-  font-size: 26px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.sheet-amount-input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-family: var(--mono);
-  font-size: 30px;
-  font-weight: 600;
-  color: var(--navy);
-  min-width: 0;
-}
 
 /* Task detail sheet info box */
 .sheet-assignee-box {
@@ -2164,6 +1895,8 @@ input, textarea, select { font-family: inherit; }
 }
 
 .section-label-row {
+  /* merged from an earlier duplicate rule */
+  padding: 4px 2px 2px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2180,6 +1913,8 @@ input, textarea, select { font-family: inherit; }
 .section-label.slate { color: var(--text-sec); }
 
 .section-divider {
+  /* merged from an earlier duplicate rule */
+  border-radius: 2px;
   height: 1px;
   flex: 1;
   background: #DFE4EF;
@@ -2187,6 +1922,10 @@ input, textarea, select { font-family: inherit; }
 
 /* ── Running Badge & Done Card (Tasks Tab) ────────────────── */
 .running-badge {
+  /* merged from an earlier duplicate rule */
+  background: var(--teal-light);
+  padding: 2px 7px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -2213,6 +1952,9 @@ input, textarea, select { font-family: inherit; }
 }
 
 .task-card-done-check {
+  /* merged from an earlier duplicate rule */
+  flex-shrink: 0;
+  margin-top: 3px;
   flex: none;
   width: 22px;
   height: 22px;
@@ -2311,6 +2053,8 @@ input, textarea, select { font-family: inherit; }
 }
 
 .shift-btn {
+  /* merged from an earlier duplicate rule */
+  color: #fff;
   padding: 14px;
   border-radius: 14px;
   text-align: center;
@@ -2348,6 +2092,8 @@ input, textarea, select { font-family: inherit; }
   border-top: 1px solid var(--row-sep);
 }
 .activity-time-col {
+  /* merged from an earlier duplicate rule */
+  flex-shrink: 0;
   flex: none;
   display: flex;
   flex-direction: column;
@@ -2523,9 +2269,10 @@ input, textarea, select { font-family: inherit; }
   color: #0B7E71;
 }
 
-
 /* ── Tasks Floating Action Button (FAB) ───────────────────── */
 .fab-btn {
+  /* merged from an earlier duplicate rule */
+  color: #fff;
   position: fixed;
   right: 20px;
   bottom: calc(72px + env(safe-area-inset-bottom, 12px));
@@ -2597,6 +2344,8 @@ input, textarea, select { font-family: inherit; }
 }
 
 .sheet-title {
+  /* merged from an earlier duplicate rule */
+  letter-spacing: -.3px;
   font-size: 18px;
   font-weight: 600;
   color: var(--navy);
@@ -2604,6 +2353,8 @@ input, textarea, select { font-family: inherit; }
 }
 
 .sheet-input {
+  /* merged from an earlier duplicate rule */
+  font-weight: 500;
   width: 100%;
   padding: 12px 14px;
   border-radius: 12px;
@@ -2636,6 +2387,9 @@ input, textarea, select { font-family: inherit; }
 }
 
 .sheet-option-chip {
+  /* merged from an earlier duplicate rule */
+  flex: 1;
+  text-align: center;
   padding: 7px 14px;
   border-radius: 20px;
   font-size: 12.5px;
@@ -2694,6 +2448,8 @@ input, textarea, select { font-family: inherit; }
 }
 
 .sheet-amount-wrap {
+  /* merged from an earlier duplicate rule */
+  gap: 8px;
   display: flex;
   align-items: center;
   border: 1.5px solid #DFE4EF;
@@ -2716,6 +2472,9 @@ input, textarea, select { font-family: inherit; }
   margin-right: 6px;
 }
 .sheet-amount-input {
+  /* merged from an earlier duplicate rule */
+  flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
   font-family: var(--mono);
@@ -2727,6 +2486,8 @@ input, textarea, select { font-family: inherit; }
 }
 
 .sheet-submit-btn {
+  /* merged from an earlier duplicate rule */
+  color: #fff;
   width: 100%;
   padding: 14px;
   border-radius: 14px;
@@ -4564,7 +4325,6 @@ input, textarea, select { font-family: inherit; }
   transform: scale(0.95);
 }
 
-
 /* ============================================================
    Header actions — sync state and data access
    ============================================================ */
@@ -4701,4 +4461,23 @@ input, textarea, select { font-family: inherit; }
 .task-meta-chip.date-jump:focus-visible {
   outline: 2px solid rgba(15, 158, 142, 0.55);
   outline-offset: 1px;
+}
+
+.chat-load-older {
+  align-self: center;
+  margin: 4px auto 10px;
+  padding: 7px 15px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--text-sec);
+  font-size: 12px;
+  font-weight: 700;
+  transition: background 0.16s ease;
+}
+
+.chat-load-older:hover { background: rgba(118, 118, 128, 0.2); }
+
+.chat-load-older:focus-visible {
+  outline: 3px solid rgba(77, 123, 243, 0.45);
+  outline-offset: 2px;
 }

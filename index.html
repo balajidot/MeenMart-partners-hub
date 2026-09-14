@@ -13,12 +13,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="MeenMart" />
     <title>MeenMart Partners Portal</title>
-    <!-- Resource hints for fastest RTDB & Font connection -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- The UI renders in the platform system font, so no webfont is fetched.
+         Only the Realtime Database connection is worth warming up. -->
     <link rel="preconnect" href="https://meenmart-partners-hub-default-rtdb.asia-southeast1.firebasedatabase.app" crossorigin />
     <link rel="dns-prefetch" href="https://meenmart-partners-hub-default-rtdb.asia-southeast1.firebasedatabase.app" />
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

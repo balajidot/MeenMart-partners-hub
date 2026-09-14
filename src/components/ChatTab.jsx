@@ -3,6 +3,9 @@ import { compressImage, getLocalDateStr } from '../utils/calculations';
 import { triggerHaptic } from '../utils/haptics';
 import { PARTNER_NAMES, metaFor } from '../config/partners';
 
+/** Messages rendered per page of scroll-back. */
+const PAGE_SIZE = 50;
+
 const QUICK_OPS_CHIPS = [
   { label: '🐟 Pazhaverkaadu Stock', text: '🐟 Pazhaverkaadu: Fresh meen stock eduthaachu.' },
   { label: '📦 Packing Finished', text: '📦 Pack & Clean: Orders clean panni, weigh panni, ice box-la pack aachu.' },
@@ -47,12 +50,10 @@ function groupByDay(messages) {
   return groups;
 }
 
-const ChatMessageItem = React.memo(function ChatMessageItem({ msg, myName, onOpenLightbox, profiles }) {
-  const isMine = msg.partner === myName;
+const ChatMessageItem = React.memo(function ChatMessageItem({ msg, isMine, avatarUrl, onOpenLightbox }) {
   const meta = metaFor(msg.partner);
   const partnerColor = meta.color;
   const partnerInitials = meta.initials;
-  const avatarUrl = profiles?.[msg.partner]?.avatarUrl;
   const timeStr = formatChatTime(msg.createdAt);
   const hasProof = !!msg.proof;
   const hasText = msg.text && msg.text.trim() && msg.text !== '📸 Photo attachment';
@@ -92,6 +93,7 @@ const ChatMessageItem = React.memo(function ChatMessageItem({ msg, myName, onOpe
                 alt="Attachment"
                 className="chat-media-img"
                 loading="lazy"
+                decoding="async"
               />
               <div className="chat-media-overlay">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -146,7 +148,17 @@ export default function ChatTab({
     (pName) => onlinePartners?.[pName] || pName === myName
   );
 
-  const dayGroups = useMemo(() => groupByDay(messages), [messages]);
+  // Rendering an unbounded thread gets slow, and every proof photo in it stays
+  // decoded in memory. Show the recent tail and page backwards on demand.
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const hiddenCount = Math.max(0, messages.length - visibleCount);
+
+  const visibleMessages = useMemo(
+    () => (hiddenCount > 0 ? messages.slice(-visibleCount) : messages),
+    [messages, visibleCount, hiddenCount]
+  );
+
+  const dayGroups = useMemo(() => groupByDay(visibleMessages), [visibleMessages]);
 
   const scrollToBottom = useCallback((smooth = true) => {
     if (messagesEndRef.current) {
@@ -159,10 +171,11 @@ export default function ChatTab({
     scrollToBottom(false);
   }, [scrollToBottom]);
 
-  // Scroll to bottom on new messages
+  // Follow new messages, but do not yank the view when older ones are paged in.
+  const lastMessageId = messages[messages.length - 1]?.id;
   useEffect(() => {
     scrollToBottom(true);
-  }, [messages.length, scrollToBottom]);
+  }, [lastMessageId, scrollToBottom]);
 
   const handleInputFocus = () => {
     setIsChatTyping?.(true);
@@ -302,6 +315,15 @@ export default function ChatTab({
         )}
 
         <div className="chat-messages-list">
+          {hiddenCount > 0 && (
+            <button
+              type="button"
+              className="chat-load-older"
+              onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+            >
+              ↑ Load {Math.min(hiddenCount, PAGE_SIZE)} older {hiddenCount === 1 ? 'message' : 'messages'}
+            </button>
+          )}
           {dayGroups.map((group) => (
             <React.Fragment key={group.dateStr}>
               <div className="chat-date-header">{formatDayLabel(group.dateStr)}</div>
@@ -309,9 +331,9 @@ export default function ChatTab({
                 <ChatMessageItem
                   key={msg.id}
                   msg={msg}
-                  myName={myName}
+                  isMine={msg.partner === myName}
+                  avatarUrl={profiles?.[msg.partner]?.avatarUrl}
                   onOpenLightbox={onOpenLightbox}
-                  profiles={profiles}
                 />
               ))}
             </React.Fragment>

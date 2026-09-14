@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { ref, onValue, set, update, remove, onDisconnect } from 'firebase/database';
+import { ref, onValue, get, set, update, remove, onDisconnect } from 'firebase/database';
 import { db } from '../firebase';
 import { PARTNER_NAMES } from '../config/partners';
-import { generateId } from '../utils/constants';
-import { pruneExpiredProofs } from '../utils/calculations';
+import { generateId, PROOF_EXPIRY_MS } from '../utils/constants';
 import { triggerHaptic } from '../utils/haptics';
 import { isPreview, previewStore, previewOnlinePartners } from '../devPreview';
 
@@ -41,17 +40,34 @@ export function dedupeById(list) {
   });
 }
 
+/** Collections whose rows carry a numeric field that must survive a string. */
+const NUMERIC_FIELD = {
+  expenses: 'amount', revenues: 'amount', capitals: 'amount', worklogs: 'hours',
+};
+
+/** Collections whose rows can hold an expiring proof photo. */
+const HAS_PROOFS = new Set(['tasks', 'expenses', 'worklogs', 'messages']);
+
+/** Sort, dedupe, coerce and expire in a single pass over one collection. */
+function normalizeCollection(name, raw) {
+  const field = NUMERIC_FIELD[name];
+  const expiresProofs = HAS_PROOFS.has(name);
+  const cutoff = Date.now() - PROOF_EXPIRY_MS;
+
+  return byCreatedAt(dedupeById(toArray(raw))).map((item) => {
+    const expired = expiresProofs && item.proof && item.proofAddedAt && item.proofAddedAt < cutoff;
+    if (!field && !expired) return item;
+    const next = { ...item };
+    if (field) next[field] = Number(item[field] || 0);
+    if (expired) { next.proof = null; next.proofAddedAt = null; }
+    return next;
+  });
+}
+
 function normalize(raw) {
-  const num = (list, field) => list.map((it) => ({ ...it, [field]: Number(it[field] || 0) }));
-  return {
-    tasks:    byCreatedAt(dedupeById(toArray(raw?.tasks))),
-    expenses: num(byCreatedAt(dedupeById(toArray(raw?.expenses))), 'amount'),
-    revenues: num(byCreatedAt(dedupeById(toArray(raw?.revenues))), 'amount'),
-    capitals: num(byCreatedAt(dedupeById(toArray(raw?.capitals))), 'amount'),
-    worklogs: num(byCreatedAt(dedupeById(toArray(raw?.worklogs))), 'hours'),
-    messages: byCreatedAt(dedupeById(toArray(raw?.messages))),
-    activeShifts: raw?.activeShifts || {},
-  };
+  const out = { activeShifts: raw?.activeShifts || {} };
+  COLLECTIONS.forEach((name) => { out[name] = normalizeCollection(name, raw?.[name]); });
+  return out;
 }
 
 /** Photos are large and already durable in the cloud; keeping them out of
@@ -82,6 +98,27 @@ function loadLocal() {
  *  node keyed by id; after that every write targets a single item. */
 function needsKeyMigration(remote) {
   return COLLECTIONS.some((name) => Array.isArray(remote?.[name]));
+}
+
+/** Cheap structural checks used to drop Firebase's echo of our own write. */
+function sameIds(a, b) {
+  if (!a || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) if (a[i].id !== b[i].id) return false;
+  return true;
+}
+
+function sameRevision(a, b) {
+  for (let i = 0; i < a.length; i += 1) {
+    const x = a[i];
+    const y = b[i];
+    if (x === y) continue;
+    if (x.status !== y.status || x.hasProblem !== y.hasProblem) return false;
+    if (x.completedAt !== y.completedAt || x.proofAddedAt !== y.proofAddedAt) return false;
+    if ((x.comments?.length || 0) !== (y.comments?.length || 0)) return false;
+    if (x.amount !== y.amount || x.hours !== y.hours) return false;
+    if (!!x.proof !== !!y.proof) return false;
+  }
+  return true;
 }
 
 function keyedBy(list) {
@@ -188,32 +225,61 @@ export function useStore(activePartnerName = PARTNER_NAMES[0]) {
     return res;
   }, [presenceMap, activePartnerName]);
 
-  /* ── Remote → local ────────────────────────────────────────────── */
+  /* ── Remote → local ────────────────────────────────────────────────
+     One listener per collection. Subscribing to the whole document meant a
+     single new task pushed every chat message — and every base64 proof photo
+     — back down to all three clients. */
   useEffect(() => {
     if (isPreview) return;
-    const unsub = onValue(
-      ref(db, DB_ROOT),
-      (snapshot) => {
-        const remote = snapshot.val();
-        setLastSyncedAt(Date.now());
-        const next = pruneExpiredProofs(normalize(remote));
-        setStore(next);
 
-        if (remote && !didMigrate.current && needsKeyMigration(remote)) {
-          didMigrate.current = true;
-          const payload = {};
-          COLLECTIONS.forEach((name) => { payload[name] = keyedBy(next[name]); });
-          update(ref(db, DB_ROOT), payload).catch((e) => {
-            console.warn('Key migration skipped:', e.message);
-          });
-        }
-      },
-      (err) => {
-        console.warn('Firebase sync error (offline fallback):', err.message);
-        setIsOnline(false);
-      }
+    const onError = (err) => {
+      console.warn('Firebase sync error (offline fallback):', err.message);
+      setIsOnline(false);
+    };
+
+    const unsubs = COLLECTIONS.map((name) =>
+      onValue(
+        ref(db, `${DB_ROOT}/${name}`),
+        (snapshot) => {
+          const list = normalizeCollection(name, snapshot.val());
+          setLastSyncedAt(Date.now());
+          setStore((prev) => (
+            // Firebase echoes our own optimistic write straight back; skipping
+            // an identical payload avoids a pointless render of every tab.
+            sameIds(prev[name], list) && sameRevision(prev[name], list)
+              ? prev
+              : { ...prev, [name]: list }
+          ));
+        },
+        onError
+      )
     );
-    return () => unsub();
+
+    unsubs.push(
+      onValue(
+        ref(db, `${DB_ROOT}/activeShifts`),
+        (snapshot) => setStore((prev) => ({ ...prev, activeShifts: snapshot.val() || {} })),
+        onError
+      )
+    );
+
+    // The legacy-shape check needs the whole node, but only once.
+    get(ref(db, DB_ROOT))
+      .then((snap) => {
+        const remote = snap.val();
+        if (!remote || didMigrate.current || !needsKeyMigration(remote)) return;
+        didMigrate.current = true;
+        const payload = {};
+        COLLECTIONS.forEach((name) => {
+          payload[name] = keyedBy(normalizeCollection(name, remote[name]));
+        });
+        update(ref(db, DB_ROOT), payload).catch((e) => {
+          console.warn('Key migration skipped:', e.message);
+        });
+      })
+      .catch(() => { /* offline; the listeners still serve cached data */ });
+
+    return () => unsubs.forEach((u) => u());
   }, []);
 
   /* ── Local → localStorage (an effect, so no state updater has side effects) ── */
