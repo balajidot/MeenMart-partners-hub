@@ -17,16 +17,14 @@ export const PARTNERS = [
     name: 'Nagoor',
     role: 'Procure & Pack',
     avatar: '🐟',
-    // TODO: replace with Nagoor's real Gmail before shipping to him
-    email: 'nagoor.meenmart@gmail.com',
+    email: 'abdulfaizal66786@gmail.com',
     aliases: [],
   },
   {
     name: 'JP',
     role: 'Delivery & Sales',
     avatar: '🛵',
-    // TODO: replace with JP's real Gmail before shipping to him
-    email: 'jp.meenmart@gmail.com',
+    email: 'jaya84008@gmail.com',
     aliases: [],
   },
 ];
