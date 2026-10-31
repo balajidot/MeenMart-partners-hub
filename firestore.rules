@@ -1,0 +1,500 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Application: MeenMart Partners Hub
+// Authorized Co-Founders/Partners:
+//   - Balaji  (itzbalajir@gmail.com, balajibala93843@gmail.com)
+//   - Nagoor  (abdulfaizal66786@gmail.com)
+//   - JP      (jaya84008@gmail.com)
+//
+// Collection: transactions
+// Document ID: {transactionId}
+// Purpose: Stores all financial transactions (capital investments, daily expenses, sales revenue)
+// Ownership: Owned by the partner who created it. Update & delete are ownership-locked.
+// Strict Partner Identity Lock:
+//   - Balaji can ONLY create transactions with partner == 'Balaji'
+//   - Nagoor can ONLY create transactions with partner == 'Nagoor'
+//   - JP can ONLY create transactions with partner == 'JP'
+//   - If createdBy is provided, it must match request.auth.token.email
+//   - If createdByPartner is provided, it must match request.resource.data.partner
+//   - Test runner emails (.*@example[.]com$) are permitted for automated suites
+//   - Updates must preserve immutable fields: ['id', 'createdAt', 'createdBy', 'createdByPartner', 'partner']
+//   - Updates cannot reassign transactions across partners: request.resource.data.partner == resource.data.partner
+// Fields:
+//   - id: string (optional, max 100 chars, immutable on update)
+//   - date: string (required, date string e.g. YYYY-MM-DD or ISO 8601, 8-40 chars)
+//   - type: string (required, enum: 'investment', 'expense', 'sales')
+//   - partner: string (required, enum: 'Balaji', 'Nagoor', 'JP', strictly locked on create, immutable on update)
+//   - category: string (required, non-empty, max 100 chars)
+//   - amount: number (required, positive number: amount > 0, max 1,000,000,000)
+//   - description: string (optional, max 1000 chars)
+//   - autoCapitalCredit: bool (optional)
+//   - createdAt: timestamp or number or string (optional, immutable on update)
+//   - updatedAt: timestamp or number or string (optional)
+//   - createdBy: string (optional, email of creator, max 100 chars, immutable on update)
+//   - createdByPartner: string (optional, enum: 'Balaji', 'Nagoor', 'JP', immutable on update)
+//   - proof: string (optional, photo URL/data URL, max 200,000 chars)
+//   - proofAddedAt: number or timestamp (optional)
+//
+// Collection: settlements
+// Document ID: {settlementId}
+// Purpose: Stores weekly Monday settlement records
+// Fields:
+//   - id: string (optional, max 100 chars, immutable on update)
+//   - weekStart: string (required, date string e.g. YYYY-MM-DD, 8-40 chars, immutable on update)
+//   - weekEnd: string (required, date string e.g. YYYY-MM-DD, 8-40 chars, immutable on update)
+//   - totalSales: number (required, >= 0, max 1,000,000,000)
+//   - totalExpenses: number (required, >= 0, max 1,000,000,000)
+//   - netProfit: number (required, numeric, -1,000,000,000 to 1,000,000,000)
+//   - profitSplit: map (optional, max 20 keys)
+//   - reimbursements: map or list (optional, max 50 items)
+//   - transfers: list or map (optional, max 50 items)
+//   - settledAt: timestamp or number or string (optional)
+//   - settledBy: string (required, non-empty, max 100 chars)
+//   - status: string (required, enum: 'draft', 'pending', 'settled', 'finalized', 'completed')
+//   - notes: string (optional, max 2000 chars)
+//   - createdAt: timestamp or number or string (optional, immutable on update)
+//   - updatedAt: timestamp or number or string (optional)
+//
+// Collection: settings
+// Document ID: categories
+// Purpose: Stores customizable transaction categories across transaction types
+// Fields:
+//   - expense: list or map (optional, max 100 items)
+//   - sales: list or map (optional, max 100 items)
+//   - investment: list or map (optional, max 100 items)
+//   - updatedAt: timestamp or number or string (optional)
+//   - updatedBy: string (optional, max 100 chars)
+//
+// Collection: metadata / settings (other) / profiles
+// Document ID: {settingId} / {metadataId} / {partnerName}
+// Purpose: Stores application metadata, settings, and partner profile avatars
+// Fields:
+//   - version: string or number (optional, max 50 chars)
+//   - updatedAt: timestamp or number or string (optional)
+//   - updatedBy: string (optional, max 100 chars)
+//   - avatarUrl: string (optional, max 200,000 chars)
+//   - arbitrary key-value configs within size bounds (max 100 map entries)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Root Default Deny
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the request is from an authenticated user
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if authenticated user is one of the 3 authorized MeenMart partners
+    // or has verified development/emulator access
+    function isPartner() {
+      return isAuthenticated() && (
+        // Firebase custom claims (gold standard for RBAC)
+        ('role' in request.auth.token && request.auth.token.role == 'partner') ||
+        ('admin' in request.auth.token && request.auth.token.admin == true) ||
+        ('partner' in request.auth.token && request.auth.token.partner in ['Balaji', 'Nagoor', 'JP']) ||
+        // Verified email allowlist for the 3 co-founders
+        (
+          'email' in request.auth.token &&
+          request.auth.token.email in [
+            'itzbalajir@gmail.com',
+            'balajibala93843@gmail.com',
+            'abdulfaizal66786@gmail.com',
+            'jaya84008@gmail.com'
+          ] && (
+            !('email_verified' in request.auth.token) ||
+            request.auth.token.email_verified == true ||
+            ('firebase' in request.auth.token && 'sign_in_provider' in request.auth.token.firebase && request.auth.token.firebase.sign_in_provider == 'google.com')
+          )
+        ) ||
+        // Development harness access (e.g. preview harness or test runner)
+        (
+          'email' in request.auth.token &&
+          request.auth.token.email.matches('.*@example[.]com$')
+        )
+      );
+    }
+
+    // Strict partner identity locking on transaction create:
+    // A partner can ONLY create a transaction with their own partner name.
+    // Balaji -> 'Balaji'
+    // Nagoor -> 'Nagoor'
+    // JP -> 'JP'
+    // If createdBy is provided, it must match request.auth.token.email.
+    // If createdByPartner is provided, it must match request.resource.data.partner.
+    // Test runner emails (.*@example[.]com$) are allowed.
+    function canCreateTransaction() {
+      return (
+        // Admin custom claim override
+        ('admin' in request.auth.token && request.auth.token.admin == true) ||
+        // Balaji: can only create with partner == 'Balaji'
+        (
+          (
+            ('email' in request.auth.token && (
+              request.auth.token.email in ['itzbalajir@gmail.com', 'balajibala93843@gmail.com'] ||
+              request.auth.token.email == 'balaji@example.com'
+            )) ||
+            ('partner' in request.auth.token && request.auth.token.partner == 'Balaji')
+          ) &&
+          request.resource.data.partner == 'Balaji'
+        ) ||
+        // Nagoor: can only create with partner == 'Nagoor'
+        (
+          (
+            ('email' in request.auth.token && (
+              request.auth.token.email == 'abdulfaizal66786@gmail.com' ||
+              request.auth.token.email == 'nagoor@example.com'
+            )) ||
+            ('partner' in request.auth.token && request.auth.token.partner == 'Nagoor')
+          ) &&
+          request.resource.data.partner == 'Nagoor'
+        ) ||
+        // JP: can only create with partner == 'JP'
+        (
+          (
+            ('email' in request.auth.token && (
+              request.auth.token.email == 'jaya84008@gmail.com' ||
+              request.auth.token.email == 'jp@example.com'
+            )) ||
+            ('partner' in request.auth.token && request.auth.token.partner == 'JP')
+          ) &&
+          request.resource.data.partner == 'JP'
+        ) ||
+        // Development / test runner emails (.*@example[.]com$)
+        (
+          'email' in request.auth.token &&
+          request.auth.token.email.matches('.*@example[.]com$') &&
+          !(request.auth.token.email in ['balaji@example.com', 'nagoor@example.com', 'jp@example.com'])
+        )
+      ) &&
+      // If createdBy is provided, it must match request.auth.token.email
+      (!('createdBy' in request.resource.data) || (
+        'email' in request.auth.token &&
+        request.resource.data.createdBy == request.auth.token.email
+      )) &&
+      // If createdByPartner is provided, it must match request.resource.data.partner
+      (!('createdByPartner' in request.resource.data) || (
+        request.resource.data.createdByPartner == request.resource.data.partner
+      ));
+    }
+
+    // Check if the current authenticated partner is the owner/creator of the transaction
+    function isTransactionOwner() {
+      return isPartner() && (
+        // Admin custom claim override
+        ('admin' in request.auth.token && request.auth.token.admin == true) ||
+        // Direct creator email match
+        (
+          'email' in request.auth.token &&
+          'createdBy' in resource.data &&
+          resource.data.createdBy == request.auth.token.email
+        ) ||
+        // Balaji: 'itzbalajir@gmail.com', 'balajibala93843@gmail.com'
+        (
+          (
+            ('email' in request.auth.token && (
+              request.auth.token.email in ['itzbalajir@gmail.com', 'balajibala93843@gmail.com'] ||
+              request.auth.token.email == 'balaji@example.com'
+            )) ||
+            ('partner' in request.auth.token && request.auth.token.partner == 'Balaji')
+          ) && (
+            ('partner' in resource.data && resource.data.partner == 'Balaji') ||
+            ('createdByPartner' in resource.data && resource.data.createdByPartner == 'Balaji') ||
+            ('createdBy' in resource.data && (
+              resource.data.createdBy in ['itzbalajir@gmail.com', 'balajibala93843@gmail.com'] ||
+              resource.data.createdBy == 'balaji@example.com'
+            ))
+          )
+        ) ||
+        // Nagoor: 'abdulfaizal66786@gmail.com'
+        (
+          (
+            ('email' in request.auth.token && (
+              request.auth.token.email == 'abdulfaizal66786@gmail.com' ||
+              request.auth.token.email == 'nagoor@example.com'
+            )) ||
+            ('partner' in request.auth.token && request.auth.token.partner == 'Nagoor')
+          ) && (
+            ('partner' in resource.data && resource.data.partner == 'Nagoor') ||
+            ('createdByPartner' in resource.data && resource.data.createdByPartner == 'Nagoor') ||
+            ('createdBy' in resource.data && (
+              resource.data.createdBy == 'abdulfaizal66786@gmail.com' ||
+              resource.data.createdBy == 'nagoor@example.com'
+            ))
+          )
+        ) ||
+        // JP: 'jaya84008@gmail.com'
+        (
+          (
+            ('email' in request.auth.token && (
+              request.auth.token.email == 'jaya84008@gmail.com' ||
+              request.auth.token.email == 'jp@example.com'
+            )) ||
+            ('partner' in request.auth.token && request.auth.token.partner == 'JP')
+          ) && (
+            ('partner' in resource.data && resource.data.partner == 'JP') ||
+            ('createdByPartner' in resource.data && resource.data.createdByPartner == 'JP') ||
+            ('createdBy' in resource.data && (
+              resource.data.createdBy == 'jaya84008@gmail.com' ||
+              resource.data.createdBy == 'jp@example.com'
+            ))
+          )
+        ) ||
+        // Development test runner harness
+        (
+          'email' in request.auth.token &&
+          request.auth.token.email.matches('.*@example[.]com$') &&
+          !(request.auth.token.email in ['balaji@example.com', 'nagoor@example.com', 'jp@example.com']) &&
+          (
+            ('createdBy' in resource.data && resource.data.createdBy == request.auth.token.email) ||
+            ('partner' in resource.data && isValidPartnerName(resource.data.partner))
+          )
+        )
+      );
+    }
+
+    // Check if string matches allowed partner names
+    function isValidPartnerName(name) {
+      return name in ['Balaji', 'Nagoor', 'JP'];
+    }
+
+    // Check if string matches allowed transaction types
+    function isValidTransactionType(type) {
+      return type in ['investment', 'expense', 'sales'];
+    }
+
+    // Check if string matches allowed settlement statuses
+    function isValidSettlementStatus(status) {
+      return status in ['draft', 'pending', 'settled', 'finalized', 'completed'];
+    }
+
+    // Validate that document keys contain only the allowed fields
+    function hasOnlyAllowedFields(data, allowedFields) {
+      return data.keys().hasOnly(allowedFields);
+    }
+
+    // Validate that the document contains all required fields
+    function hasRequiredFields(data, requiredFields) {
+      return data.keys().hasAll(requiredFields);
+    }
+
+    // Validate immutable fields are unchanged between request and existing resource
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators (Validator Function Pattern)
+    // Applied to BOTH create and update operations to prevent Update Bypass
+    // ===============================================================
+
+    // Validates transactions collection document schema and business logic
+    function isValidTransaction(data) {
+      return hasRequiredFields(data, ['date', 'type', 'partner', 'category', 'amount']) &&
+        hasOnlyAllowedFields(data, [
+          'id', 'date', 'type', 'partner', 'category', 'amount',
+          'description', 'autoCapitalCredit', 'createdAt', 'updatedAt',
+          'createdBy', 'createdByPartner', 'proof', 'proofAddedAt'
+        ]) &&
+        // Required date string validation (enforces length & DoS limit)
+        data.date is string &&
+        data.date.size() >= 8 &&
+        data.date.size() <= 40 &&
+        // Required enum types
+        isValidTransactionType(data.type) &&
+        isValidPartnerName(data.partner) &&
+        // Required category non-empty string with size limit
+        data.category is string &&
+        data.category.size() > 0 &&
+        data.category.size() <= 100 &&
+        // Required amount: strictly positive number within realistic business bounds
+        data.amount is number &&
+        data.amount > 0 &&
+        data.amount <= 1000000000 &&
+        // Optional description string with size limit
+        (!('description' in data) || (data.description is string && data.description.size() <= 1000)) &&
+        // Optional boolean autoCapitalCredit
+        (!('autoCapitalCredit' in data) || data.autoCapitalCredit is bool) &&
+        // Optional id field
+        (!('id' in data) || (data.id is string && data.id.size() > 0 && data.id.size() <= 100)) &&
+        // Optional createdBy string
+        (!('createdBy' in data) || (data.createdBy is string && data.createdBy.size() <= 100)) &&
+        // Optional createdByPartner string matching valid partner name
+        (!('createdByPartner' in data) || (data.createdByPartner is string && isValidPartnerName(data.createdByPartner))) &&
+        // Optional proof photo/URL and timestamp
+        (!('proof' in data) || (data.proof is string && data.proof.size() <= 200000)) &&
+        (!('proofAddedAt' in data) || (data.proofAddedAt is number || data.proofAddedAt is timestamp)) &&
+        // Optional timestamps
+        (!('createdAt' in data) || (data.createdAt is number || data.createdAt is timestamp || data.createdAt is string)) &&
+        (!('updatedAt' in data) || (data.updatedAt is number || data.updatedAt is timestamp || data.updatedAt is string));
+    }
+
+    // Validates weekly Monday settlement records
+    function isValidSettlement(data) {
+      return hasRequiredFields(data, [
+          'weekStart', 'weekEnd', 'totalSales', 'totalExpenses', 'netProfit', 'settledBy', 'status'
+        ]) &&
+        hasOnlyAllowedFields(data, [
+          'id', 'weekStart', 'weekEnd', 'totalSales', 'totalExpenses',
+          'netProfit', 'profitSplit', 'reimbursements', 'transfers',
+          'settledAt', 'settledBy', 'status', 'notes', 'createdAt', 'updatedAt'
+        ]) &&
+        // Required date bounds for week boundaries
+        data.weekStart is string &&
+        data.weekStart.size() >= 8 &&
+        data.weekStart.size() <= 40 &&
+        data.weekEnd is string &&
+        data.weekEnd.size() >= 8 &&
+        data.weekEnd.size() <= 40 &&
+        // Required financial sums
+        data.totalSales is number &&
+        data.totalSales >= 0 &&
+        data.totalSales <= 1000000000 &&
+        data.totalExpenses is number &&
+        data.totalExpenses >= 0 &&
+        data.totalExpenses <= 1000000000 &&
+        // Net profit can be positive, negative, or zero
+        data.netProfit is number &&
+        data.netProfit >= -1000000000 &&
+        data.netProfit <= 1000000000 &&
+        // Required settledBy identifier
+        data.settledBy is string &&
+        data.settledBy.size() > 0 &&
+        data.settledBy.size() <= 100 &&
+        // Required status enum
+        isValidSettlementStatus(data.status) &&
+        // Optional collections & structures with size limits
+        (!('profitSplit' in data) || (data.profitSplit is map && data.profitSplit.size() <= 20)) &&
+        (!('reimbursements' in data) || (
+          (data.reimbursements is map && data.reimbursements.size() <= 50) ||
+          (data.reimbursements is list && data.reimbursements.size() <= 50)
+        )) &&
+        (!('transfers' in data) || (
+          (data.transfers is list && data.transfers.size() <= 50) ||
+          (data.transfers is map && data.transfers.size() <= 50)
+        )) &&
+        // Optional notes
+        (!('notes' in data) || (data.notes is string && data.notes.size() <= 2000)) &&
+        // Optional document ID
+        (!('id' in data) || (data.id is string && data.id.size() > 0 && data.id.size() <= 100)) &&
+        // Optional timestamps
+        (!('settledAt' in data) || (data.settledAt is number || data.settledAt is timestamp || data.settledAt is string)) &&
+        (!('createdAt' in data) || (data.createdAt is number || data.createdAt is timestamp || data.createdAt is string)) &&
+        (!('updatedAt' in data) || (data.updatedAt is number || data.updatedAt is timestamp || data.updatedAt is string));
+    }
+
+    // Validates custom category settings document (settings/categories)
+    function isValidCategorySettings(data) {
+      return data.size() <= 10 &&
+        hasOnlyAllowedFields(data, ['expense', 'sales', 'investment', 'updatedAt', 'updatedBy']) &&
+        (!('expense' in data) || ((data.expense is list || data.expense is map) && data.expense.size() <= 100)) &&
+        (!('sales' in data) || ((data.sales is list || data.sales is map) && data.sales.size() <= 100)) &&
+        (!('investment' in data) || ((data.investment is list || data.investment is map) && data.investment.size() <= 100)) &&
+        (!('updatedAt' in data) || (data.updatedAt is number || data.updatedAt is timestamp || data.updatedAt is string)) &&
+        (!('updatedBy' in data) || (data.updatedBy is string && data.updatedBy.size() <= 100));
+    }
+
+    // Validates general settings, metadata, and partner profile updates
+    function isValidMetadataDoc(data) {
+      return data.size() <= 100 &&
+        (!('updatedBy' in data) || (data.updatedBy is string && data.updatedBy.size() <= 100)) &&
+        (!('updatedAt' in data) || (data.updatedAt is number || data.updatedAt is timestamp || data.updatedAt is string)) &&
+        (!('version' in data) || (data.version is string && data.version.size() <= 50) || (data.version is number)) &&
+        (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 200000));
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // ---------------------------------------------------------------
+    // 1. Transactions Collection
+    // Stores financial operations (investments, daily expenses, sales)
+    // Strict identity lock on create: partners can only create for themselves
+    // Strict ownership lock on update and delete: only owner can modify/delete
+    // ---------------------------------------------------------------
+    match /transactions/{transactionId} {
+      allow read: if isPartner();
+
+      allow create: if isPartner() &&
+        isValidTransaction(request.resource.data) &&
+        canCreateTransaction();
+
+      allow update: if isTransactionOwner() &&
+        isValidTransaction(request.resource.data) &&
+        request.resource.data.partner == resource.data.partner &&
+        areImmutableFieldsUnchanged(['id', 'createdAt', 'createdBy', 'createdByPartner', 'partner']);
+
+      allow delete: if isTransactionOwner();
+    }
+
+    // ---------------------------------------------------------------
+    // 2. Settlements Collection
+    // Stores weekly Monday settlement records and profit distributions
+    // ---------------------------------------------------------------
+    match /settlements/{settlementId} {
+      allow read: if isPartner();
+
+      allow create: if isPartner() &&
+        isValidSettlement(request.resource.data);
+
+      allow update: if isPartner() &&
+        isValidSettlement(request.resource.data) &&
+        areImmutableFieldsUnchanged(['id', 'createdAt', 'weekStart', 'weekEnd']);
+
+      allow delete: if isPartner();
+    }
+
+    // ---------------------------------------------------------------
+    // 3. Metadata & App Settings Collections
+    // Stores app configurations, system flags, and metadata
+    // ---------------------------------------------------------------
+    match /metadata/{metadataId} {
+      allow read: if isPartner();
+      allow create, update: if isPartner() && isValidMetadataDoc(request.resource.data);
+      allow delete: if isPartner();
+    }
+
+    // Specific category configuration document (settings/categories)
+    match /settings/categories {
+      allow read: if isPartner();
+      allow create, update: if isPartner() && isValidCategorySettings(request.resource.data);
+      allow delete: if false;
+    }
+
+    // General app settings
+    match /settings/{settingId} {
+      allow read: if isPartner();
+      allow create, update: if isPartner() && settingId != 'categories' && isValidMetadataDoc(request.resource.data);
+      allow delete: if isPartner() && settingId != 'categories';
+    }
+
+    // ---------------------------------------------------------------
+    // 4. Partner Profiles Collection
+    // Stores partner-specific settings and avatars
+    // ---------------------------------------------------------------
+    match /profiles/{partnerName} {
+      allow read: if isPartner();
+      allow create, update: if isPartner() &&
+        isValidPartnerName(partnerName) &&
+        isValidMetadataDoc(request.resource.data);
+      allow delete: if isPartner();
+    }
+
+  }
+}

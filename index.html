@@ -1,25 +1,2506 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
-    <meta name="theme-color" content="#ffffff" />
-    <meta name="description" content="MeenMart Co-Founders Operations & Management Portal" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="MeenMart" />
-    <title>MeenMart Partners Portal</title>
-    <!-- The UI renders in the platform system font, so no webfont is fetched.
-         Only the Realtime Database connection is worth warming up. -->
-    <link rel="preconnect" href="https://meenmart-partners-hub-default-rtdb.asia-southeast1.firebasedatabase.app" crossorigin />
-    <link rel="dns-prefetch" href="https://meenmart-partners-hub-default-rtdb.asia-southeast1.firebasedatabase.app" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="ta" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" id="metaThemeColor" content="#070d1e" />
+  <meta name="description" content="மீன்மார்ட் பார்ட்னர் ஹப் - செலவு, வரவு, முதலீடு & வாராந்திர கணக்கு மேலாண்மை" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="மீன்மார்ட்" />
+  
+  <title>மீன்மார்ட் பார்ட்னர் ஹப்</title>
+
+  <!-- PWA Favicons & Manifest -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              200: '#99f6e4',
+              300: '#5eead4',
+              400: '#2dd4bf',
+              500: '#0F9E8E',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- FontAwesome 6 Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    /* Strict Horizontal Scroll Prevention */
+    html, body {
+      overflow-x: hidden !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      position: relative;
+      touch-action: pan-y;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+    }
+
+    body {
+      padding-top: var(--sat);
+      padding-bottom: calc(var(--sab) + 5.5rem);
+    }
+
+    /* Prevent mobile input zoom */
+    input, select, textarea {
+      font-size: 16px !important;
+      user-select: text !important;
+    }
+
+    /* Hide scrollbars */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* High-contrast Cards */
+    .app-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.05);
+    }
+    .dark .app-card {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Bottom Dock Bar */
+    .app-dock {
+      background: rgba(255, 255, 255, 0.98);
+      border-top: 1px solid #e2e8f0;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding-bottom: max(var(--sab), 0.5rem);
+    }
+    .dark .app-dock {
+      background: rgba(7, 13, 30, 0.96);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding-bottom: max(var(--sab), 0.5rem);
+    }
+
+    /* Floating Center Button Glow */
+    .fab-button {
+      box-shadow: 0 8px 24px -2px rgba(15, 158, 142, 0.45);
+    }
+
+    /* Native Modal Bottom Sheet (No black gap) */
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    /* Strip native search styling so search inputs look like clean text inputs */
+    input[type="search"]::-webkit-search-decoration,
+    input[type="search"]::-webkit-search-cancel-button,
+    input[type="search"]::-webkit-search-results-button,
+    input[type="search"]::-webkit-search-results-decoration {
+      -webkit-appearance: none;
+      display: none;
+    }
+    input[type="search"] {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.18s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-[#070d1e] text-slate-900 dark:text-slate-100 antialiased">
+
+  <!-- ========================================== -->
+  <!-- 🔒 1. உள்நுழைவுத் திரை (AUTH GATE)        -->
+  <!-- ========================================== -->
+  <section id="authGateSection" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-50 dark:bg-[#070d1e]">
+    <div class="w-full max-w-sm app-card rounded-3xl p-6 text-center space-y-6 shadow-2xl">
+      
+      <!-- Brand Title -->
+      <div class="space-y-1 pt-2">
+        <h1 class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center justify-center gap-2">
+          மீன்மார்ட் <span class="text-xs px-2.5 py-0.5 rounded-full bg-teal-500/15 text-teal-700 dark:text-teal-300 font-bold border border-teal-500/30">ஹப்</span>
+        </h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">பார்ட்னர்கள் நிதி & கணக்கு மேலாண்மை</p>
+      </div>
+
+      <!-- 3 Fixed Partners Icons -->
+      <div class="py-2 flex items-center justify-center space-x-3">
+        <div class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 flex items-center justify-center text-xl shadow-sm">
+            👨‍💻
+          </div>
+          <span class="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1">பாலாஜி</span>
+          <span class="text-[9px] text-slate-400">டெக் & வசூல்</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-xl shadow-sm">
+            🦐
+          </div>
+          <span class="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1">நாகூர்</span>
+          <span class="text-[9px] text-slate-400">மீன் கொள்முதல்</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center text-xl shadow-sm">
+            🛵
+          </div>
+          <span class="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1">JP</span>
+          <span class="text-[9px] text-slate-400">டெலிவரி & பெட்ரோல்</span>
+        </div>
+      </div>
+
+      <!-- Unauthorized Message -->
+      <div id="unauthorizedAlert" class="hidden p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs text-left space-y-1">
+        <div class="font-bold flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-exclamation"></i> அனுமதி மறுக்கப்பட்டது
+        </div>
+        <p class="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+          இந்த ஜிமெயில் அனுமதிக்கப்பட்ட மீன்மார்ட் பார்ட்னர் கணக்கு அல்ல.
+        </p>
+      </div>
+
+      <!-- Google Sign In Button -->
+      <div class="space-y-3">
+        <button id="btnAuthSignIn" onclick="handleGoogleSignIn()" class="w-full py-3.5 px-4 rounded-2xl bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs flex items-center justify-center space-x-2.5 transition shadow-lg active:scale-98">
+          <i class="fa-brands fa-google text-rose-500 text-base"></i>
+          <span>Google மூலம் உள்நுழைக</span>
+        </button>
+
+        <p class="text-[10px] text-slate-400 dark:text-slate-500">
+          அங்கீகரிக்கப்பட்ட பார்ட்னர் ஜிமெயில் மூலம் மட்டுமே கணக்குகளை அணுக முடியும்.
+        </p>
+      </div>
+
+      <!-- Theme Switcher in Login Screen -->
+      <div class="pt-1 flex justify-center">
+        <button onclick="toggleTheme()" class="px-3.5 py-1.5 rounded-full text-[11px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-medium">
+          <span id="loginThemeIcon">☀️</span>
+          <span>தீம் மாற்றுக</span>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 📱 2. முதன்மை ஆப் ஷெல் (MAIN APP SHELL)    -->
+  <!-- ========================================== -->
+  <div id="appContainer" class="hidden w-full max-w-md mx-auto">
+
+    <!-- மேல் தலைப்பு (HEADER) -->
+    <header class="sticky top-0 z-40 w-full bg-white/95 dark:bg-[#070d1e]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-4 py-2.5">
+      <div class="flex items-center justify-between">
+        
+        <div class="flex flex-col">
+          <h1 class="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">
+            மீன்மார்ட் <span class="text-[10px] px-2 py-0.5 rounded-full bg-teal-500/15 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold border border-teal-500/30">ஹப்</span>
+          </h1>
+          <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">தினசரி நிதி & செட்டில்மென்ட்</span>
+        </div>
+
+        <!-- Right: Current Partner, Theme, Sign Out -->
+        <div class="flex items-center space-x-2">
+          
+          <div class="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl text-xs">
+            <span id="currentPartnerAvatar">👨‍💻</span>
+            <span id="currentPartnerName" class="font-bold text-slate-900 dark:text-slate-100">பாலாஜி</span>
+          </div>
+
+          <button onclick="toggleTheme()" title="தீம் மாற்றுக" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-amber-500 dark:text-amber-300 text-xs shadow-sm active:scale-95 transition">
+            <i id="themeToggleIcon" class="fa-solid fa-sun"></i>
+          </button>
+
+          <button onclick="handleSignOut()" title="வெளியேறுக" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-rose-500 text-xs shadow-sm active:scale-95 transition">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+
+        </div>
+
+      </div>
+    </header>
+
+    <!-- முதன்மை பக்கங்கள் (MAIN BODY TABS) -->
+    <main class="px-3.5 pt-3.5 space-y-4">
+
+      <!-- ======================================== -->
+      <!-- TAB 1: முகப்பு (DASHBOARD)               -->
+      <!-- ======================================== -->
+      <section id="tab-dashboard" class="space-y-3.5 fade-in">
+        
+        <!-- DATE FILTER BAR (இன்று, நேற்று, இந்த வாரம், தேதி தேர்வு) -->
+        <div class="app-card rounded-2xl p-2.5 space-y-2">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">கால அளவு தேர்வு:</span>
+            <button onclick="toggleCustomDateRangeModal()" class="text-[10px] font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1">
+              <i class="fa-solid fa-calendar-days"></i> <span id="dashRangeLabel">இன்று</span>
+            </button>
+          </div>
+
+          <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <button onclick="setDashboardDateScope('today')" id="dashScope-today" class="flex-1 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white text-center whitespace-nowrap shadow-sm">இன்று</button>
+            <button onclick="setDashboardDateScope('yesterday')" id="dashScope-yesterday" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">நேற்று</button>
+            <button onclick="setDashboardDateScope('week')" id="dashScope-week" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">இந்த வாரம்</button>
+            <button onclick="setDashboardDateScope('month')" id="dashScope-month" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">இந்த மாதம்</button>
+          </div>
+
+          <!-- Custom Date Range Row (Hidden by default, shown when custom selected) -->
+          <div id="dashCustomDateRow" class="hidden pt-1.5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="block text-[9px] text-slate-400 font-bold mb-0.5">தொடக்கத் தேதி:</label>
+              <input type="date" id="dashCustomFrom" onchange="applyCustomDateRange()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs" />
+            </div>
+            <div>
+              <label class="block text-[9px] text-slate-400 font-bold mb-0.5">முடிவுத் தேதி:</label>
+              <input type="date" id="dashCustomTo" onchange="applyCustomDateRange()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs" />
+            </div>
+          </div>
+        </div>
+
+        <!-- HERO CARD: FINANCIAL SUMMARY (தேர்ந்தெடுத்த கால அளவிற்கு) -->
+        <div class="rounded-3xl p-5 bg-gradient-to-br from-teal-600 via-teal-700 to-slate-900 text-white shadow-xl space-y-4 relative overflow-hidden">
+          <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
+
+          <div>
+            <div class="flex items-center justify-between text-teal-100 text-xs font-semibold">
+              <span id="dashNetTitle">நிகர லாபம் / இருப்பு</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-sm" id="dashHeroDateBadge">இன்று</span>
+            </div>
+            <div class="text-3xl font-extrabold tracking-tight mt-1" id="dashHeroNetBalance">₹0</div>
+          </div>
+
+          <!-- 3 Mini Metric Cards -->
+          <div class="grid grid-cols-3 gap-2 pt-1 border-t border-white/10 text-center">
+            <div class="bg-white/10 rounded-xl p-2">
+              <span class="block text-[9px] text-teal-100 font-medium">மொத்த வரவு</span>
+              <span class="text-xs font-extrabold text-emerald-300" id="dashHeroSales">₹0</span>
+            </div>
+            <div class="bg-white/10 rounded-xl p-2">
+              <span class="block text-[9px] text-teal-100 font-medium">மொத்த செலவு</span>
+              <span class="text-xs font-extrabold text-rose-300" id="dashHeroExpenses">₹0</span>
+            </div>
+            <div class="bg-white/10 rounded-xl p-2">
+              <span class="block text-[9px] text-teal-100 font-medium">மூலதன முதலீடு</span>
+              <span class="text-xs font-extrabold text-teal-200" id="dashHeroCapital">₹0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 💰 தற்போது யார் கையில் பணம் உள்ளது? (WHO HOLDS THE CASH?) -->
+        <div class="app-card rounded-2xl p-3.5 space-y-2.5 border-teal-500/30">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-sm">💵</span>
+              <h2 class="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                தற்போது யார் கையில் பணம் உள்ளது?
+              </h2>
+            </div>
+            <span class="text-[9px] text-slate-400">ரொக்கம் & வங்கி இருப்பு</span>
+          </div>
+
+          <div class="space-y-2 pt-1" id="cashInHandContainer">
+            <!-- Balaji, Nagoor, JP cash status rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- 3 பார்ட்னர்கள் செய்த செலவு நிலவரம் (PARTNER EXPENSES IN SELECTED RANGE) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              யார் எவ்வளவு செலவு செய்துள்ளனர்?
+            </h2>
+            <span class="text-[10px] text-slate-400">கைச்செலவு விவரம்</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2" id="partnerSummaryCards">
+            <!-- Balaji -->
+            <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-blue-500">
+              <div class="text-lg">👨‍💻</div>
+              <div class="font-extrabold text-xs text-slate-900 dark:text-white">பாலாஜி</div>
+              <div class="text-[9px] text-slate-400">சுத்தம், கவர், ஆப்</div>
+              <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
+                <div class="text-slate-500">செலவு: <strong class="text-rose-600 dark:text-rose-400" id="cardBalajiExp">₹0</strong></div>
+                <div class="text-slate-500">வசூல்: <strong class="text-emerald-600 dark:text-emerald-400" id="cardBalajiSales">₹0</strong></div>
+              </div>
+            </div>
+
+            <!-- Nagoor -->
+            <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-emerald-500">
+              <div class="text-lg">🦐</div>
+              <div class="font-extrabold text-xs text-slate-900 dark:text-white">நாகூர்</div>
+              <div class="text-[9px] text-slate-400">மீன் கொள்முதல்</div>
+              <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
+                <div class="text-slate-500">செலவு: <strong class="text-rose-600 dark:text-rose-400" id="cardNagoorExp">₹0</strong></div>
+                <div class="text-slate-500">வசூல்: <strong class="text-emerald-600 dark:text-emerald-400" id="cardNagoorSales">₹0</strong></div>
+              </div>
+            </div>
+
+            <!-- JP -->
+            <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-amber-500">
+              <div class="text-lg">🛵</div>
+              <div class="font-extrabold text-xs text-slate-900 dark:text-white">JP</div>
+              <div class="text-[9px] text-slate-400">டெலிவரி & பெட்ரோல்</div>
+              <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
+                <div class="text-slate-500">செலவு: <strong class="text-rose-600 dark:text-rose-400" id="cardJpExp">₹0</strong></div>
+                <div class="text-slate-500">வசூல்: <strong class="text-emerald-600 dark:text-emerald-400" id="cardJpSales">₹0</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- சமீபத்திய பதிவுகள் (RECENT TRANSACTIONS) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              சமீபத்திய கணக்குப் பதிவுகள்
+            </h2>
+            <button onclick="switchTab('history')" class="text-xs text-teal-600 dark:text-teal-400 font-bold hover:underline">
+              அனைத்தும் காண்க &rarr;
+            </button>
+          </div>
+
+          <div id="dashRecentTransactions" class="space-y-2">
+            <!-- Dynamic Recent Records -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================================== -->
+      <!-- TAB 2: கணக்குப் பட்டியல் (HISTORY)     -->
+      <!-- ======================================== -->
+      <section id="tab-history" class="hidden space-y-3.5 fade-in">
+        
+        <!-- SEARCH & FILTER HEADER -->
+        <div class="app-card rounded-2xl p-3.5 space-y-3">
+          
+          <!-- Search & CSV Export Row -->
+          <div class="flex items-center space-x-2">
+            <div class="relative flex-1">
+              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input 
+                type="search" 
+                id="historySearchInput" 
+                name="field_srch_query_1"
+                autocomplete="nope"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
+                data-lpignore="true"
+                data-form-type="other"
+                oninput="renderHistoryList()" 
+                placeholder="குறிப்பு, பிரிவு, தொகை தேடவும்..." 
+                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" 
+              />
+            </div>
+            <!-- CSV Download Button -->
+            <button onclick="exportToCSV()" title="CSV பதிவிறக்கம்" class="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition">
+              <i class="fa-solid fa-file-excel text-sm"></i>
+              <span class="hidden sm:inline">CSV</span>
+            </button>
+          </div>
+
+          <!-- Date Filter Chips -->
+          <div class="space-y-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">தேதி வாரியாக:</span>
+            <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5">
+              <button onclick="setHistoryDateFilter('all')" id="hDate-all" class="px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white whitespace-nowrap">அனைத்தும்</button>
+              <button onclick="setHistoryDateFilter('today')" id="hDate-today" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">இன்று</button>
+              <button onclick="setHistoryDateFilter('yesterday')" id="hDate-yesterday" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">நேற்று</button>
+              <button onclick="setHistoryDateFilter('this-week')" id="hDate-this-week" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">இந்த வாரம்</button>
+              <button onclick="setHistoryDateFilter('this-month')" id="hDate-this-month" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">இந்த மாதம்</button>
+            </div>
+          </div>
+
+          <!-- Type & Partner Segmented Selectors -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-1">வகை:</label>
+              <select id="hFilterType" onchange="renderHistoryList()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none">
+                <option value="all">அனைத்து வகைகள்</option>
+                <option value="expense">💸 செலவு மட்டும்</option>
+                <option value="sales">📈 விற்பனை வரவு மட்டும்</option>
+                <option value="investment">💰 முதலீடு மட்டும்</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 mb-1">பார்ட்னர்:</label>
+              <select id="hFilterPartner" onchange="renderHistoryList()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none">
+                <option value="all">அனைத்து பார்ட்னர்</option>
+                <option value="Balaji">👨‍💻 பாலாஜி</option>
+                <option value="Nagoor">🦐 நாகூர்</option>
+                <option value="JP">🛵 JP</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- LIST SUMMARY STATS BAR -->
+        <div class="flex items-center justify-between px-2 text-xs font-bold text-slate-500">
+          <span id="hCountLabel">0 பதிவுகள்</span>
+          <span id="hTotalAmountLabel" class="text-teal-600 dark:text-teal-400">கூட்டுத்தொகை: ₹0</span>
+        </div>
+
+        <!-- TRANSACTIONS CONTAINER -->
+        <div id="historyListContainer" class="space-y-2">
+          <!-- Rendered dynamically -->
+        </div>
+
+      </section>
+
+      <!-- ======================================== -->
+      <!-- TAB 3: கிராஃப் அனாலிட்டிக்ஸ் (ANALYTICS) -->
+      <!-- ======================================== -->
+      <section id="tab-analytics" class="hidden space-y-4 fade-in">
+        
+        <!-- Header & Range -->
+        <div class="app-card rounded-2xl p-3.5 space-y-2.5">
+          <div>
+            <h2 class="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
+              கிராஃப் அனாலிட்டிக்ஸ்
+            </h2>
+            <p class="text-[10px] text-slate-400">விற்பனை மற்றும் செலவு ஒப்பீட்டு வரைபடங்கள்</p>
+          </div>
+
+          <!-- Range Switcher Pills -->
+          <div class="flex space-x-1.5 pt-1">
+            <button onclick="setAnalyticsRange('7')" id="range-7" class="flex-1 py-1.5 text-xs rounded-xl font-bold bg-teal-600 text-white text-center shadow-sm">7 நாட்கள்</button>
+            <button onclick="setAnalyticsRange('30')" id="range-30" class="flex-1 py-1.5 text-xs rounded-xl font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center">30 நாட்கள்</button>
+            <button onclick="setAnalyticsRange('all')" id="range-all" class="flex-1 py-1.5 text-xs rounded-xl font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center">அனைத்தும்</button>
+          </div>
+        </div>
+
+        <!-- Chart 1: Daily Expense vs Sales -->
+        <div class="app-card rounded-2xl p-4 space-y-3">
+          <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">1. தினசரி விற்பனை & செலவு</h3>
+          <div class="relative h-56 w-full" id="chartDailyContainer">
+            <canvas id="chartDaily"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Partner Spend Share -->
+        <div class="app-card rounded-2xl p-4 space-y-3">
+          <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">2. பார்ட்னர்கள் செலவுப் பங்கு விகிதம்</h3>
+          <div class="relative h-56 w-full flex items-center justify-center" id="chartPartnersContainer">
+            <canvas id="chartPartners"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: Category Breakdown -->
+        <div class="app-card rounded-2xl p-4 space-y-3">
+          <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">3. செலவுப் பிரிவுகள் புள்ளிவிவரம்</h3>
+          <div class="relative h-56 w-full" id="chartCategoriesContainer">
+            <canvas id="chartCategories"></canvas>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================================== -->
+      <!-- TAB 4: ACCOUNTS (கணக்குகள் & செட்டில்மென்ட்) -->
+      <!-- ======================================== -->
+      <section id="tab-accounts" class="hidden space-y-3.5 fade-in">
+        
+        <!-- Week Range Navigator -->
+        <div class="app-card rounded-2xl p-3 flex items-center justify-between">
+          <button onclick="changeSettlementWeek(1)" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center text-xs active:scale-95">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <div class="text-center">
+            <span class="block text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-wider" id="settleWeekLabel">இந்த வாரம்</span>
+            <span class="text-xs font-extrabold text-slate-900 dark:text-white" id="settleWeekRangeText">...</span>
+          </div>
+          <button onclick="changeSettlementWeek(-1)" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center text-xs active:scale-95">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Weekly Accounting Master Card -->
+        <div class="app-card rounded-3xl p-4 space-y-4 border-t-4 border-t-teal-500 shadow-xl">
+          
+          <!-- Weekly Overview -->
+          <div class="text-center space-y-1 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-center gap-2">
+              <span class="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">வாராந்திர நிகர லாபம்</span>
+              <span id="settleStatusBadge" class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">நிலுவையில் உள்ளது</span>
+            </div>
+            <div class="text-3xl font-black text-emerald-600 dark:text-emerald-400" id="settleNetProfit">₹0</div>
+            <div class="flex justify-center space-x-3 text-xs text-slate-500 pt-1">
+              <span>மொத்த விற்பனை: <strong class="text-slate-900 dark:text-white font-bold" id="settleTotalSales">₹0</strong></span>
+              <span>மொத்த செலவு: <strong class="text-slate-900 dark:text-white font-bold" id="settleTotalExpenses">₹0</strong></span>
+            </div>
+          </div>
+
+          <!-- Step 1: Expense Reimbursements -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
+              <span>1. செலவுத் தொகை வாபஸ்</span>
+              <span class="text-[10px] text-slate-400">கையிலிருந்து போட்டது</span>
+            </div>
+            <div id="settleReimbursementList" class="space-y-1.5">
+              <!-- Balaji, Nagoor, JP reimbursements -->
+            </div>
+          </div>
+
+          <!-- Step 2: Equal Profit Split -->
+          <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
+              <span>2. சம லாபப் பங்கு (தலா 1/3)</span>
+              <span id="settleEachPartnerShare" class="text-xs font-extrabold text-teal-600 dark:text-teal-400">தலா: ₹0</span>
+            </div>
+            <div id="settleProfitSplitGrid" class="grid grid-cols-3 gap-2 text-center">
+              <!-- Balaji, Nagoor, JP profit shares -->
+            </div>
+          </div>
+
+          <!-- Step 3: WHO PAYS WHOM (FINAL MONEY ACTION BOX) -->
+          <div class="rounded-2xl p-3.5 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-500/30 space-y-2.5">
+            <div class="flex items-center space-x-2 text-teal-900 dark:text-teal-200 font-extrabold text-xs">
+              <span>🚀</span>
+              <span>3. யார் யாருக்கு பணம் அனுப்ப வேண்டும்?</span>
+            </div>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-snug">
+              விற்பனைப் பணம் பாலாஜி கையில் (ரொக்கம் & கேட்வே வங்கி) இருப்பதால், பாலாஜி நாகூருக்கும், JP-க்கும் அனுப்ப வேண்டிய நிகரத் தொகை:
+            </p>
+            <div id="settleTransfersContainer" class="space-y-2 pt-1">
+              <!-- Balaji to Nagoor, Balaji to JP -->
+            </div>
+          </div>
+
+          <!-- Action Buttons Row -->
+          <div class="space-y-2 pt-1">
+            <button onclick="copyWeeklyReportWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg flex items-center justify-center space-x-2 text-xs active:scale-98 transition">
+              <i class="fa-brands fa-whatsapp text-lg"></i>
+              <span>வாட்ஸ்அப் அறிக்கை நகலெடு</span>
+            </button>
+
+            <button onclick="toggleWeekSettlementStatus()" id="btnToggleSettle" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3 px-4 rounded-2xl shadow-md flex items-center justify-center space-x-2 text-xs active:scale-98 transition">
+              <i class="fa-solid fa-check-double"></i>
+              <span id="btnToggleSettleText">இந்த வாரக் கணக்கை முடிக்க</span>
+            </button>
+          </div>
+
+          <!-- Category Customizer Button -->
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-center">
+            <button onclick="openCategoryManagerModal()" class="text-xs font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5 py-1.5 px-3.5 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-500/30">
+              <i class="fa-solid fa-sliders"></i>
+              <span>பிரிவுகள் மேலாளர்</span>
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 🧭 3. வளைந்த கீழ்ப் பட்டை (BOTTOM DOCK)    -->
+    <!-- ========================================== -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 select-none">
+      <div class="w-full max-w-md mx-auto relative">
+        
+        <!-- RAISED CENTER FLOATING '+' BUTTON -->
+        <div class="absolute -top-6 left-1/2 -translate-x-1/2 z-50">
+          <button onclick="openEntryBottomSheet()" title="புதிய பதிவு" class="w-13 h-13 p-3.5 rounded-full bg-gradient-to-tr from-teal-600 via-teal-500 to-cyan-400 text-white flex items-center justify-center shadow-2xl fab-button border-[3px] border-slate-50 dark:border-[#070d1e] active:scale-90 transition-transform">
+            <i class="fa-solid fa-plus text-xl font-bold"></i>
+          </button>
+        </div>
+
+        <!-- 4-TAB DOCK WITH EMPTY CENTER HOLE -->
+        <div class="app-dock border-t border-slate-200 dark:border-slate-800 px-3 pt-2">
+          <div class="grid grid-cols-5 items-center text-center">
+            
+            <!-- Tab 1: Dashboard -->
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center justify-center py-1 text-teal-600 dark:text-teal-400">
+              <i class="fa-solid fa-house text-sm"></i>
+              <span class="text-[10px] font-bold mt-1">முகப்பு</span>
+            </button>
+
+            <!-- Tab 2: History -->
+            <button onclick="switchTab('history')" id="nav-history" class="flex flex-col items-center justify-center py-1 text-slate-500 dark:text-slate-400">
+              <i class="fa-solid fa-list-ul text-sm"></i>
+              <span class="text-[10px] font-semibold mt-1">பட்டியல்</span>
+            </button>
+
+            <!-- Center Column Spacer -->
+            <div class="flex flex-col items-center justify-center pointer-events-none">
+              <span class="text-[9px] font-semibold text-transparent">.</span>
+            </div>
+
+            <!-- Tab 3: Analytics -->
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="flex flex-col items-center justify-center py-1 text-slate-500 dark:text-slate-400">
+              <i class="fa-solid fa-chart-simple text-sm"></i>
+              <span class="text-[10px] font-semibold mt-1">கிராஃப்</span>
+            </button>
+
+            <!-- Tab 4: Accounts -->
+            <button onclick="switchTab('accounts')" id="nav-accounts" class="flex flex-col items-center justify-center py-1 text-slate-500 dark:text-slate-400">
+              <i class="fa-solid fa-wallet text-sm"></i>
+              <span class="text-[10px] font-semibold mt-1">Accounts</span>
+            </button>
+
+          </div>
+        </div>
+
+      </div>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- 📄 4. புதிய கணக்குப் பதிவு (QUICK ENTRY)   -->
+    <!-- (Clean Sheet - No Black Gap)               -->
+    <!-- ========================================== -->
+    <div id="entryBottomSheetModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+      <!-- Backdrop -->
+      <div onclick="closeEntryBottomSheet()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
+      
+      <!-- Inner Sheet Content -->
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[88vh] overflow-y-auto no-scrollbar">
+        
+        <!-- Sheet Header -->
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
+          <div>
+            <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">புதிய கணக்குப் பதிவு</h3>
+            <p class="text-[10px] text-slate-400">செலவு, விற்பனை அல்லது முதலீடு சேர்க்கவும்</p>
+          </div>
+          <button onclick="closeEntryBottomSheet()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div id="entryForm" class="space-y-3.5">
+          <!-- 1. பதிவு வகை -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">பதிவு வகை:</label>
+            <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+              <button type="button" onclick="selectEntryType('expense')" id="typeBtn-expense" class="py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center space-x-1 bg-white dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-300 dark:border-rose-500/40 shadow-sm">
+                <span>💸</span><span>தினசரி செலவு</span>
+              </button>
+              <button type="button" onclick="selectEntryType('sales')" id="typeBtn-sales" class="py-2.5 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
+                <span>📈</span><span>விற்பனை வரவு</span>
+              </button>
+              <button type="button" onclick="selectEntryType('investment')" id="typeBtn-investment" class="py-2.5 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
+                <span>💰</span><span>முதலீடு</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. பார்ட்னர் தேர்வு -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5" id="entryPartnerLabel">யார் பணம் கொடுத்தது / வசூலித்தது?</label>
+            <div class="grid grid-cols-3 gap-2" id="sheetPartnerSelector">
+              <button type="button" onclick="selectEntryPartner('Balaji')" id="sheetPartner-Balaji" class="py-2.5 px-1 rounded-2xl border border-teal-500 bg-teal-50 dark:bg-teal-500/20 text-center font-bold text-xs text-slate-900 dark:text-white">
+                👨‍💻 பாலாஜி
+              </button>
+              <button type="button" onclick="selectEntryPartner('Nagoor')" id="sheetPartner-Nagoor" class="py-2.5 px-1 rounded-2xl border border-slate-200 dark:border-slate-800 text-center font-bold text-xs text-slate-600 dark:text-slate-400">
+                🦐 நாகூர்
+              </button>
+              <button type="button" onclick="selectEntryPartner('JP')" id="sheetPartner-JP" class="py-2.5 px-1 rounded-2xl border border-slate-200 dark:border-slate-800 text-center font-bold text-xs text-slate-600 dark:text-slate-400">
+                🛵 JP
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. தேதி & பிரிவு -->
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">தேதி</label>
+              <input type="date" id="entryDate" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-900 dark:text-white font-medium" />
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300">பிரிவு</label>
+                <button type="button" onclick="openCategoryManagerModal()" class="text-[10px] text-teal-600 dark:text-teal-400 font-bold hover:underline">+ மாற்றுக</button>
+              </div>
+              <select id="entryCategory" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs text-slate-900 dark:text-white font-medium"></select>
+            </div>
+          </div>
+
+          <!-- 4. தொகை (₹) -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300">தொகை (₹)</label>
+              <div class="flex space-x-1">
+                <button type="button" onclick="addAmountValue(500)" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300">+500</button>
+                <button type="button" onclick="addAmountValue(1000)" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300">+1k</button>
+                <button type="button" onclick="addAmountValue(2000)" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300">+2k</button>
+                <button type="button" onclick="addAmountValue(5000)" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300">+5k</button>
+              </div>
+            </div>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">₹</span>
+              <input 
+                type="search" 
+                inputmode="numeric" 
+                pattern="[0-9]*" 
+                id="entryAmount" 
+                name="mm_num_val_input" 
+                placeholder="0" 
+                autocomplete="off" 
+                autocorrect="off" 
+                autocapitalize="off" 
+                spellcheck="false" 
+                data-lpignore="true" 
+                data-1p-ignore="true" 
+                data-bwignore="true" 
+                onkeydown="if(event.key==='Enter') handleFormSubmit(event)"
+                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-lg font-extrabold text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" 
+              />
+            </div>
+          </div>
+
+          <!-- 5. குறிப்பு -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">குறிப்பு</label>
+            <input 
+              type="search" 
+              id="entryDescription" 
+              name="mm_notes_val_input" 
+              placeholder="உதா: வஞ்சிரம் 15kg / கிளீனிங் கூலி / பெட்ரோல்..." 
+              autocomplete="off" 
+              autocorrect="off" 
+              autocapitalize="off" 
+              spellcheck="false" 
+              data-lpignore="true" 
+              data-1p-ignore="true" 
+              data-bwignore="true" 
+              onkeydown="if(event.key==='Enter') handleFormSubmit(event)"
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" 
+            />
+          </div>
+
+          <!-- Save Button -->
+          <button type="button" onclick="handleFormSubmit(event)" id="btnSubmitEntry" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center space-x-2 text-xs active:scale-98 transition">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>பதிவு செய்க</span>
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ⚙️ 5. பிரிவுகள் மேலாளர் (CATEGORY MANAGER) -->
+    <!-- ========================================== -->
+    <div id="categoryManagerModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+      <div onclick="closeCategoryManagerModal()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+        
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
+          <div>
+            <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">பிரிவுகள் மேலாளர்</h3>
+            <p class="text-[10px] text-slate-400">விருப்பத்திற்கேற்ப பிரிவுகளை சேர்க்கலாம் / நீக்கலாம்</p>
+          </div>
+          <button onclick="closeCategoryManagerModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Category Type Switcher -->
+        <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+          <button type="button" onclick="switchCatManagerType('expense')" id="catTab-expense" class="py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">
+            💸 செலவு
+          </button>
+          <button type="button" onclick="switchCatManagerType('sales')" id="catTab-sales" class="py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">
+            📈 விற்பனை
+          </button>
+          <button type="button" onclick="switchCatManagerType('investment')" id="catTab-investment" class="py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">
+            💰 முதலீடு
+          </button>
+        </div>
+
+        <!-- Current Category List -->
+        <div class="space-y-1.5 max-h-56 overflow-y-auto no-scrollbar" id="catManagerList">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Add New Category Form -->
+        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+          <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">புதிய பிரிவு பெயர்:</label>
+          <div class="flex space-x-2">
+            <input 
+              type="search" 
+              id="newCatInput" 
+              name="cat_val_custom_fld"
+              autocomplete="nope"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              data-lpignore="true"
+              data-form-type="other"
+              placeholder="உதா: 🦀 நண்டு கொள்முதல்..." 
+              class="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" 
+            />
+            <button onclick="handleAddCategory()" class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-md">
+              + சேர்
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- EDIT TRANSACTION MODAL                     -->
+    <!-- (Strictly Ownership Protected)             -->
+    <!-- ========================================== -->
+    <div id="editTransactionModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+      <div onclick="closeEditModal()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-3.5 max-h-[85vh] overflow-y-auto no-scrollbar">
+        
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+          <div>
+            <h3 class="font-bold text-sm text-slate-900 dark:text-white">பதிவைத் திருத்து</h3>
+            <p class="text-[10px] text-slate-400" id="editOwnershipBadge">உங்கள் பதிவு</p>
+          </div>
+          <button onclick="closeEditModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div id="editForm" class="space-y-3">
+          <input type="hidden" id="editTxId" />
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">பார்ட்னர்</label>
+              <select id="editTxPartner" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-2 text-xs text-slate-900 dark:text-white">
+                <option value="Balaji">👨‍💻 பாலாஜி</option>
+                <option value="Nagoor">🦐 நாகூர்</option>
+                <option value="JP">🛵 JP</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">வகை</label>
+              <select id="editTxType" onchange="updateEditCategoryOptions()" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-2 text-xs text-slate-900 dark:text-white">
+                <option value="expense">💸 தினசரி செலவு</option>
+                <option value="sales">📈 விற்பனை வரவு</option>
+                <option value="investment">💰 முதலீடு</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">தேதி</label>
+              <input type="date" id="editTxDate" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-2 text-xs text-slate-900 dark:text-white" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">தொகை (₹)</label>
+              <input 
+                type="search" 
+                inputmode="numeric" 
+                pattern="[0-9]*" 
+                id="editTxAmount" 
+                name="mm_edit_num_input" 
+                placeholder="0" 
+                autocomplete="off" 
+                autocorrect="off" 
+                autocapitalize="off" 
+                spellcheck="false" 
+                data-lpignore="true" 
+                data-1p-ignore="true" 
+                data-bwignore="true" 
+                onkeydown="if(event.key==='Enter') handleEditSubmit(event)"
+                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold text-slate-900 dark:text-white" 
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">பிரிவு</label>
+            <select id="editTxCategory" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-2 text-xs text-slate-900 dark:text-white"></select>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">குறிப்பு</label>
+            <input 
+              type="search" 
+              id="editTxDescription" 
+              name="mm_edit_notes_input" 
+              placeholder="உதா: வஞ்சிரம் 15kg..." 
+              autocomplete="off" 
+              autocorrect="off" 
+              autocapitalize="off" 
+              spellcheck="false" 
+              data-lpignore="true" 
+              data-1p-ignore="true" 
+              data-bwignore="true" 
+              onkeydown="if(event.key==='Enter') handleEditSubmit(event)"
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white" 
+            />
+          </div>
+
+          <div class="flex space-x-2 pt-2">
+            <button type="button" onclick="closeEditModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold">ரத்து</button>
+            <button type="button" onclick="handleEditSubmit(event)" class="w-1/2 py-2.5 rounded-xl bg-teal-600 text-white text-xs font-bold shadow-sm">சேமி</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION POPUP -->
+    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px] max-w-sm w-11/12">
+      <div class="app-card rounded-2xl px-4 py-3 shadow-2xl flex items-center space-x-2.5 border-teal-500/40 text-xs bg-white dark:bg-slate-900">
+        <span id="toastIcon" class="text-base text-teal-500">✅</span>
+        <span id="toastMessage" class="text-slate-900 dark:text-slate-100 font-bold">வெற்றிகரமாக பதிவு செய்யப்பட்டது!</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- ⚙️ 6. JAVASCRIPT APP LOGIC & FIREBASE SDK  -->
+  <!-- ========================================== -->
+  <script type="module">
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgmMzKiRKM8mn9FgOdkWCanqZ7RihV0k8",
+      authDomain: "meenmart-partners-hub.firebaseapp.com",
+      projectId: "meenmart-partners-hub",
+      storageBucket: "meenmart-partners-hub.firebasestorage.app",
+      messagingSenderId: "49631212929",
+      appId: "1:49631212929:web:15f09cb19dab3110ac2480"
+    };
+
+    // Firebase Modular v10 SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+      getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, onSnapshot, query, orderBy 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { 
+      getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    // 3 Fixed Partners & Emails
+    const PARTNERS = {
+      Balaji: { name: "பாலாஜி", role: "டெக், சுத்தம் & வசூல்", avatar: "👨‍💻", color: "#3B82F6" },
+      Nagoor: { name: "நாகூர்", role: "மீன் கொள்முதல்", avatar: "🦐", color: "#10B981" },
+      JP: { name: "JP", role: "டெலிவரி & பெட்ரோல்", avatar: "🛵", color: "#F59E0B" }
+    };
+
+    const PARTNER_EMAILS = {
+      'itzbalajir@gmail.com': 'Balaji',
+      'balajibala93843@gmail.com': 'Balaji',
+      'abdulfaizal66786@gmail.com': 'Nagoor',
+      'jaya84008@gmail.com': 'JP'
+    };
+
+    // Default Startup Categories for MeenMart
+    const DEFAULT_CATEGORIES = {
+      expense: [
+        { id: "fish_purchase", label: "🐟 மீன் கொள்முதல்" },
+        { id: "fish_cleaning", label: "🧼 மீன் சுத்தம் செய்தல் கூலி" },
+        { id: "ice_storage", label: "🧊 ஐஸ் & சேமிப்புப் பெட்டி" },
+        { id: "packing_covers", label: "📦 பேக்கிங் கவர் & பைகள்" },
+        { id: "petrol_delivery", label: "🛵 பெட்ரோல் & டெலிவரி" },
+        { id: "marketing_ads", label: "📢 விளம்பரம் & ஆப் செலவு" },
+        { id: "other_expense", label: "🛠️ இதர தினசரி செலவு" }
+      ],
+      sales: [
+        { id: "cash_sales", label: "💵 கஸ்டமர் நேரடி ரொக்க விற்பனை" },
+        { id: "online_gateway", label: "💳 ஆன்லைன் கேட்வே வரவு (வங்கி)" },
+        { id: "bulk_hotel_sales", label: "🏢 மொத்த / ஹோட்டல் விற்பனை" }
+      ],
+      investment: [
+        { id: "freezer_box", label: "🧊 டீப் ஃப்ரீசர் & பெரிய ஐஸ் பெட்டிகள்" },
+        { id: "weighing_scale", label: "⚖️ டிஜிட்டல் எடை மெஷின்" },
+        { id: "initial_capital", label: "💵 ஆரம்ப முதலீடு" },
+        { id: "tech_branding", label: "💻 ஆப் & பிராண்டிங்" }
+      ]
+    };
+
+    // App State
+    const state = {
+      currentUser: null,
+      currentPartner: null,
+      theme: localStorage.getItem('meenmart_theme') || 'dark',
+      currentTab: 'dashboard',
+      dashboardScope: 'today', // 'today', 'yesterday', 'week', 'month', 'custom'
+      customDateRange: { from: '', to: '' },
+      transactions: [],
+      settlements: {},
+      categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+      catManagerTab: 'expense',
+      settlementOffsetWeeks: 0,
+      entryType: 'expense',
+      entryPartner: 'Balaji',
+      historyFilter: {
+        search: '',
+        date: 'all',
+        type: 'all',
+        partner: 'all'
+      },
+      analyticsRange: '7',
+      charts: { daily: null, partners: null, categories: null }
+    };
+
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // Theme Management
+    window.toggleTheme = function() {
+      const newTheme = state.theme === 'dark' ? 'light' : 'dark';
+      state.theme = newTheme;
+      localStorage.setItem('meenmart_theme', newTheme);
+      applyTheme(newTheme);
+      if (state.currentTab === 'analytics') renderAnalytics();
+    };
+
+    function applyTheme(theme) {
+      const root = document.documentElement;
+      const themeToggleIcon = document.getElementById('themeToggleIcon');
+      const loginThemeIcon = document.getElementById('loginThemeIcon');
+      const metaColor = document.getElementById('metaThemeColor');
+
+      if (theme === 'dark') {
+        root.classList.add('dark');
+        if (themeToggleIcon) themeToggleIcon.className = 'fa-solid fa-sun';
+        if (loginThemeIcon) loginThemeIcon.innerText = '☀️';
+        if (metaColor) metaColor.setAttribute('content', '#070d1e');
+      } else {
+        root.classList.remove('dark');
+        if (themeToggleIcon) themeToggleIcon.className = 'fa-solid fa-moon';
+        if (loginThemeIcon) loginThemeIcon.innerText = '🌙';
+        if (metaColor) metaColor.setAttribute('content', '#f8fafc');
+      }
+    }
+
+    // Google Authentication
+    window.handleGoogleSignIn = async function() {
+      const btn = document.getElementById('btnAuthSignIn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-base"></i> <span>உள்நுழைகிறது...</span>`;
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (err) {
+        alert("Google உள்நுழைவு பிழை: " + err.message);
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-brands fa-google text-rose-500 text-base"></i> <span>Google மூலம் உள்நுழைக</span>`;
+      }
+    };
+
+    window.handleSignOut = async function() {
+      if (confirm("நிச்சயமாக வெளியேற விரும்புகிறீர்களா?")) {
+        await signOut(auth);
+      }
+    };
+
+    // Auth State Observer
+    onAuthStateChanged(auth, (user) => {
+      state.currentUser = user;
+      const gate = document.getElementById('authGateSection');
+      const appContainer = document.getElementById('appContainer');
+      const alertBox = document.getElementById('unauthorizedAlert');
+      const btn = document.getElementById('btnAuthSignIn');
+
+      if (user) {
+        const email = (user.email || '').toLowerCase().trim();
+        const matchedPartner = PARTNER_EMAILS[email];
+
+        if (matchedPartner) {
+          state.currentPartner = matchedPartner;
+          gate.classList.add('hidden');
+          appContainer.classList.remove('hidden');
+
+          document.getElementById('currentPartnerName').innerText = PARTNERS[matchedPartner].name;
+          document.getElementById('currentPartnerAvatar').innerText = PARTNERS[matchedPartner].avatar;
+          selectEntryPartner(matchedPartner);
+
+          initCategoriesSync();
+          initLiveSync();
+          initSettlementsSync();
+        } else {
+          gate.classList.remove('hidden');
+          appContainer.classList.add('hidden');
+          alertBox.classList.remove('hidden');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-brands fa-google text-rose-500 text-base"></i> <span>Google மூலம் உள்நுழைக</span>`;
+          }
+        }
+      } else {
+        gate.classList.remove('hidden');
+        appContainer.classList.add('hidden');
+        alertBox.classList.add('hidden');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-brands fa-google text-rose-500 text-base"></i> <span>Google மூலம் உள்நுழைக</span>`;
+        }
+      }
+    });
+
+    // Real-time Categories Sync with Firestore
+    function initCategoriesSync() {
+      const catDocRef = doc(db, "settings", "categories");
+      onSnapshot(catDocRef, (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.expense && data.sales && data.investment) {
+            state.categories = {
+              expense: data.expense,
+              sales: data.sales,
+              investment: data.investment
+            };
+            updateCategorySelect();
+            if (!document.getElementById('categoryManagerModal').classList.contains('hidden')) {
+              renderCatManagerList();
+            }
+          }
+        } else {
+          setDoc(catDocRef, {
+            ...DEFAULT_CATEGORIES,
+            updatedAt: Date.now(),
+            updatedBy: state.currentUser ? state.currentUser.email : 'system'
+          }).catch(console.error);
+        }
+      }, (err) => {
+        console.warn("Categories sync warning:", err);
+      });
+    }
+
+    // Real-Time Transactions Sync
+    function initLiveSync() {
+      const q = query(collection(db, "transactions"), orderBy("date", "desc"));
+      onSnapshot(q, (snapshot) => {
+        const txs = [];
+        snapshot.forEach((docSnap) => {
+          txs.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        state.transactions = txs;
+        updateUI();
+      }, (err) => {
+        console.error("Firestore Listen Error:", err);
+      });
+    }
+
+    // Real-Time Weekly Settlement Status Sync
+    function initSettlementsSync() {
+      const q = query(collection(db, "settlements"));
+      onSnapshot(q, (snapshot) => {
+        const sMap = {};
+        snapshot.forEach((docSnap) => {
+          sMap[docSnap.id] = docSnap.data();
+        });
+        state.settlements = sMap;
+        if (state.currentTab === 'accounts') renderAccounts();
+      }, (err) => {
+        console.warn("Settlements listen error:", err);
+      });
+    }
+
+    // Master UI Update
+    function updateUI() {
+      renderDashboard();
+      renderHistoryList();
+      if (state.currentTab === 'analytics') renderAnalytics();
+      if (state.currentTab === 'accounts') renderAccounts();
+    }
+
+    // Currency Formatter
+    function formatINR(val) {
+      const num = Number(val) || 0;
+      return "₹" + num.toLocaleString('en-IN');
+    }
+
+    // Ownership Verification (JP edits only JP, etc.)
+    function canUserModify(tx) {
+      if (!state.currentPartner) return false;
+      if (tx.createdByPartner && tx.createdByPartner === state.currentPartner) return true;
+      if (tx.createdBy && state.currentUser && tx.createdBy === state.currentUser.email) return true;
+      if (!tx.createdByPartner && !tx.createdBy && tx.partner === state.currentPartner) return true;
+      return false;
+    }
+
+    // Date Helper Utilities
+    function getTodayString() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    function getYesterdayString() {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      return d.toISOString().split('T')[0];
+    }
+
+    function getThisWeekStart() {
+      const d = new Date();
+      const day = d.getDay();
+      const diffToMon = d.getDate() - day + (day === 0 ? -6 : 1);
+      const mon = new Date(d.setDate(diffToMon));
+      return mon.toISOString().split('T')[0];
+    }
+
+    function getThisMonthStart() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+    }
+
+    // 1. Dashboard Scopes & Calculations
+    window.setDashboardDateScope = function(scope) {
+      state.dashboardScope = scope;
+      ['today', 'yesterday', 'week', 'month'].forEach(k => {
+        const btn = document.getElementById(`dashScope-${k}`);
+        if (btn) {
+          btn.className = (k === scope)
+            ? "flex-1 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white text-center whitespace-nowrap shadow-sm"
+            : "flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap";
+        }
+      });
+
+      const customRow = document.getElementById('dashCustomDateRow');
+      if (scope === 'custom') {
+        customRow.classList.remove('hidden');
+      } else {
+        customRow.classList.add('hidden');
+      }
+
+      renderDashboard();
+    };
+
+    window.toggleCustomDateRangeModal = function() {
+      const customRow = document.getElementById('dashCustomDateRow');
+      if (customRow.classList.contains('hidden')) {
+        customRow.classList.remove('hidden');
+        state.dashboardScope = 'custom';
+        ['today', 'yesterday', 'week', 'month'].forEach(k => {
+          const btn = document.getElementById(`dashScope-${k}`);
+          if (btn) btn.className = "flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap";
+        });
+        if (!document.getElementById('dashCustomFrom').value) {
+          document.getElementById('dashCustomFrom').value = getThisWeekStart();
+          document.getElementById('dashCustomTo').value = getTodayString();
+        }
+        applyCustomDateRange();
+      } else {
+        setDashboardDateScope('today');
+      }
+    };
+
+    window.applyCustomDateRange = function() {
+      const from = document.getElementById('dashCustomFrom').value;
+      const to = document.getElementById('dashCustomTo').value;
+      state.customDateRange = { from, to };
+      renderDashboard();
+    };
+
+    function renderDashboard() {
+      const todayStr = getTodayString();
+      const yesterdayStr = getYesterdayString();
+      const weekStartStr = getThisWeekStart();
+      const monthStartStr = getThisMonthStart();
+
+      let fromDate = todayStr;
+      let toDate = todayStr;
+      let badgeLabel = "இன்று";
+
+      if (state.dashboardScope === 'today') {
+        fromDate = todayStr;
+        toDate = todayStr;
+        badgeLabel = "இன்று";
+      } else if (state.dashboardScope === 'yesterday') {
+        fromDate = yesterdayStr;
+        toDate = yesterdayStr;
+        badgeLabel = "நேற்று";
+      } else if (state.dashboardScope === 'week') {
+        fromDate = weekStartStr;
+        toDate = todayStr;
+        badgeLabel = "இந்த வாரம்";
+      } else if (state.dashboardScope === 'month') {
+        fromDate = monthStartStr;
+        toDate = todayStr;
+        badgeLabel = "இந்த மாதம்";
+      } else if (state.dashboardScope === 'custom') {
+        fromDate = state.customDateRange.from || todayStr;
+        toDate = state.customDateRange.to || todayStr;
+        badgeLabel = `${fromDate.slice(5)} முதல் ${toDate.slice(5)} வரை`;
+      }
+
+      document.getElementById('dashRangeLabel').innerText = badgeLabel;
+      document.getElementById('dashHeroDateBadge').innerText = badgeLabel;
+
+      let totalSales = 0;
+      let totalExp = 0;
+      let totalCap = 0;
+
+      // Scoped partner totals
+      const pScoped = {
+        Balaji: { exp: 0, sales: 0, cap: 0 },
+        Nagoor: { exp: 0, sales: 0, cap: 0 },
+        JP: { exp: 0, sales: 0, cap: 0 }
+      };
+
+      // Lifetime Cash Flow tracking: Who holds cash?
+      // Balaji collects all Customer Cash and Online Gateway funds into his account.
+      // Balaji also pays cleaning labor, ice/covers, and meta ads.
+      // Nagoor spends on fish purchase at harbor.
+      // JP spends on fuel & delivery.
+      const cashflowHold = {
+        Balaji: { collected: 0, spent: 0 },
+        Nagoor: { collected: 0, spent: 0 },
+        JP: { collected: 0, spent: 0 }
+      };
+
+      state.transactions.forEach((tx) => {
+        const amt = Number(tx.amount) || 0;
+        const p = tx.partner;
+
+        // Lifetime Cashflow accumulator
+        if (tx.type === 'sales') {
+          if (cashflowHold[p]) cashflowHold[p].collected += amt;
+        } else if (tx.type === 'expense') {
+          if (cashflowHold[p]) cashflowHold[p].spent += amt;
+        }
+
+        // Scope date filter for hero cards
+        if (tx.date >= fromDate && tx.date <= toDate) {
+          if (tx.type === 'sales') {
+            totalSales += amt;
+            if (pScoped[p]) pScoped[p].sales += amt;
+          } else if (tx.type === 'expense') {
+            totalExp += amt;
+            if (pScoped[p]) pScoped[p].exp += amt;
+          } else if (tx.type === 'investment') {
+            totalCap += amt;
+            if (pScoped[p]) pScoped[p].cap += amt;
+          }
+        }
+      });
+
+      const netBalance = totalSales - totalExp;
+
+      // Update Hero Card
+      const heroNet = document.getElementById('dashHeroNetBalance');
+      heroNet.innerText = formatINR(netBalance);
+      if (netBalance >= 0) {
+        heroNet.className = "text-3xl font-extrabold tracking-tight mt-1 text-white";
+        document.getElementById('dashNetTitle').innerText = "நிகர லாபம் (Profit)";
+      } else {
+        heroNet.className = "text-3xl font-extrabold tracking-tight mt-1 text-rose-300";
+        document.getElementById('dashNetTitle').innerText = "நிகர பற்றாக்குறை (Deficit)";
+      }
+
+      document.getElementById('dashHeroSales').innerText = formatINR(totalSales);
+      document.getElementById('dashHeroExpenses').innerText = formatINR(totalExp);
+      document.getElementById('dashHeroCapital').innerText = formatINR(totalCap);
+
+      // Scoped Partner Cards
+      document.getElementById('cardBalajiExp').innerText = formatINR(pScoped.Balaji.exp);
+      document.getElementById('cardBalajiSales').innerText = formatINR(pScoped.Balaji.sales);
+
+      document.getElementById('cardNagoorExp').innerText = formatINR(pScoped.Nagoor.exp);
+      document.getElementById('cardNagoorSales').innerText = formatINR(pScoped.Nagoor.sales);
+
+      document.getElementById('cardJpExp').innerText = formatINR(pScoped.JP.exp);
+      document.getElementById('cardJpSales').innerText = formatINR(pScoped.JP.sales);
+
+      // Render Cash in Hand Status (The Startup Reality)
+      const balajiNetCash = cashflowHold.Balaji.collected - cashflowHold.Balaji.spent;
+      const nagoorSpentNet = cashflowHold.Nagoor.spent - cashflowHold.Nagoor.collected;
+      const jpSpentNet = cashflowHold.JP.spent - cashflowHold.JP.collected;
+
+      const cashContainer = document.getElementById('cashInHandContainer');
+      cashContainer.innerHTML = `
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2">
+            <span class="text-base">👨‍💻</span>
+            <div>
+              <span class="font-bold text-slate-800 dark:text-slate-200">பாலாஜி கையில் உள்ள விற்பனைப் பணம்:</span>
+              <div class="text-[10px] text-slate-400">வசூல் ${formatINR(cashflowHold.Balaji.collected)} - செலவு ${formatINR(cashflowHold.Balaji.spent)}</div>
+            </div>
+          </div>
+          <span class="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">${formatINR(balajiNetCash)}</span>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2">
+            <span class="text-base">🦐</span>
+            <div>
+              <span class="font-bold text-slate-800 dark:text-slate-200">நாகூருக்கு திருப்பித் தர வேண்டிய செலவு:</span>
+              <div class="text-[10px] text-slate-400">மீன் கொள்முதல் செலவு ${formatINR(cashflowHold.Nagoor.spent)}</div>
+            </div>
+          </div>
+          <span class="font-extrabold text-rose-600 dark:text-rose-400 text-sm">${formatINR(nagoorSpentNet)}</span>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2">
+            <span class="text-base">🛵</span>
+            <div>
+              <span class="font-bold text-slate-800 dark:text-slate-200">JP-க்கு திருப்பித் தர வேண்டிய செலவு:</span>
+              <div class="text-[10px] text-slate-400">பெட்ரோல் & டெலிவரி செலவு ${formatINR(cashflowHold.JP.spent)}</div>
+            </div>
+          </div>
+          <span class="font-extrabold text-rose-600 dark:text-rose-400 text-sm">${formatINR(jpSpentNet)}</span>
+        </div>
+      `;
+
+      // Recent 3 Transactions
+      const recentContainer = document.getElementById('dashRecentTransactions');
+      if (state.transactions.length === 0) {
+        recentContainer.innerHTML = `
+          <div class="app-card rounded-2xl p-6 text-center space-y-2">
+            <div class="text-3xl">📭</div>
+            <div class="text-xs font-bold text-slate-700 dark:text-slate-300">இன்னும் பதிவுகள் எதுவும் இல்லை</div>
+            <p class="text-[11px] text-slate-400">முதல் செலவு அல்லது விற்பனையைப் பதிவு செய்ய கீழே உள்ள '+' பட்டனை அழுத்தவும்.</p>
+            <button onclick="openEntryBottomSheet()" class="mt-2 px-3 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold shadow-md">
+              + கணக்கு சேர்க்க
+            </button>
+          </div>
+        `;
+      } else {
+        const top3 = state.transactions.slice(0, 3);
+        recentContainer.innerHTML = top3.map(tx => renderTransactionItem(tx, false)).join('');
+      }
+    }
+
+    // 2. History List Rendering
+    window.renderHistoryList = function() {
+      const container = document.getElementById('historyListContainer');
+      const search = (document.getElementById('historySearchInput').value || '').toLowerCase().trim();
+      const filterType = document.getElementById('hFilterType').value;
+      const filterPartner = document.getElementById('hFilterPartner').value;
+      const filterDate = state.historyFilter.date;
+
+      const todayStr = getTodayString();
+      const yesterdayStr = getYesterdayString();
+      const monStr = getThisWeekStart();
+      const monthStartStr = getThisMonthStart();
+
+      let filtered = state.transactions.filter(tx => {
+        // Date filter
+        if (filterDate === 'today' && tx.date !== todayStr) return false;
+        if (filterDate === 'yesterday' && tx.date !== yesterdayStr) return false;
+        if (filterDate === 'this-week' && (tx.date < monStr || tx.date > todayStr)) return false;
+        if (filterDate === 'this-month' && tx.date < monthStartStr) return false;
+
+        // Type filter
+        if (filterType !== 'all' && tx.type !== filterType) return false;
+
+        // Partner filter
+        if (filterPartner !== 'all' && tx.partner !== filterPartner) return false;
+
+        // Search text
+        if (search) {
+          const matchDesc = (tx.description || '').toLowerCase().includes(search);
+          const matchCat = (tx.category || '').toLowerCase().includes(search);
+          const matchPartner = (tx.partner || '').toLowerCase().includes(search);
+          const matchAmount = String(tx.amount || '').includes(search);
+          if (!matchDesc && !matchCat && !matchPartner && !matchAmount) return false;
+        }
+
+        return true;
+      });
+
+      // Update count & total
+      let sum = 0;
+      filtered.forEach(tx => sum += Number(tx.amount) || 0);
+      document.getElementById('hCountLabel').innerText = `${filtered.length} பதிவுகள்`;
+      document.getElementById('hTotalAmountLabel').innerText = `கூட்டுத்தொகை: ${formatINR(sum)}`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="app-card rounded-2xl p-8 text-center space-y-2">
+            <div class="text-3xl">🔍</div>
+            <div class="text-xs font-bold text-slate-700 dark:text-slate-300">பதிவுகள் எதுவும் கிடைக்கவில்லை</div>
+            <p class="text-[11px] text-slate-400">தேர்வு செய்த வடிகட்டிக்கு ஏற்ப கணக்குகள் எதுவும் இல்லை.</p>
+          </div>
+        `;
+      } else {
+        container.innerHTML = filtered.map(tx => renderTransactionItem(tx, true)).join('');
+      }
+    };
+
+    function renderTransactionItem(tx, showActions = true) {
+      const p = PARTNERS[tx.partner] || { avatar: '👤', name: tx.partner };
+      const isExp = tx.type === 'expense';
+      const isSales = tx.type === 'sales';
+
+      let typeBadge = '';
+      let amountColor = '';
+      let sign = '';
+
+      if (isExp) {
+        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold">செலவு</span>';
+        amountColor = 'text-rose-600 dark:text-rose-400';
+        sign = '- ';
+      } else if (isSales) {
+        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold">விற்பனை</span>';
+        amountColor = 'text-emerald-600 dark:text-emerald-400';
+        sign = '+ ';
+      } else {
+        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-300 text-[10px] font-bold">முதலீடு</span>';
+        amountColor = 'text-teal-600 dark:text-teal-400';
+        sign = '';
+      }
+
+      const catLabel = getCategoryLabel(tx.type, tx.category);
+      const isOwner = canUserModify(tx);
+
+      return `
+        <div class="app-card rounded-2xl p-3 flex items-center justify-between space-x-3 transition active:scale-[0.99]">
+          <div class="flex items-center space-x-2.5 min-w-0">
+            <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-lg flex-shrink-0">
+              ${p.avatar}
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center space-x-1.5">
+                <span class="font-bold text-xs text-slate-900 dark:text-white truncate">${catLabel}</span>
+                ${typeBadge}
+              </div>
+              <div class="flex items-center space-x-2 text-[10px] text-slate-400 mt-0.5">
+                <span>${p.name}</span>
+                <span>•</span>
+                <span>${tx.date}</span>
+                ${tx.description ? `<span>•</span><span class="truncate max-w-[120px] text-slate-500">${escapeHtml(tx.description)}</span>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2 flex-shrink-0">
+            <div class="text-right">
+              <div class="text-xs font-black ${amountColor}">${sign}${formatINR(tx.amount)}</div>
+            </div>
+            ${showActions ? (
+              isOwner ? `
+                <div class="flex space-x-1 pl-1 border-l border-slate-100 dark:border-slate-800">
+                  <button onclick="openEditModal('${tx.id}')" title="திருத்து" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-teal-500 flex items-center justify-center text-[10px]">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button onclick="handleDeleteTx('${tx.id}')" title="நீக்கு" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-rose-500 flex items-center justify-center text-[10px]">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              ` : `
+                <div class="pl-1 border-l border-slate-100 dark:border-slate-800" title="${p.name}-ன் பதிவு">
+                  <span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-400 flex items-center gap-1 font-semibold">
+                    <i class="fa-solid fa-lock text-[9px]"></i> ${p.name}
+                  </span>
+                </div>
+              `
+            ) : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function getCategoryLabel(type, catId) {
+      const list = (state.categories && state.categories[type]) || DEFAULT_CATEGORIES[type] || [];
+      const found = list.find(c => c.id === catId);
+      return found ? found.label.split('(')[0].trim() : (catId || 'கணக்கு');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // CSV Export for Excel
+    window.exportToCSV = function() {
+      if (state.transactions.length === 0) {
+        alert("ஏற்றுமதி செய்ய கணக்குப் பதிவுகள் எதுவும் இல்லை!");
+        return;
+      }
+
+      // UTF-8 BOM so Excel opens Tamil characters perfectly
+      let csvContent = "\uFEFF";
+      csvContent += "தேதி,வகை,பிரிவு,பார்ட்னர்,தொகை,குறிப்பு,பதிவு செய்தவர்\r\n";
+
+      state.transactions.forEach(tx => {
+        const typeTamil = tx.type === 'expense' ? 'செலவு' : (tx.type === 'sales' ? 'விற்பனை வரவு' : 'முதலீடு');
+        const cat = getCategoryLabel(tx.type, tx.category).replace(/,/g, ' ');
+        const partnerName = PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner;
+        const desc = (tx.description || '').replace(/"/g, '""').replace(/,/g, ' ');
+        const creator = tx.createdBy || tx.createdByPartner || '';
+
+        csvContent += `"${tx.date}","${typeTamil}","${cat}","${partnerName}","${tx.amount}","${desc}","${creator}"\r\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `meenmart_accounts_${getTodayString()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("CSV கோப்பு பதிவிறக்கம் செய்யப்பட்டது! 📥");
+    };
+
+    // 3. Analytics Charts (Chart.js)
+    window.renderAnalytics = function() {
+      const isDark = state.theme === 'dark';
+      const textColor = isDark ? '#94a3b8' : '#475569';
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+
+      // 1. Day-by-Day Bar Chart
+      const dailyCanvas = document.getElementById('chartDaily');
+      if (dailyCanvas) {
+        if (state.charts.daily) state.charts.daily.destroy();
+
+        const daysMap = {};
+        const range = state.analyticsRange;
+        let limitDays = range === '7' ? 7 : (range === '30' ? 30 : 90);
+
+        const now = new Date();
+        for (let i = limitDays - 1; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(now.getDate() - i);
+          const key = d.toISOString().split('T')[0];
+          daysMap[key] = { sales: 0, expense: 0 };
+        }
+
+        state.transactions.forEach(tx => {
+          if (daysMap[tx.date]) {
+            const amt = Number(tx.amount) || 0;
+            if (tx.type === 'sales') daysMap[tx.date].sales += amt;
+            else if (tx.type === 'expense') daysMap[tx.date].expense += amt;
+          }
+        });
+
+        const labels = Object.keys(daysMap).map(d => {
+          const parts = d.split('-');
+          return `${parts[2]}/${parts[1]}`;
+        });
+        const salesData = Object.values(daysMap).map(v => v.sales);
+        const expData = Object.values(daysMap).map(v => v.expense);
+
+        state.charts.daily = new Chart(dailyCanvas, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              { label: 'விற்பனை வரவு', data: salesData, backgroundColor: '#10B981', borderRadius: 4, barThickness: 18, maxBarThickness: 28 },
+              { label: 'தினசரி செலவு', data: expData, backgroundColor: '#EF4444', borderRadius: 4, barThickness: 18, maxBarThickness: 28 }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: textColor, font: { size: 10 } } }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: textColor, font: { size: 9 } } },
+              y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 9 } } }
+            }
+          }
+        });
+      }
+
+      // 2. Partner Spend Share Doughnut
+      const partnerCanvas = document.getElementById('chartPartners');
+      if (partnerCanvas) {
+        if (state.charts.partners) state.charts.partners.destroy();
+
+        const pExp = { Balaji: 0, Nagoor: 0, JP: 0 };
+        state.transactions.forEach(tx => {
+          if (tx.type === 'expense' && pExp[tx.partner] !== undefined) {
+            pExp[tx.partner] += Number(tx.amount) || 0;
+          }
+        });
+
+        const totalPExp = pExp.Balaji + pExp.Nagoor + pExp.JP;
+
+        if (totalPExp === 0) {
+          document.getElementById('chartPartnersContainer').innerHTML = `
+            <div class="text-center py-8 space-y-1">
+              <span class="text-2xl">📊</span>
+              <p class="text-xs text-slate-400 font-medium">இன்னும் செலவுப் பதிவுகள் இல்லை</p>
+            </div>
+          `;
+        } else {
+          document.getElementById('chartPartnersContainer').innerHTML = '<canvas id="chartPartners"></canvas>';
+          const newPartnerCanvas = document.getElementById('chartPartners');
+
+          state.charts.partners = new Chart(newPartnerCanvas, {
+            type: 'doughnut',
+            data: {
+              labels: ['பாலாஜி (சுத்தம்/ஆப்)', 'நாகூர் (கொள்முதல்)', 'JP (பெட்ரோல்)'],
+              datasets: [{
+                data: [pExp.Balaji, pExp.Nagoor, pExp.JP],
+                backgroundColor: ['#3B82F6', '#10B981', '#F59E0B'],
+                borderWidth: 0
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'bottom', labels: { color: textColor, font: { size: 10 } } }
+              }
+            }
+          });
+        }
+      }
+
+      // 3. Category Breakdown Bar
+      const catCanvas = document.getElementById('chartCategories');
+      if (catCanvas) {
+        if (state.charts.categories) state.charts.categories.destroy();
+
+        const catMap = {};
+        state.transactions.forEach(tx => {
+          if (tx.type === 'expense') {
+            const cat = getCategoryLabel('expense', tx.category);
+            catMap[cat] = (catMap[cat] || 0) + (Number(tx.amount) || 0);
+          }
+        });
+
+        const catLabels = Object.keys(catMap);
+        const catValues = Object.values(catMap);
+
+        if (catValues.length === 0) {
+          document.getElementById('chartCategoriesContainer').innerHTML = `
+            <div class="text-center py-8 space-y-1">
+              <span class="text-2xl">📦</span>
+              <p class="text-xs text-slate-400 font-medium">செலவுப் பிரிவுகள் எதுவும் இல்லை</p>
+            </div>
+          `;
+        } else {
+          document.getElementById('chartCategoriesContainer').innerHTML = '<canvas id="chartCategories"></canvas>';
+          const newCatCanvas = document.getElementById('chartCategories');
+
+          state.charts.categories = new Chart(newCatCanvas, {
+            type: 'bar',
+            data: {
+              labels: catLabels,
+              datasets: [{
+                label: 'செலவு (₹)',
+                data: catValues,
+                backgroundColor: '#0F9E8E',
+                borderRadius: 6
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 9 } } },
+                y: { grid: { display: false }, ticks: { color: textColor, font: { size: 9 } } }
+              }
+            }
+          });
+        }
+      }
+    };
+
+    // 4. Accounts & Monday Settlement Calculations
+    function getWeekRange(offsetWeeks = 0) {
+      const d = new Date();
+      d.setDate(d.getDate() - (offsetWeeks * 7));
+      const day = d.getDay();
+      const diffToMon = d.getDate() - day + (day === 0 ? -6 : 1);
+
+      const mon = new Date(d.setDate(diffToMon));
+      mon.setHours(0, 0, 0, 0);
+
+      const sun = new Date(mon);
+      sun.setDate(mon.getDate() + 6);
+      sun.setHours(23, 59, 59, 999);
+
+      return { monday: mon, sunday: sun };
+    }
+
+    window.changeSettlementWeek = function(delta) {
+      state.settlementOffsetWeeks += delta;
+      if (state.settlementOffsetWeeks < 0) state.settlementOffsetWeeks = 0;
+      renderAccounts();
+    };
+
+    function renderAccounts() {
+      const { monday, sunday } = getWeekRange(state.settlementOffsetWeeks);
+      const monStr = monday.toISOString().split('T')[0];
+      const sunStr = sunday.toISOString().split('T')[0];
+      const weekId = `week_${monStr}_${sunStr}`;
+
+      // Update Header Text
+      document.getElementById('settleWeekLabel').innerText = state.settlementOffsetWeeks === 0 ? "இந்த வாரம் (நடப்பு வாரம்)" : `${state.settlementOffsetWeeks} வாரம் முன்`;
+      document.getElementById('settleWeekRangeText').innerText = `${monday.toLocaleDateString('ta-IN', { day: 'numeric', month: 'short' })} - ${sunday.toLocaleDateString('ta-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+
+      // Check settlement status in Firestore
+      const isSettled = state.settlements[weekId] && state.settlements[weekId].status === 'settled';
+      const statusBadge = document.getElementById('settleStatusBadge');
+      const btnToggle = document.getElementById('btnToggleSettleText');
+
+      if (isSettled) {
+        statusBadge.innerText = "கணக்கு முடிந்தது";
+        statusBadge.className = "text-[9px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300";
+        btnToggle.innerText = "கணக்கை மீண்டும் திறக்க";
+      } else {
+        statusBadge.innerText = "நிலுவையில் உள்ளது";
+        statusBadge.className = "text-[9px] px-2 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300";
+        btnToggle.innerText = "இந்த வாரக் கணக்கை முடிக்க";
+      }
+
+      let weeklySales = 0;
+      let weeklyExp = 0;
+      const weeklyPartnerExp = { Balaji: 0, Nagoor: 0, JP: 0 };
+      const weeklyPartnerSales = { Balaji: 0, Nagoor: 0, JP: 0 };
+
+      state.transactions.forEach(tx => {
+        if (tx.date >= monStr && tx.date <= sunStr) {
+          const amt = Number(tx.amount) || 0;
+          if (tx.type === 'sales') {
+            weeklySales += amt;
+            if (weeklyPartnerSales[tx.partner] !== undefined) weeklyPartnerSales[tx.partner] += amt;
+          } else if (tx.type === 'expense') {
+            weeklyExp += amt;
+            if (weeklyPartnerExp[tx.partner] !== undefined) weeklyPartnerExp[tx.partner] += amt;
+          }
+        }
+      });
+
+      const netProfit = weeklySales - weeklyExp;
+      const equalShare = Math.round(netProfit / 3);
+
+      // 1. Weekly Overview
+      document.getElementById('settleNetProfit').innerText = formatINR(netProfit);
+      document.getElementById('settleTotalSales').innerText = formatINR(weeklySales);
+      document.getElementById('settleTotalExpenses').innerText = formatINR(weeklyExp);
+
+      // 2. Step 1: Reimbursements List
+      const reimbList = document.getElementById('settleReimbursementList');
+      reimbList.innerHTML = `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
+          <span>🦐 நாகூர் (மீன் கொள்முதல்):</span>
+          <strong class="text-rose-600 dark:text-rose-400 font-bold">${formatINR(weeklyPartnerExp.Nagoor)}</strong>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
+          <span>👨‍💻 பாலாஜி (சுத்தம், ஐஸ், கவர், ஆப்):</span>
+          <strong class="text-rose-600 dark:text-rose-400 font-bold">${formatINR(weeklyPartnerExp.Balaji)}</strong>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
+          <span>🛵 JP (பெட்ரோல் & டெலிவரி):</span>
+          <strong class="text-rose-600 dark:text-rose-400 font-bold">${formatINR(weeklyPartnerExp.JP)}</strong>
+        </div>
+      `;
+
+      // 3. Step 2: Equal Profit Split (1/3)
+      document.getElementById('settleEachPartnerShare').innerText = `தலா: ${formatINR(equalShare)}`;
+      const splitGrid = document.getElementById('settleProfitSplitGrid');
+      splitGrid.innerHTML = `
+        <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
+          <div class="text-sm">👨‍💻</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">பாலாஜி</div>
+          <div class="text-xs font-bold text-teal-600 dark:text-teal-400">${formatINR(equalShare)}</div>
+        </div>
+        <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
+          <div class="text-sm">🦐</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">நாகூர்</div>
+          <div class="text-xs font-bold text-teal-600 dark:text-teal-400">${formatINR(equalShare)}</div>
+        </div>
+        <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
+          <div class="text-sm">🛵</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">JP</div>
+          <div class="text-xs font-bold text-teal-600 dark:text-teal-400">${formatINR(equalShare)}</div>
+        </div>
+      `;
+
+      // 4. Step 3: WHO PAYS WHOM (FINAL MONEY TRANSFERS)
+      // Balaji collects all sales revenue (Cash & Bank/Gateway)
+      // Balaji sends Nagoor: (Nagoor's expense reimbursement) + (Nagoor's 1/3 profit share)
+      // Balaji sends JP: (JP's fuel/expense reimbursement) + (JP's 1/3 profit share)
+      // Balaji keeps: (Balaji's expense reimbursement) + (Balaji's 1/3 profit share)
+      const nagoorReceives = weeklyPartnerExp.Nagoor + equalShare;
+      const jpReceives = weeklyPartnerExp.JP + equalShare;
+      const balajiKeeps = weeklyPartnerExp.Balaji + equalShare;
+
+      const transfersContainer = document.getElementById('settleTransfersContainer');
+
+      if (weeklySales === 0 && weeklyExp === 0) {
+        transfersContainer.innerHTML = `
+          <div class="text-center py-2 text-xs text-slate-500">
+            இந்த வாரத்தில் கணக்குப் பதிவுகள் எதுவும் இல்லை.
+          </div>
+        `;
+      } else {
+        transfersContainer.innerHTML = `
+          <!-- Balaji to Nagoor -->
+          <div class="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
+                <span>👨‍💻 பாலாஜி</span>
+                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
+                <span>🦐 நாகூருக்கு அனுப்ப வேண்டியது</span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">
+                செலவு வாபஸ் ${formatINR(weeklyPartnerExp.Nagoor)} + லாபப் பங்கு ${formatINR(equalShare)}
+              </div>
+            </div>
+            <div class="text-right flex items-center space-x-2">
+              <span class="text-xs font-black text-teal-600 dark:text-teal-400">${formatINR(nagoorReceives)}</span>
+              <button onclick="copyToClipboard('${nagoorReceives}', 'நாகூருக்கான தொகை')" class="px-2 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-500/30">
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <!-- Balaji to JP -->
+          <div class="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
+                <span>👨‍💻 பாலாஜி</span>
+                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
+                <span>🛵 JP-க்கு அனுப்ப வேண்டியது</span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">
+                பெட்ரோல் வாபஸ் ${formatINR(weeklyPartnerExp.JP)} + லாபப் பங்கு ${formatINR(equalShare)}
+              </div>
+            </div>
+            <div class="text-right flex items-center space-x-2">
+              <span class="text-xs font-black text-teal-600 dark:text-teal-400">${formatINR(jpReceives)}</span>
+              <button onclick="copyToClipboard('${jpReceives}', 'JP-க்கான தொகை')" class="px-2 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-500/30">
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <!-- Balaji Remaining in Hand -->
+          <div class="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-between text-xs">
+            <div>
+              <span class="font-bold text-emerald-900 dark:text-emerald-200">👨‍💻 பாலாஜி கையில் மீதம் இருக்க வேண்டியது:</span>
+              <div class="text-[10px] text-emerald-700 dark:text-emerald-400">செலவு வாபஸ் ${formatINR(weeklyPartnerExp.Balaji)} + லாபப் பங்கு ${formatINR(equalShare)}</div>
+            </div>
+            <span class="font-black text-emerald-600 dark:text-emerald-400">${formatINR(balajiKeeps)}</span>
+          </div>
+        `;
+      }
+    }
+
+    // Toggle Week Settlement Status (Mark Settled / Re-open)
+    window.toggleWeekSettlementStatus = async function() {
+      const { monday, sunday } = getWeekRange(state.settlementOffsetWeeks);
+      const monStr = monday.toISOString().split('T')[0];
+      const sunStr = sunday.toISOString().split('T')[0];
+      const weekId = `week_${monStr}_${sunStr}`;
+
+      const isSettled = state.settlements[weekId] && state.settlements[weekId].status === 'settled';
+      const newStatus = isSettled ? 'pending' : 'settled';
+
+      try {
+        await setDoc(doc(db, "settlements", weekId), {
+          weekStart: monStr,
+          weekEnd: sunStr,
+          totalSales: Number(document.getElementById('settleTotalSales').innerText.replace(/[^0-9]/g, '')) || 0,
+          totalExpenses: Number(document.getElementById('settleTotalExpenses').innerText.replace(/[^0-9]/g, '')) || 0,
+          netProfit: Number(document.getElementById('settleNetProfit').innerText.replace(/[^0-9-]/g, '')) || 0,
+          status: newStatus,
+          settledAt: Date.now(),
+          settledBy: state.currentUser ? state.currentUser.email : 'partner',
+          updatedAt: Date.now()
+        }, { merge: true });
+
+        showToast(newStatus === 'settled' ? "வாரக் கணக்கு வெற்றிகரமாக முடிக்கப்பட்டது! ✅" : "வாரக் கணக்கு மீண்டும் திறக்கப்பட்டது! 🔄");
+      } catch (err) {
+        alert("Settlement Error: " + err.message);
+      }
+    };
+
+    // Copy to Clipboard Utility
+    window.copyToClipboard = function(text, label) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(`${label} நகலெடுக்கப்பட்டது! 📋`);
+        });
+      }
+    };
+
+    // Copy Weekly Report for WhatsApp
+    window.copyWeeklyReportWhatsApp = function() {
+      const { monday, sunday } = getWeekRange(state.settlementOffsetWeeks);
+      const mStr = `${monday.getDate()}/${monday.getMonth()+1}`;
+      const sStr = `${sunday.getDate()}/${sunday.getMonth()+1}/${sunday.getFullYear()}`;
+      const monStr = monday.toISOString().split('T')[0];
+      const sunStr = sunday.toISOString().split('T')[0];
+
+      let sales = 0, exp = 0;
+      const pExp = { Balaji: 0, Nagoor: 0, JP: 0 };
+
+      state.transactions.forEach(tx => {
+        if (tx.date >= monStr && tx.date <= sunStr) {
+          const amt = Number(tx.amount) || 0;
+          if (tx.type === 'sales') sales += amt;
+          else if (tx.type === 'expense') {
+            exp += amt;
+            if (pExp[tx.partner] !== undefined) pExp[tx.partner] += amt;
+          }
+        }
+      });
+
+      const profit = sales - exp;
+      const split = Math.round(profit / 3);
+
+      const msg = `*மீன்மார்ட் வாராந்திர கணக்கு அறிக்கை* 🐟
+📅 வாரம்: ${mStr} - ${sStr}
+-----------------------
+📈 மொத்த விற்பனை வரவு: ${formatINR(sales)}
+💸 மொத்த தினசரி செலவு: ${formatINR(exp)}
+💎 வாராந்திர நிகர லாபம்: ${formatINR(profit)}
+-----------------------
+🤝 சம லாபப் பங்கு (1/3 வீதம்):
+👨‍💻 பாலாஜி: ${formatINR(split)}
+🦐 நாகூர்: ${formatINR(split)}
+🛵 JP: ${formatINR(split)}
+-----------------------
+🔄 செலவுத் தொகை வாபஸ்:
+🦐 நாகூர்: ${formatINR(pExp.Nagoor)}
+👨‍💻 பாலாஜி: ${formatINR(pExp.Balaji)}
+🛵 JP: ${formatINR(pExp.JP)}
+-----------------------
+🚀 பணம் அனுப்ப வேண்டிய விபரம் (பாலாஜி அனுப்புவார்):
+👨‍💻 பாலாஜி ➔ 🦐 நாகூர்: ${formatINR(pExp.Nagoor + split)}
+👨‍💻 பாலாஜி ➔ 🛵 JP: ${formatINR(pExp.JP + split)}
+👨‍💻 பாலாஜி கையில் மீதம்: ${formatINR(pExp.Balaji + split)}
+-----------------------
+✅ மீன்மார்ட் பார்ட்னர் ஹப்`;
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(msg).then(() => showToast("வாட்ஸ்அப் அறிக்கை நகலெடுக்கப்பட்டது! 📋"));
+      }
+    };
+
+    // Category Manager Logic
+    window.openCategoryManagerModal = function() {
+      document.getElementById('categoryManagerModal').classList.remove('hidden');
+      renderCatManagerList();
+    };
+    window.closeCategoryManagerModal = function() {
+      document.getElementById('categoryManagerModal').classList.add('hidden');
+    };
+
+    window.switchCatManagerType = function(type) {
+      state.catManagerTab = type;
+      ['expense', 'sales', 'investment'].forEach(t => {
+        const btn = document.getElementById(`catTab-${t}`);
+        if (t === type) {
+          btn.className = "py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm";
+        } else {
+          btn.className = "py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400";
+        }
+      });
+      renderCatManagerList();
+    };
+
+    function renderCatManagerList() {
+      const container = document.getElementById('catManagerList');
+      const list = (state.categories && state.categories[state.catManagerTab]) || [];
+
+      if (list.length === 0) {
+        container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">பிரிவுகள் எதுவும் இல்லை.</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map((cat, idx) => `
+        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
+          <span class="font-bold text-slate-800 dark:text-slate-200">${cat.label}</span>
+          <button onclick="handleDeleteCategory(${idx})" class="w-6 h-6 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-500 hover:text-rose-700 flex items-center justify-center text-[10px]" title="பிரிவை நீக்கு">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    window.handleAddCategory = async function() {
+      const input = document.getElementById('newCatInput');
+      const name = (input.value || '').trim();
+      if (!name) return;
+
+      const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 20) || 'cat_' + Date.now();
+      const newCat = { id: slug, label: name };
+
+      if (!state.categories[state.catManagerTab]) state.categories[state.catManagerTab] = [];
+      state.categories[state.catManagerTab].push(newCat);
+
+      try {
+        await setDoc(doc(db, "settings", "categories"), {
+          ...state.categories,
+          updatedAt: Date.now(),
+          updatedBy: state.currentUser ? state.currentUser.email : 'partner'
+        });
+        showToast("புதிய பிரிவு சேர்க்கப்பட்டது! ✅");
+        input.value = '';
+        renderCatManagerList();
+        updateCategorySelect();
+      } catch (err) {
+        alert("பிரிவு சேமிப்பு பிழை: " + err.message);
+      }
+    };
+
+    window.handleDeleteCategory = async function(idx) {
+      const list = state.categories[state.catManagerTab] || [];
+      if (list.length <= 1) {
+        alert("குறைந்தது ஒரு பிரிவு இருக்க வேண்டும்!");
+        return;
+      }
+
+      if (confirm(`'${list[idx].label}' பிரிவை நிச்சயமாக நீக்க விரும்புகிறீர்களா?`)) {
+        list.splice(idx, 1);
+        try {
+          await setDoc(doc(db, "settings", "categories"), {
+            ...state.categories,
+            updatedAt: Date.now(),
+            updatedBy: state.currentUser ? state.currentUser.email : 'partner'
+          });
+          showToast("பிரிவு நீக்கப்பட்டது! 🗑️");
+          renderCatManagerList();
+          updateCategorySelect();
+        } catch (err) {
+          alert("பிரிவு நீக்க பிழை: " + err.message);
+        }
+      }
+    };
+
+    // Quick Entry Modal Functions
+    window.openEntryBottomSheet = function() {
+      if (state.currentPartner) {
+        state.entryPartner = state.currentPartner;
+        updateSheetPartnerLockUI();
+      }
+      document.getElementById('entryBottomSheetModal').classList.remove('hidden');
+    };
+
+    window.closeEntryBottomSheet = function() {
+      document.getElementById('entryBottomSheetModal').classList.add('hidden');
+    };
+
+    function updateSheetPartnerLockUI() {
+      const active = state.currentPartner;
+      ['Balaji', 'Nagoor', 'JP'].forEach(p => {
+        const btn = document.getElementById(`sheetPartner-${p}`);
+        if (!btn) return;
+        if (p === active) {
+          btn.disabled = false;
+          btn.className = "py-2.5 px-1 rounded-2xl border-2 border-teal-500 bg-teal-50 dark:bg-teal-500/25 text-center font-extrabold text-xs text-slate-900 dark:text-white shadow-sm ring-2 ring-teal-500/20";
+          btn.innerHTML = `${PARTNERS[p].avatar} ${PARTNERS[p].name} <span class="block text-[9px] text-teal-600 dark:text-teal-400 font-bold mt-0.5"><i class="fa-solid fa-lock text-[8px]"></i> நீங்கள்</span>`;
+        } else {
+          btn.disabled = true;
+          btn.className = "py-2.5 px-1 rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-slate-100/60 dark:bg-slate-900/40 text-center font-medium text-xs text-slate-400 dark:text-slate-500 opacity-40 cursor-not-allowed pointer-events-none";
+          btn.innerHTML = `${PARTNERS[p].avatar} ${PARTNERS[p].name} <span class="block text-[8px] text-slate-400 mt-0.5">🔒 லாக்</span>`;
+        }
+      });
+    }
+
+    window.selectEntryType = function(type) {
+      state.entryType = type;
+      ['expense', 'sales', 'investment'].forEach(t => {
+        const btn = document.getElementById(`typeBtn-${t}`);
+        if (t === type) {
+          btn.className = "py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center space-x-1 bg-white dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-300 dark:border-rose-500/40 shadow-sm";
+        } else {
+          btn.className = "py-2.5 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400";
+        }
+      });
+      updateCategorySelect();
+
+      const label = document.getElementById('entryPartnerLabel');
+      if (type === 'sales') {
+        label.innerText = "யார் விற்பனைப் பணத்தை வசூலித்தது?";
+      } else if (type === 'expense') {
+        label.innerText = "யார் தன் கையிலிருந்து செலவு செய்தது?";
+      } else {
+        label.innerText = "யார் முதலீடு செய்தது?";
+      }
+    };
+
+    window.selectEntryPartner = function(partner) {
+      // Strict Rule: You can ONLY register under your own logged in partner profile!
+      if (partner !== state.currentPartner) {
+        showToast("உங்கள் பெயரில் மட்டுமே பதிவு செய்ய முடியும்! 🔒", "⚠️");
+        return;
+      }
+      state.entryPartner = state.currentPartner;
+      updateSheetPartnerLockUI();
+    };
+
+    window.addAmountValue = function(val) {
+      const input = document.getElementById('entryAmount');
+      const cur = Number(input.value) || 0;
+      input.value = cur + val;
+    };
+
+    function updateCategorySelect() {
+      const select = document.getElementById('entryCategory');
+      if (!select) return;
+      select.innerHTML = "";
+      const cats = (state.categories && state.categories[state.entryType]) || DEFAULT_CATEGORIES[state.entryType] || [];
+      cats.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.innerText = c.label;
+        select.appendChild(opt);
+      });
+    }
+
+    // Submit New Transaction to Firestore (Strictly Stamped with Logged-in Identity)
+    window.handleFormSubmit = async function(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      const amountVal = Number(document.getElementById('entryAmount').value);
+      if (!amountVal || amountVal <= 0) {
+        alert("சரியான தொகையை உள்ளிடவும்!");
+        return;
+      }
+
+      const activePartner = state.currentPartner;
+      if (!activePartner) {
+        alert("தயவுசெய்து முதலில் Google மூலம் உள்நுழையவும்!");
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitEntry');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>பதிவாகிறது...</span>`;
+
+      // STRICT ENFORCEMENT: Partner identity is ALWAYS locked to the logged in user
+      const newTx = {
+        type: state.entryType,
+        partner: activePartner,
+        date: document.getElementById('entryDate').value,
+        category: document.getElementById('entryCategory').value,
+        amount: amountVal,
+        description: document.getElementById('entryDescription').value.trim(),
+        createdAt: Date.now(),
+        createdBy: state.currentUser ? state.currentUser.email : '',
+        createdByPartner: activePartner
+      };
+
+      try {
+        await addDoc(collection(db, "transactions"), newTx);
+        showToast("வெற்றிகரமாக பதிவு செய்யப்பட்டது! ✅");
+        closeEntryBottomSheet();
+        document.getElementById('entryAmount').value = '';
+        document.getElementById('entryDescription').value = '';
+      } catch (err) {
+        alert("பதிவு செய்வதில் பிழை: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>பதிவு செய்க</span>`;
+      }
+    };
+      } catch (err) {
+        alert("பதிவு செய்வதில் பிழை: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>பதிவு செய்க</span>`;
+      }
+    };
+
+    // Delete Transaction (Ownership Protected)
+    window.handleDeleteTx = async function(id) {
+      const tx = state.transactions.find(t => t.id === id);
+      if (!tx) return;
+
+      if (!canUserModify(tx)) {
+        alert(`மன்னிக்கவும்! இந்த பதிவை ${PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner} மட்டுமே நீக்க முடியும்.`);
+        return;
+      }
+
+      if (confirm("இந்த கணக்குப் பதிவை நிச்சயமாக நீக்க விரும்புகிறீர்களா?")) {
+        try {
+          await deleteDoc(doc(db, "transactions", id));
+          showToast("பதிவு நீக்கப்பட்டது! 🗑️");
+        } catch (err) {
+          alert("நீக்குவதில் பிழை: " + err.message);
+        }
+      }
+    };
+
+    // Edit Transaction (Ownership Protected)
+    window.openEditModal = function(id) {
+      const tx = state.transactions.find(t => t.id === id);
+      if (!tx) return;
+
+      if (!canUserModify(tx)) {
+        alert(`மன்னிக்கவும்! இந்த பதிவை ${PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner} மட்டுமே திருத்த முடியும்.`);
+        return;
+      }
+
+      document.getElementById('editTxId').value = tx.id;
+      const partnerSelect = document.getElementById('editTxPartner');
+      partnerSelect.value = tx.partner;
+      partnerSelect.disabled = true; // Permanently locked to creator
+      document.getElementById('editTxType').value = tx.type;
+      document.getElementById('editTxDate').value = tx.date;
+      document.getElementById('editTxAmount').value = tx.amount;
+      document.getElementById('editTxDescription').value = tx.description || '';
+      document.getElementById('editOwnershipBadge').innerText = `${PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner}-ன் பதிவு 🔒`;
+
+      updateEditCategoryOptions(tx.category);
+      document.getElementById('editTransactionModal').classList.remove('hidden');
+    };
+
+    window.closeEditModal = function() {
+      document.getElementById('editTransactionModal').classList.add('hidden');
+    };
+
+    window.updateEditCategoryOptions = function(selectedCat) {
+      const type = document.getElementById('editTxType').value;
+      const select = document.getElementById('editTxCategory');
+      select.innerHTML = '';
+      const list = (state.categories && state.categories[type]) || DEFAULT_CATEGORIES[type] || [];
+      list.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.innerText = c.label;
+        if (c.id === selectedCat) opt.selected = true;
+        select.appendChild(opt);
+      });
+    };
+
+    window.handleEditSubmit = async function(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const id = document.getElementById('editTxId').value;
+      const tx = state.transactions.find(t => t.id === id);
+
+      if (!tx || !canUserModify(tx)) {
+        alert(`மன்னிக்கவும்! இந்த பதிவை ${tx ? (PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner) : 'உரிமையாளர்'} மட்டுமே திருத்த முடியும்.`);
+        return;
+      }
+
+      const updated = {
+        partner: tx.partner, // Maintain original creator
+        type: document.getElementById('editTxType').value,
+        category: document.getElementById('editTxCategory').value,
+        date: document.getElementById('editTxDate').value,
+        amount: Number(document.getElementById('editTxAmount').value),
+        description: document.getElementById('editTxDescription').value.trim(),
+        updatedAt: Date.now()
+      };
+
+      try {
+        await updateDoc(doc(db, "transactions", id), updated);
+        showToast("பதிவு மாற்றப்பட்டது! ✏️");
+        closeEditModal();
+      } catch (err) {
+        alert("மாற்றுவதில் பிழை: " + err.message);
+      }
+    };
+
+    // Navigation Switcher
+    window.switchTab = function(tabName) {
+      state.currentTab = tabName;
+      ['dashboard', 'history', 'analytics', 'accounts'].forEach(t => {
+        const sec = document.getElementById(`tab-${t}`);
+        const nav = document.getElementById(`nav-${t}`);
+        if (sec && nav) {
+          if (t === tabName) {
+            sec.classList.remove('hidden');
+            nav.className = "flex flex-col items-center justify-center py-1 text-teal-600 dark:text-teal-400";
+          } else {
+            sec.classList.add('hidden');
+            nav.className = "flex flex-col items-center justify-center py-1 text-slate-500 dark:text-slate-400";
+          }
+        }
+      });
+
+      if (tabName === 'dashboard') renderDashboard();
+      if (tabName === 'analytics') renderAnalytics();
+      if (tabName === 'accounts') renderAccounts();
+      if (tabName === 'history') renderHistoryList();
+    };
+
+    window.setHistoryDateFilter = function(p) {
+      state.historyFilter.date = p;
+      ['all', 'today', 'yesterday', 'this-week', 'this-month'].forEach(k => {
+        const btn = document.getElementById(`hDate-${k}`);
+        if (btn) {
+          btn.className = (k === p) 
+            ? "px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white whitespace-nowrap" 
+            : "px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap";
+        }
+      });
+      renderHistoryList();
+    };
+
+    window.setAnalyticsRange = function(r) {
+      state.analyticsRange = r;
+      ['7', '30', 'all'].forEach(k => {
+        const btn = document.getElementById(`range-${k}`);
+        if (btn) {
+          btn.className = (String(k) === String(r))
+            ? "flex-1 py-1.5 text-xs rounded-xl font-bold bg-teal-600 text-white text-center shadow-sm"
+            : "flex-1 py-1.5 text-xs rounded-xl font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center";
+        }
+      });
+      renderAnalytics();
+    };
+
+    function showToast(msg, icon = "✅") {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').innerText = msg;
+      document.getElementById('toastIcon').innerText = icon;
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2500);
+    }
+
+    // Initialization on Page Load
+    window.addEventListener('DOMContentLoaded', () => {
+      applyTheme(state.theme);
+      document.getElementById('entryDate').value = getTodayString();
+      updateCategorySelect();
+    });
+
+  </script>
+</body>
 </html>
