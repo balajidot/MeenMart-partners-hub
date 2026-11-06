@@ -379,6 +379,7 @@
               <div class="flex justify-center" id="cardAvatar-Balaji">👨‍💻</div>
               <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">Balaji</div>
               <div class="text-[9px] text-slate-400">Clean, Cover, Ads</div>
+              <div id="partnerCardPresence-Balaji" class="min-h-[16px]"></div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Selavu: <strong class="text-rose-600 dark:text-rose-400" id="cardBalajiExp">₹0</strong></div>
                 <div class="text-slate-500">Vasool: <strong class="text-emerald-600 dark:text-emerald-400" id="cardBalajiSales">₹0</strong></div>
@@ -390,6 +391,7 @@
               <div class="flex justify-center" id="cardAvatar-Nagoor">🦐</div>
               <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">Nagoor</div>
               <div class="text-[9px] text-slate-400">Fish Purchase</div>
+              <div id="partnerCardPresence-Nagoor" class="min-h-[16px]"></div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Selavu: <strong class="text-rose-600 dark:text-rose-400" id="cardNagoorExp">₹0</strong></div>
                 <div class="text-slate-500">Vasool: <strong class="text-emerald-600 dark:text-emerald-400" id="cardNagoorSales">₹0</strong></div>
@@ -401,6 +403,7 @@
               <div class="flex justify-center" id="cardAvatar-JP">🛵</div>
               <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">JP</div>
               <div class="text-[9px] text-slate-400">Delivery & Petrol</div>
+              <div id="partnerCardPresence-JP" class="min-h-[16px]"></div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Selavu: <strong class="text-rose-600 dark:text-rose-400" id="cardJpExp">₹0</strong></div>
                 <div class="text-slate-500">Vasool: <strong class="text-emerald-600 dark:text-emerald-400" id="cardJpSales">₹0</strong></div>
@@ -733,7 +736,9 @@
       <div onclick="closeEntryBottomSheet()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
       
       <!-- Inner Sheet Content -->
-      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[88vh] overflow-y-auto no-scrollbar">
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[88vh] overflow-y-auto no-scrollbar pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <!-- Native Sheet Drag Handle -->
+        <div class="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-1"></div>
         
         <!-- Sheet Header -->
         <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
@@ -1088,7 +1093,9 @@
     <!-- ========================================== -->
     <div id="editTransactionModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
       <div onclick="closeEditModal()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
-      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-3.5 max-h-[85vh] overflow-y-auto no-scrollbar">
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-3.5 max-h-[85vh] overflow-y-auto no-scrollbar pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <!-- Native Sheet Drag Handle -->
+        <div class="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-1"></div>
         
         <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
           <div>
@@ -1249,6 +1256,40 @@
           Close
         </button>
 
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 👥 CO-FOUNDERS LIVE PRESENCE DETAIL MODAL   -->
+    <!-- ========================================== -->
+    <div id="presenceDetailModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+      <div onclick="closePresenceDetailModal()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        
+        <!-- Native Sheet Drag Handle -->
+        <div class="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-1"></div>
+
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div>
+              <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">Co-Founders Live Status</h3>
+              <p class="text-[10px] text-slate-400">Real-time presence across devices</p>
+            </div>
+          </div>
+          <button onclick="closePresenceDetailModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-xs flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Co-Founders Detailed Status List -->
+        <div class="space-y-2.5" id="presenceDetailModalList">
+          <!-- Dynamically populated with Balaji, Nagoor, JP -->
+        </div>
+
+        <button type="button" onclick="closePresenceDetailModal()" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold active:scale-95 transition">
+          Close
+        </button>
       </div>
     </div>
 
@@ -1700,8 +1741,9 @@
       document.getElementById('partnerIconsModal').classList.remove('hidden');
     };
 
-    window.closePartnerIconsModal = function() {
+    window.closePartnerIconsModal = function(fromPopState = false) {
       document.getElementById('partnerIconsModal').classList.add('hidden');
+      popModalState('partnerIconsModal', fromPopState);
     };
 
     window.selectQuickAvatar = function(partner, emoji) {
@@ -3417,10 +3459,12 @@ ${transferSection}
     // Category Manager Logic
     window.openCategoryManagerModal = function() {
       document.getElementById('categoryManagerModal').classList.remove('hidden');
+      pushModalState('categoryManagerModal');
       renderCatManagerList();
     };
-    window.closeCategoryManagerModal = function() {
+    window.closeCategoryManagerModal = function(fromPopState = false) {
       document.getElementById('categoryManagerModal').classList.add('hidden');
+      popModalState('categoryManagerModal', fromPopState);
     };
 
     window.switchCatManagerType = function(type) {
@@ -3505,17 +3549,20 @@ ${transferSection}
       }
     };
 
-    // Quick Entry Modal Functions
+    // Quick Entry Modal Functions (With Android Back Button Intercept)
     window.openEntryBottomSheet = function() {
+      if (navigator.vibrate) navigator.vibrate(10);
       if (state.currentPartner) {
         state.entryPartner = state.currentPartner;
         updateSheetPartnerLockUI();
       }
       document.getElementById('entryBottomSheetModal').classList.remove('hidden');
+      pushModalState('entryBottomSheetModal');
     };
 
-    window.closeEntryBottomSheet = function() {
+    window.closeEntryBottomSheet = function(fromPopState = false) {
       document.getElementById('entryBottomSheetModal').classList.add('hidden');
+      popModalState('entryBottomSheetModal', fromPopState);
     };
 
     function updateSheetPartnerLockUI() {
@@ -3653,27 +3700,132 @@ ${transferSection}
       }
     };
 
-    // ==========================================
-    // 🟢 REAL-TIME PRESENCE SYNC & ONLINE STATUS
-    // ==========================================
+    // =========================================================
+    // 🔙 UNIFIED MODAL HISTORY STACK (ANDROID BACK BUTTON FIX)
+    // =========================================================
+    window.modalStack = [];
+
+    window.pushModalState = function(modalId) {
+      if (!window.modalStack.includes(modalId)) {
+        window.modalStack.push(modalId);
+        // Push state into browser history so hardware back key closes modal instead of page
+        history.pushState({ modalId: modalId, timestamp: Date.now() }, '');
+      }
+    };
+
+    window.popModalState = function(modalId, fromPopState = false) {
+      const idx = window.modalStack.indexOf(modalId);
+      if (idx !== -1) {
+        window.modalStack.splice(idx, 1);
+      }
+      // If closed by user button/backdrop (not by browser back button), pop the history entry cleanly
+      if (!fromPopState && history.state && history.state.modalId === modalId) {
+        history.back();
+      }
+    };
+
+    // Global listener for Android Back Button & Browser Back Gestures
+    window.addEventListener('popstate', (e) => {
+      if (window.modalStack && window.modalStack.length > 0) {
+        const topModal = window.modalStack[window.modalStack.length - 1];
+        if (topModal === 'entryBottomSheetModal') {
+          closeEntryBottomSheet(true);
+        } else if (topModal === 'editTransactionModal') {
+          closeEditModal(true);
+        } else if (topModal === 'txDetailsModal') {
+          closeTxDetailsModal(true);
+        } else if (topModal === 'categoryManagerModal') {
+          closeCategoryManagerModal(true);
+        } else if (topModal === 'partnerIconsModal') {
+          closePartnerIconsModal(true);
+        } else if (topModal === 'presenceDetailModal') {
+          closePresenceDetailModal(true);
+        }
+      }
+    });
+
+    // =========================================================
+    // 🟢 REAL-TIME PRESENCE SYNC & RICH LAST SEEN FORMATTER
+    // =========================================================
     window.isPartnerOnline = function(p) {
       if (!state.presence || !state.presence[p]) return false;
       const item = state.presence[p];
       if (!item.online) return false;
-      // Online if lastSeen within 65 seconds
+      // Online if lastSeen heartbeat is within 65 seconds
       return (Date.now() - (item.lastSeen || 0)) < 65000;
     };
 
-    window.getPartnerLastSeenText = function(p) {
-      if (isPartnerOnline(p)) return 'Online';
-      if (!state.presence || !state.presence[p] || !state.presence[p].lastSeen) return 'Offline';
-      const diffMs = Date.now() - state.presence[p].lastSeen;
+    window.getPartnerShortLastSeen = function(timestamp) {
+      if (!timestamp) return 'Offline';
+      const now = Date.now();
+      const diffMs = now - timestamp;
+      if (diffMs < 65000) return 'Online';
+
+      const d = new Date(timestamp);
+      if (isNaN(d.getTime())) return 'Offline';
+
       const mins = Math.floor(diffMs / 60000);
       if (mins < 1) return 'Just now';
-      if (mins < 60) return `${mins}m`;
-      const hours = Math.floor(mins / 60);
-      if (hours < 24) return `${hours}h`;
-      return `${Math.floor(hours / 24)}d`;
+      if (mins < 60) return `${mins}m ago`;
+
+      const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      const nowDate = new Date();
+      if (nowDate.toDateString() === d.toDateString()) {
+        return timeStr;
+      }
+      const yDate = new Date();
+      yDate.setDate(nowDate.getDate() - 1);
+      if (yDate.toDateString() === d.toDateString()) {
+        return `Y'day ${timeStr}`;
+      }
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    };
+
+    window.formatPartnerLastSeen = function(timestamp) {
+      if (!timestamp) return 'Offline';
+      const now = Date.now();
+      const diffMs = now - timestamp;
+      if (diffMs < 65000) return 'Active Now (Online)';
+
+      const d = new Date(timestamp);
+      if (isNaN(d.getTime())) return 'Offline';
+
+      const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      const nowDate = new Date();
+      const mins = Math.floor(diffMs / 60000);
+
+      if (mins < 1) return 'Last seen just now';
+      if (mins < 60) return `Last seen ${mins}m ago (${timeStr})`;
+
+      if (nowDate.toDateString() === d.toDateString()) {
+        return `Last seen today at ${timeStr}`;
+      }
+      const yDate = new Date();
+      yDate.setDate(nowDate.getDate() - 1);
+      if (yDate.toDateString() === d.toDateString()) {
+        return `Last seen yesterday at ${timeStr}`;
+      }
+      const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      return `Last seen on ${dateStr} at ${timeStr}`;
+    };
+
+    window.updatePartnerCardsPresence = function() {
+      ['Balaji', 'Nagoor', 'JP'].forEach(p => {
+        const el = document.getElementById(`partnerCardPresence-${p}`);
+        if (!el) return;
+        const online = isPartnerOnline(p);
+        const item = state.presence ? state.presence[p] : null;
+        const lastSeen = item ? item.lastSeen : null;
+
+        if (online) {
+          el.innerHTML = `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active</span>`;
+        } else if (lastSeen) {
+          const shortText = getPartnerShortLastSeen(lastSeen);
+          el.innerHTML = `<span class="text-[9px] text-slate-400 font-medium" title="${formatPartnerLastSeen(lastSeen)}">Seen ${shortText}</span>`;
+        } else {
+          el.innerHTML = `<span class="text-[9px] text-slate-400 font-medium">Offline</span>`;
+        }
+      });
     };
 
     window.renderPartnerPresence = function() {
@@ -3682,21 +3834,76 @@ ${transferSection}
       const partners = ['Balaji', 'Nagoor', 'JP'];
       list.innerHTML = partners.map(p => {
         const isOnline = isPartnerOnline(p);
-        const lastSeenStr = getPartnerLastSeenText(p);
+        const item = state.presence ? state.presence[p] : null;
+        const lastSeen = item ? item.lastSeen : null;
+        const shortLastSeen = isOnline ? 'Online' : getPartnerShortLastSeen(lastSeen);
+        const fullLastSeen = isOnline ? 'Active Now' : formatPartnerLastSeen(lastSeen);
+
         const isMe = state.currentPartner === p;
         const dotColor = isOnline ? 'bg-emerald-500 ring-2 ring-emerald-200 dark:ring-emerald-950' : 'bg-slate-300 dark:bg-slate-600';
-        const statusText = isOnline ? 'Online' : lastSeenStr;
         const statusClass = isOnline ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400 dark:text-slate-500 font-medium';
         const bgClass = isOnline ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200/50 dark:border-emerald-800/40' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/40';
 
         return `
-          <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${bgClass} text-[10px] shadow-2xs" title="${p}: ${statusText}">
+          <button type="button" onclick="openPresenceDetailModal()" class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${bgClass} text-[10px] shadow-2xs hover:scale-105 active:scale-95 transition cursor-pointer" title="${p}: ${fullLastSeen} (Click for co-founder live status)">
             <div class="relative flex items-center">
               ${renderPartnerAvatar(p, 'w-4 h-4', 'rounded-full')}
               <span class="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotColor}"></span>
             </div>
             <span class="font-bold text-slate-700 dark:text-slate-200">${p}</span>
-            <span class="${statusClass} text-[9px]">${isOnline ? '🟢' : statusText}</span>
+            <span class="${statusClass} text-[9px]">${isOnline ? '🟢' : shortLastSeen}</span>
+          </button>
+        `;
+      }).join('');
+
+      updatePartnerCardsPresence();
+      renderPresenceDetailModal();
+    };
+
+    window.openPresenceDetailModal = function() {
+      renderPresenceDetailModal();
+      document.getElementById('presenceDetailModal').classList.remove('hidden');
+      pushModalState('presenceDetailModal');
+    };
+
+    window.closePresenceDetailModal = function(fromPopState = false) {
+      document.getElementById('presenceDetailModal').classList.add('hidden');
+      popModalState('presenceDetailModal', fromPopState);
+    };
+
+    window.renderPresenceDetailModal = function() {
+      const container = document.getElementById('presenceDetailModalList');
+      if (!container) return;
+      const partners = ['Balaji', 'Nagoor', 'JP'];
+      container.innerHTML = partners.map(p => {
+        const isOnline = isPartnerOnline(p);
+        const item = state.presence ? state.presence[p] : null;
+        const lastSeen = item ? item.lastSeen : null;
+        const statusText = formatPartnerLastSeen(lastSeen);
+        const partnerInfo = PARTNERS[p] || { name: p, role: 'Partner' };
+        const isMe = state.currentPartner === p;
+
+        return `
+          <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="relative flex-shrink-0">
+                ${renderPartnerAvatar(p, 'w-11 h-11', 'rounded-xl')}
+                <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ${isOnline ? 'bg-emerald-500 ring-2 ring-white dark:ring-slate-900 animate-pulse' : 'bg-slate-300 dark:bg-slate-600'}"></span>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <h4 class="font-bold text-xs text-slate-900 dark:text-white">${partnerInfo.name}</h4>
+                  ${isMe ? '<span class="text-[9px] px-1.5 py-0.2 rounded font-black bg-teal-500/15 text-teal-600 dark:text-teal-300 border border-teal-500/30">You</span>' : ''}
+                </div>
+                <p class="text-[10px] text-slate-400 font-medium">${partnerInfo.role}</p>
+                <div class="text-[10px] mt-0.5 font-semibold ${isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}">
+                  ${isOnline ? '🟢 Active Now' : '⚪ ' + statusText}
+                </div>
+              </div>
+            </div>
+            <div>
+              ${isOnline ? '<span class="px-2 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-black">ONLINE</span>' : '<span class="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 text-[10px] font-bold">OFFLINE</span>'}
+            </div>
           </div>
         `;
       }).join('');
@@ -3838,11 +4045,13 @@ ${transferSection}
       document.getElementById('viewTxLockText').innerText = `Created by ${p.name}. Only ${p.name} can edit or delete this entry (View Only). 🔒`;
 
       document.getElementById('txDetailsModal').classList.remove('hidden');
+      pushModalState('txDetailsModal');
     };
 
-    window.closeTxDetailsModal = function() {
+    window.closeTxDetailsModal = function(fromPopState = false) {
       const modal = document.getElementById('txDetailsModal');
       if (modal) modal.classList.add('hidden');
+      popModalState('txDetailsModal', fromPopState);
     };
 
     window.handleDeleteFromEditModal = async function() {
@@ -3887,10 +4096,12 @@ ${transferSection}
 
       updateEditCategoryOptions(tx.category);
       document.getElementById('editTransactionModal').classList.remove('hidden');
+      pushModalState('editTransactionModal');
     };
 
-    window.closeEditModal = function() {
+    window.closeEditModal = function(fromPopState = false) {
       document.getElementById('editTransactionModal').classList.add('hidden');
+      popModalState('editTransactionModal', fromPopState);
     };
 
     window.updateEditCategoryOptions = function(selectedCat) {
