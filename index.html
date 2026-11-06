@@ -304,10 +304,10 @@
 
           <!-- 4 Scope Pills: Today, This Week, This Month, Total -->
           <div class="grid grid-cols-4 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl text-center">
-            <button onclick="setDashboardDateScope('today')" id="dashScope-today" class="py-1.5 rounded-xl text-xs font-extrabold bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm transition">Today</button>
-            <button onclick="setDashboardDateScope('week')" id="dashScope-week" class="py-1.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">This Week</button>
-            <button onclick="setDashboardDateScope('month')" id="dashScope-month" class="py-1.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">This Month</button>
-            <button onclick="setDashboardDateScope('all')" id="dashScope-all" class="py-1.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Total</button>
+            <button onclick="setDashboardDateScope('today')" id="dashScope-today" class="py-1.5 rounded-xl text-xs font-extrabold bg-teal-600 text-white shadow-md transition-all scale-[1.02]">Today</button>
+            <button onclick="setDashboardDateScope('week')" id="dashScope-week" class="py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">This Week</button>
+            <button onclick="setDashboardDateScope('month')" id="dashScope-month" class="py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">This Month</button>
+            <button onclick="setDashboardDateScope('all')" id="dashScope-all" class="py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition">Total</button>
           </div>
 
           <!-- Interactive 7-Day Weekly Calendar Strip -->
@@ -2303,35 +2303,106 @@
     }
 
     // 1. Dashboard Scopes & Calculations
+    const DASH_SCOPE_KEYS = ['today', 'week', 'month', 'all'];
+
     window.setDashboardDateScope = function(scope) {
       state.dashboardScope = scope;
-      ['today', 'yesterday', 'week', 'month'].forEach(k => {
+      state.selectedDashboardDay = null; // Clear single-day calendar filter
+
+      // Update 4 Scope Pills UI
+      DASH_SCOPE_KEYS.forEach(k => {
         const btn = document.getElementById(`dashScope-${k}`);
         if (btn) {
-          btn.className = (k === scope)
-            ? "flex-1 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white text-center whitespace-nowrap shadow-sm"
-            : "flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap";
+          if (k === scope) {
+            btn.className = "py-1.5 rounded-xl text-xs font-extrabold bg-teal-600 text-white shadow-md transition-all scale-[1.02]";
+          } else {
+            btn.className = "py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition";
+          }
         }
       });
 
       const customRow = document.getElementById('dashCustomDateRow');
       if (scope === 'custom') {
-        customRow.classList.remove('hidden');
+        if (customRow) customRow.classList.remove('hidden');
       } else {
-        customRow.classList.add('hidden');
+        if (customRow) customRow.classList.add('hidden');
       }
 
       renderDashboard();
     };
 
+    window.selectWeeklyCalendarDay = function(dateStr) {
+      state.dashboardScope = 'day';
+      state.selectedDashboardDay = dateStr;
+
+      // Deactivate all 4 scope pills
+      DASH_SCOPE_KEYS.forEach(k => {
+        const btn = document.getElementById(`dashScope-${k}`);
+        if (btn) {
+          btn.className = "py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition";
+        }
+      });
+
+      const customRow = document.getElementById('dashCustomDateRow');
+      if (customRow) customRow.classList.add('hidden');
+
+      renderDashboard();
+    };
+
+    window.renderWeeklyCalendarStrip = function() {
+      const container = document.getElementById('dashWeeklyCalendarStrip');
+      if (!container) return;
+
+      const todayStr = getTodayString();
+      const { monday } = getWeekRange(0); // Current week's Monday
+      const monthLabel = document.getElementById('dashCalMonthLabel');
+      if (monthLabel) {
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        monthLabel.innerText = `${monthNames[monday.getMonth()]} ${monday.getFullYear()}`;
+      }
+
+      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      let stripHtml = '';
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayNum = d.getDate();
+        const dayName = dayNames[i];
+
+        const isToday = (dateStr === todayStr);
+        const isSelected = (state.dashboardScope === 'day' && state.selectedDashboardDay === dateStr);
+
+        let btnClasses = "flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all cursor-pointer ";
+        if (isSelected) {
+          btnClasses += "bg-teal-600 text-white shadow-md font-black scale-105 ring-2 ring-teal-400";
+        } else if (isToday) {
+          btnClasses += "bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-700 font-bold hover:bg-teal-100 dark:hover:bg-teal-900/60";
+        } else {
+          btnClasses += "bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700/60 font-medium";
+        }
+
+        stripHtml += `
+          <button type="button" onclick="selectWeeklyCalendarDay('${dateStr}')" class="${btnClasses}" title="${dateStr}">
+            <span class="text-[9px] tracking-wider uppercase opacity-80">${dayName}</span>
+            <span class="text-xs font-black mt-0.5">${dayNum}</span>
+            ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-teal-500 dark:bg-teal-400 mt-1"></span>' : '<span class="w-1.5 h-1.5 mt-1 opacity-0">•</span>'}
+          </button>
+        `;
+      }
+
+      container.innerHTML = stripHtml;
+    };
+
     window.toggleCustomDateRangeModal = function() {
       const customRow = document.getElementById('dashCustomDateRow');
-      if (customRow.classList.contains('hidden')) {
+      if (customRow && customRow.classList.contains('hidden')) {
         customRow.classList.remove('hidden');
         state.dashboardScope = 'custom';
-        ['today', 'yesterday', 'week', 'month'].forEach(k => {
+        DASH_SCOPE_KEYS.forEach(k => {
           const btn = document.getElementById(`dashScope-${k}`);
-          if (btn) btn.className = "flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap";
+          if (btn) btn.className = "py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300";
         });
         if (!document.getElementById('dashCustomFrom').value) {
           document.getElementById('dashCustomFrom').value = getThisWeekStart();
@@ -2352,38 +2423,47 @@
 
     function renderDashboard() {
       const todayStr = getTodayString();
-      const yesterdayStr = getYesterdayString();
       const weekStartStr = getThisWeekStart();
       const monthStartStr = getThisMonthStart();
 
       let fromDate = todayStr;
       let toDate = todayStr;
-      let badgeLabel = "Innaiku";
+      let badgeLabel = "Today";
 
       if (state.dashboardScope === 'today') {
         fromDate = todayStr;
         toDate = todayStr;
-        badgeLabel = "Innaiku";
-      } else if (state.dashboardScope === 'yesterday') {
-        fromDate = yesterdayStr;
-        toDate = yesterdayStr;
-        badgeLabel = "Nethu";
+        badgeLabel = "Today";
       } else if (state.dashboardScope === 'week') {
         fromDate = weekStartStr;
         toDate = todayStr;
-        badgeLabel = "Indha Vaaram";
+        badgeLabel = "This Week";
       } else if (state.dashboardScope === 'month') {
         fromDate = monthStartStr;
         toDate = todayStr;
-        badgeLabel = "Indha Maasam";
+        badgeLabel = "This Month";
+      } else if (state.dashboardScope === 'all') {
+        fromDate = "2020-01-01";
+        toDate = "2099-12-31";
+        badgeLabel = "All-Time Total";
+      } else if (state.dashboardScope === 'day') {
+        fromDate = state.selectedDashboardDay || todayStr;
+        toDate = state.selectedDashboardDay || todayStr;
+        const dObj = new Date(fromDate);
+        badgeLabel = dObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
       } else if (state.dashboardScope === 'custom') {
         fromDate = state.customDateRange.from || todayStr;
         toDate = state.customDateRange.to || todayStr;
         badgeLabel = `${fromDate.slice(5)} to ${toDate.slice(5)}`;
       }
 
-      document.getElementById('dashRangeLabel').innerText = badgeLabel;
-      document.getElementById('dashHeroDateBadge').innerText = badgeLabel;
+      const dashRangeEl = document.getElementById('dashRangeLabel');
+      if (dashRangeEl) dashRangeEl.innerText = badgeLabel;
+      const dashHeroBadgeEl = document.getElementById('dashHeroDateBadge');
+      if (dashHeroBadgeEl) dashHeroBadgeEl.innerText = badgeLabel;
+
+      // Always render the 7-day interactive weekly calendar strip
+      renderWeeklyCalendarStrip();
 
       let totalSales = 0;
       let totalExp = 0;
@@ -2396,27 +2476,9 @@
         JP: { exp: 0, sales: 0, cap: 0 }
       };
 
-      // Lifetime Cash Flow tracking: Who holds cash?
-      // Balaji collects all Customer Cash and Online Gateway funds into his account.
-      // Balaji also pays cleaning labor, ice/covers, and meta ads.
-      // Nagoor spends on fish purchase at harbor.
-      // JP spends on fuel & delivery.
-      const cashflowHold = {
-        Balaji: { collected: 0, spent: 0 },
-        Nagoor: { collected: 0, spent: 0 },
-        JP: { collected: 0, spent: 0 }
-      };
-
       state.transactions.forEach((tx) => {
         const amt = Number(tx.amount) || 0;
         const p = tx.partner;
-
-        // Lifetime Cashflow accumulator
-        if (tx.type === 'sales') {
-          if (cashflowHold[p]) cashflowHold[p].collected += amt;
-        } else if (tx.type === 'expense') {
-          if (cashflowHold[p]) cashflowHold[p].spent += amt;
-        }
 
         // Scope date filter for hero cards
         if (tx.date >= fromDate && tx.date <= toDate) {
@@ -2437,156 +2499,206 @@
 
       // Update Hero Card
       const heroNet = document.getElementById('dashHeroNetBalance');
-      heroNet.innerText = formatINR(netBalance);
-      if (netBalance >= 0) {
-        heroNet.className = "text-3xl font-extrabold tracking-tight mt-1 text-white";
-        document.getElementById('dashNetTitle').innerText = "Profit";
-      } else {
-        heroNet.className = "text-3xl font-extrabold tracking-tight mt-1 text-rose-300";
-        document.getElementById('dashNetTitle').innerText = "Loss";
+      if (heroNet) {
+        heroNet.innerText = formatINR(netBalance);
+        if (netBalance >= 0) {
+          heroNet.className = "text-3xl font-extrabold tracking-tight mt-1 text-white";
+          document.getElementById('dashNetTitle').innerText = "Profit";
+        } else {
+          heroNet.className = "text-3xl font-extrabold tracking-tight mt-1 text-rose-300";
+          document.getElementById('dashNetTitle').innerText = "Loss";
+        }
       }
 
-      document.getElementById('dashHeroSales').innerText = formatINR(totalSales);
-      document.getElementById('dashHeroExpenses').innerText = formatINR(totalExp);
-      document.getElementById('dashHeroCapital').innerText = formatINR(totalCap);
+      const heroSales = document.getElementById('dashHeroSales');
+      if (heroSales) heroSales.innerText = formatINR(totalSales);
+      const heroExp = document.getElementById('dashHeroExpenses');
+      if (heroExp) heroExp.innerText = formatINR(totalExp);
+      const heroCap = document.getElementById('dashHeroCapital');
+      if (heroCap) heroCap.innerText = formatINR(totalCap);
 
       // Scoped Partner Cards
-      document.getElementById('cardBalajiExp').innerText = formatINR(pScoped.Balaji.exp);
-      document.getElementById('cardBalajiSales').innerText = formatINR(pScoped.Balaji.sales);
+      const cardBExp = document.getElementById('cardBalajiExp');
+      if (cardBExp) cardBExp.innerText = formatINR(pScoped.Balaji.exp);
+      const cardBSales = document.getElementById('cardBalajiSales');
+      if (cardBSales) cardBSales.innerText = formatINR(pScoped.Balaji.sales);
 
-      document.getElementById('cardNagoorExp').innerText = formatINR(pScoped.Nagoor.exp);
-      document.getElementById('cardNagoorSales').innerText = formatINR(pScoped.Nagoor.sales);
+      const cardNExp = document.getElementById('cardNagoorExp');
+      if (cardNExp) cardNExp.innerText = formatINR(pScoped.Nagoor.exp);
+      const cardNSales = document.getElementById('cardNagoorSales');
+      if (cardNSales) cardNSales.innerText = formatINR(pScoped.Nagoor.sales);
 
-      document.getElementById('cardJpExp').innerText = formatINR(pScoped.JP.exp);
-      document.getElementById('cardJpSales').innerText = formatINR(pScoped.JP.sales);
+      const cardJExp = document.getElementById('cardJpExp');
+      if (cardJExp) cardJExp.innerText = formatINR(pScoped.JP.exp);
+      const cardJSales = document.getElementById('cardJpSales');
+      if (cardJSales) cardJSales.innerText = formatINR(pScoped.JP.sales);
 
       // Update Partner Summary Card Avatars
       updatePartnerCardAvatars();
 
       // -------------------------------------------------------------
-      // 💵 REAL-TIME CASH IN HAND & EXPENSE REIMBURSEMENT CALCULATIONS
+      // 💵 REAL-TIME CASH & PARTNER SETTLEMENT BALANCES (100% CRYSTAL CLEAR)
       // -------------------------------------------------------------
-      // 1. Calculate all payouts paid to partners from settlements
-      let totalPayoutsToNagoor = 0;
-      let totalPayoutsToJp = 0;
+      // 1. Get current week settlement context
+      const { monday: curMon, sunday: curSun } = getWeekRange(0);
+      const curMonStr = curMon.toISOString().split('T')[0];
+      const curSunStr = curSun.toISOString().split('T')[0];
+      const curWeekId = `week_${curMonStr}_${curSunStr}`;
+      const curSettlement = state.settlements[curWeekId];
+      const curTransfers = curSettlement?.transfers || {};
 
-      Object.values(state.settlements || {}).forEach(s => {
-        if (s.transfers) {
-          if (s.transfers.Nagoor && typeof s.transfers.Nagoor.paidAmount === 'number') {
-            totalPayoutsToNagoor += Number(s.transfers.Nagoor.paidAmount) || 0;
-          }
-          if (s.transfers.JP && typeof s.transfers.JP.paidAmount === 'number') {
-            totalPayoutsToJp += Number(s.transfers.JP.paidAmount) || 0;
+      // Previous week carry-forward dues if any
+      const { monday: pMon, sunday: pSun } = getWeekRange(1);
+      const prevWeekId = `week_${pMon.toISOString().split('T')[0]}_${pSun.toISOString().split('T')[0]}`;
+      const prevSettlement = state.settlements[prevWeekId];
+      const prevNagoorCarried = (prevSettlement?.transfers?.Nagoor?.remainingDue > 0) ? Number(prevSettlement.transfers.Nagoor.remainingDue) : 0;
+      const prevJpCarried = (prevSettlement?.transfers?.JP?.remainingDue > 0) ? Number(prevSettlement.transfers.JP.remainingDue) : 0;
+
+      // Current week transactions aggregation
+      let currWeekSales = 0;
+      let currWeekExp = 0;
+      const currWeekPExp = { Balaji: 0, Nagoor: 0, JP: 0 };
+      state.transactions.forEach(tx => {
+        if (tx.date >= curMonStr && tx.date <= curSunStr) {
+          const amt = Number(tx.amount) || 0;
+          if (tx.type === 'sales') currWeekSales += amt;
+          else if (tx.type === 'expense') {
+            currWeekExp += amt;
+            if (currWeekPExp[tx.partner] !== undefined) currWeekPExp[tx.partner] += amt;
           }
         }
       });
 
-      const totalPayoutsPaidByBalaji = totalPayoutsToNagoor + totalPayoutsToJp;
+      const currWeekProfit = currWeekSales - currWeekExp;
+      const currWeekEqualShare = Math.round(currWeekProfit / 3);
 
-      // 2. Balaji Live Cash in Hand:
-      // Balaji collects all sales revenue from customer payments (cash & gateway).
-      // Balaji holds capital investments.
-      // Balaji pays his own pocket expenses (cleaning, ice, packaging, ads).
-      // CRITICAL: When he transfers payouts/refunds to Nagoor or JP, that money LEAVES his hand/account!
-      let allSalesCollected = 0;
-      let allCapitalInvested = 0;
+      // --- NAGOOR REAL SETTLEMENT ENTITLEMENT ---
+      const nagoorBaseDue = currWeekPExp.Nagoor + (currWeekProfit >= 0 ? currWeekEqualShare : -Math.abs(currWeekEqualShare));
+      const nagoorTotalDue = Math.max(0, nagoorBaseDue + prevNagoorCarried);
+      const nagoorRecord = curTransfers.Nagoor;
+      const nagoorPaid = nagoorRecord ? (Number(nagoorRecord.paidAmount) || 0) : 0;
+      const nagoorBalanceToPay = Math.max(0, nagoorTotalDue - nagoorPaid);
+      const isNagoorAllPaid = (nagoorBalanceToPay === 0 && (nagoorTotalDue > 0 || nagoorPaid > 0));
+
+      // --- JP REAL SETTLEMENT ENTITLEMENT ---
+      const jpBaseDue = currWeekPExp.JP + (currWeekProfit >= 0 ? currWeekEqualShare : -Math.abs(currWeekEqualShare));
+      const jpTotalDue = Math.max(0, jpBaseDue + prevJpCarried);
+      const jpRecord = curTransfers.JP;
+      const jpPaid = jpRecord ? (Number(jpRecord.paidAmount) || 0) : 0;
+      const jpBalanceToPay = Math.max(0, jpTotalDue - jpPaid);
+      const isJpAllPaid = (jpBalanceToPay === 0 && (jpTotalDue > 0 || jpPaid > 0));
+
+      // --- BALAJI LIVE CASH IN HAND (BANK + CASH) ---
+      let totalAllSales = 0;
+      let totalAllCapital = 0;
+      let totalBalajiSpends = 0;
       state.transactions.forEach(tx => {
         const amt = Number(tx.amount) || 0;
-        if (tx.type === 'sales') allSalesCollected += amt;
-        else if (tx.type === 'investment') allCapitalInvested += amt;
+        if (tx.type === 'sales') totalAllSales += amt;
+        else if (tx.type === 'investment') totalAllCapital += amt;
+        else if (tx.type === 'expense' && tx.partner === 'Balaji') totalBalajiSpends += amt;
       });
 
-      const balajiSpends = cashflowHold.Balaji.spent;
-      const balajiNetLiveCash = allSalesCollected + allCapitalInvested - balajiSpends - totalPayoutsPaidByBalaji;
+      let totalAllPayoutsPaid = 0;
+      Object.values(state.settlements || {}).forEach(s => {
+        if (s.transfers) {
+          if (s.transfers.Nagoor && typeof s.transfers.Nagoor.paidAmount === 'number') {
+            totalAllPayoutsPaid += Number(s.transfers.Nagoor.paidAmount) || 0;
+          }
+          if (s.transfers.JP && typeof s.transfers.JP.paidAmount === 'number') {
+            totalAllPayoutsPaid += Number(s.transfers.JP.paidAmount) || 0;
+          }
+        }
+      });
 
-      // 3. Nagoor Expense Reimbursement Due:
-      // Nagoor spent out-of-pocket on fish at the harbor.
-      // Balaji pays him reimbursements/settlements.
-      const nagoorSpent = cashflowHold.Nagoor.spent - cashflowHold.Nagoor.collected;
-      const nagoorPendingRefund = Math.max(0, nagoorSpent - totalPayoutsToNagoor);
-
-      // 4. JP Expense Reimbursement Due:
-      // JP spent out-of-pocket on petrol/delivery.
-      // Balaji pays him reimbursements/settlements.
-      const jpSpent = cashflowHold.JP.spent - cashflowHold.JP.collected;
-      const jpPendingRefund = Math.max(0, jpSpent - totalPayoutsToJp);
-
-      const balajiColorClass = balajiNetLiveCash > 0 
+      const balajiLiveCash = totalAllSales + totalAllCapital - totalBalajiSpends - totalAllPayoutsPaid;
+      const balajiColorClass = balajiLiveCash > 0 
         ? 'text-emerald-600 dark:text-emerald-400' 
-        : (balajiNetLiveCash < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400');
+        : (balajiLiveCash < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400');
 
       const cashContainer = document.getElementById('cashInHandContainer');
-      cashContainer.innerHTML = `
-        <!-- Balaji Live Cash in Hand -->
-        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs shadow-sm">
-          <div class="flex items-center space-x-2.5">
-            ${renderPartnerAvatar('Balaji', 'w-8 h-8', 'rounded-xl')}
-            <div>
-              <div class="flex items-center gap-1.5">
-                <span class="font-extrabold text-slate-900 dark:text-white">Balaji</span>
-                <span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300">Live Cash in Hand</span>
-              </div>
-              <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                Sales ${formatINR(allSalesCollected)} - Spends ${formatINR(balajiSpends)} - Paid to Partners ${formatINR(totalPayoutsPaidByBalaji)}
-              </div>
-            </div>
-          </div>
-          <div class="text-right flex-shrink-0">
-            <span class="font-black ${balajiColorClass} text-sm block">${formatINR(balajiNetLiveCash)}</span>
-            <span class="text-[9px] text-slate-400 font-medium">Bank + Cash</span>
-          </div>
-        </div>
-
-        <!-- Nagoor Fish Purchase Refund Status -->
-        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs shadow-sm">
-          <div class="flex items-center space-x-2.5">
-            ${renderPartnerAvatar('Nagoor', 'w-8 h-8', 'rounded-xl')}
-            <div>
-              <div class="flex items-center gap-1.5">
-                <span class="font-extrabold text-slate-900 dark:text-white">Nagoor</span>
-                <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${nagoorPendingRefund > 0 ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'}">
-                  ${nagoorPendingRefund > 0 ? 'Refund Pending ⏳' : 'Fully Reimbursed ✅'}
-                </span>
-              </div>
-              <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                Fish Spends ${formatINR(nagoorSpent)} - Reimbursed ${formatINR(totalPayoutsToNagoor)}
+      if (cashContainer) {
+        cashContainer.innerHTML = `
+          <!-- 1. Balaji: Holds Business Cash in Hand & Bank -->
+          <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs shadow-sm">
+            <div class="flex items-center space-x-2.5">
+              ${renderPartnerAvatar('Balaji', 'w-8 h-8', 'rounded-xl')}
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-extrabold text-slate-900 dark:text-white">Balaji</span>
+                  <span class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300">Shop Cash in Hand</span>
+                </div>
+                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  Sales ${formatINR(totalAllSales)} - Spends ${formatINR(totalBalajiSpends)} - Paid ${formatINR(totalAllPayoutsPaid)}
+                </div>
               </div>
             </div>
-          </div>
-          <div class="text-right flex-shrink-0">
-            <span class="font-black ${nagoorPendingRefund > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'} text-sm block">
-              ${nagoorPendingRefund > 0 ? formatINR(nagoorPendingRefund) + ' Due' : '₹0 Due ✅'}
-            </span>
-            <span class="text-[9px] text-slate-400 font-medium">${nagoorPendingRefund > 0 ? 'Refund Due' : 'Fully Reimbursed'}</span>
-          </div>
-        </div>
-
-        <!-- JP Petrol & Delivery Refund Status -->
-        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs shadow-sm">
-          <div class="flex items-center space-x-2.5">
-            ${renderPartnerAvatar('JP', 'w-8 h-8', 'rounded-xl')}
-            <div>
-              <div class="flex items-center gap-1.5">
-                <span class="font-extrabold text-slate-900 dark:text-white">JP</span>
-                <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${jpPendingRefund > 0 ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'}">
-                  ${jpPendingRefund > 0 ? 'Refund Pending ⏳' : 'Fully Reimbursed ✅'}
-                </span>
-              </div>
-              <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                Petrol Spends ${formatINR(jpSpent)} - Reimbursed ${formatINR(totalPayoutsToJp)}
-              </div>
+            <div class="text-right flex-shrink-0">
+              <span class="font-black ${balajiColorClass} text-sm block">${formatINR(balajiLiveCash)}</span>
+              <span class="text-[9px] text-slate-400 font-medium">In Bank / Hand</span>
             </div>
           </div>
-          <div class="text-right flex-shrink-0">
-            <span class="font-black ${jpPendingRefund > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'} text-sm block">
-              ${jpPendingRefund > 0 ? formatINR(jpPendingRefund) + ' Due' : '₹0 Due ✅'}
-            </span>
-            <span class="text-[9px] text-slate-400 font-medium">${jpPendingRefund > 0 ? 'Refund Due' : 'Fully Reimbursed'}</span>
-          </div>
-        </div>
-      `;
 
-      // Recent 3 Transactions
+          <!-- 2. Nagoor: Settlement Entitlement & Payment Status -->
+          <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border ${isNagoorAllPaid ? 'border-emerald-200/80 dark:border-emerald-800/40' : (nagoorBalanceToPay > 0 ? 'border-amber-200 dark:border-amber-700/50' : 'border-slate-200 dark:border-slate-800')} flex items-center justify-between text-xs shadow-sm">
+            <div class="flex items-center space-x-2.5">
+              ${renderPartnerAvatar('Nagoor', 'w-8 h-8', 'rounded-xl')}
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-extrabold text-slate-900 dark:text-white">Nagoor</span>
+                  <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${isNagoorAllPaid ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : (nagoorBalanceToPay > 0 ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400')}">
+                    ${isNagoorAllPaid ? 'All Paid ✅' : (nagoorBalanceToPay > 0 ? 'Payment Pending ⏳' : 'No Spends')}
+                  </span>
+                </div>
+                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  ${nagoorTotalDue > 0 
+                    ? (isNagoorAllPaid 
+                        ? `Spent ${formatINR(currWeekPExp.Nagoor)} (Fish) + ${formatINR(currWeekEqualShare)} Profit • Received ${formatINR(nagoorPaid)} in Full`
+                        : `Spent ${formatINR(currWeekPExp.Nagoor)} (Fish) + ${formatINR(currWeekEqualShare)} Profit • ${formatINR(nagoorBalanceToPay)} Pending`)
+                    : 'No fish purchases recorded this week'}
+                </div>
+              </div>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="font-black ${isNagoorAllPaid ? 'text-emerald-600 dark:text-emerald-400' : (nagoorBalanceToPay > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400')} text-sm block">
+                ${isNagoorAllPaid ? 'All Cleared ✅' : (nagoorBalanceToPay > 0 ? formatINR(nagoorBalanceToPay) + ' to Pay' : '₹0 Balance')}
+              </span>
+              <span class="text-[9px] text-slate-400 font-medium">${isNagoorAllPaid ? 'Fully Settled' : (nagoorBalanceToPay > 0 ? 'Balaji to Pay Nagoor' : 'Settled')}</span>
+            </div>
+          </div>
+
+          <!-- 3. JP: Settlement Entitlement & Payment Status -->
+          <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border ${isJpAllPaid ? 'border-emerald-200/80 dark:border-emerald-800/40' : (jpBalanceToPay > 0 ? 'border-amber-200 dark:border-amber-700/50' : 'border-slate-200 dark:border-slate-800')} flex items-center justify-between text-xs shadow-sm">
+            <div class="flex items-center space-x-2.5">
+              ${renderPartnerAvatar('JP', 'w-8 h-8', 'rounded-xl')}
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-extrabold text-slate-900 dark:text-white">JP</span>
+                  <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${isJpAllPaid ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : (jpBalanceToPay > 0 ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400')}">
+                    ${isJpAllPaid ? 'All Paid ✅' : (jpBalanceToPay > 0 ? 'Payment Pending ⏳' : 'No Spends')}
+                  </span>
+                </div>
+                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  ${jpTotalDue > 0 
+                    ? (isJpAllPaid 
+                        ? `Spent ${formatINR(currWeekPExp.JP)} (Petrol) + ${formatINR(currWeekEqualShare)} Profit • Received ${formatINR(jpPaid)} in Full`
+                        : `Spent ${formatINR(currWeekPExp.JP)} (Petrol) + ${formatINR(currWeekEqualShare)} Profit • ${formatINR(jpBalanceToPay)} Pending`)
+                    : 'No petrol/delivery recorded this week'}
+                </div>
+              </div>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <span class="font-black ${isJpAllPaid ? 'text-emerald-600 dark:text-emerald-400' : (jpBalanceToPay > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400')} text-sm block">
+                ${isJpAllPaid ? 'All Cleared ✅' : (jpBalanceToPay > 0 ? formatINR(jpBalanceToPay) + ' to Pay' : '₹0 Balance')}
+              </span>
+              <span class="text-[9px] text-slate-400 font-medium">${isJpAllPaid ? 'Fully Settled' : (jpBalanceToPay > 0 ? 'Balaji to Pay JP' : 'Settled')}</span>
+            </div>
+          </div>
+        `;
+      }
+
+
+            // Recent 3 Transactions
       const recentContainer = document.getElementById('dashRecentTransactions');
       if (state.transactions.length === 0) {
         recentContainer.innerHTML = `
@@ -2915,10 +3027,10 @@
       const isProfit = netProfit >= 0;
 
       let filterTitle = 'All Transactions';
-      if (filterDate === 'today') filterTitle = "Innaiku (Today - " + todayStr + ")";
-      else if (filterDate === 'yesterday') filterTitle = "Nethu (Yesterday - " + yesterdayStr + ")";
-      else if (filterDate === 'this-week') filterTitle = "Indha Vaaram (" + monStr + " - " + todayStr + ")";
-      else if (filterDate === 'this-month') filterTitle = "Indha Maasam (" + monthStartStr + " - " + todayStr + ")";
+      if (filterDate === 'today') filterTitle = "Today (" + todayStr + ")";
+      else if (filterDate === 'yesterday') filterTitle = "Yesterday (" + yesterdayStr + ")";
+      else if (filterDate === 'this-week') filterTitle = "This Week (" + monStr + " - " + todayStr + ")";
+      else if (filterDate === 'this-month') filterTitle = "This Month (" + monthStartStr + " - " + todayStr + ")";
 
       const nowFormatted = new Date().toLocaleString('en-IN', {
         day: '2-digit', month: 'short', year: 'numeric',
