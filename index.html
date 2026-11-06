@@ -524,42 +524,175 @@
       <!-- ======================================== -->
       <section id="tab-analytics" class="hidden space-y-4 fade-in">
         
-        <!-- Header & Range -->
-        <div class="app-card rounded-2xl p-3.5 space-y-2.5">
-          <div>
-            <h2 class="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
-              Analytics
-            </h2>
-            <p class="text-[10px] text-slate-400">Revenue & Expense Comparison Charts</p>
+        <!-- Header & Range Switcher Card with Period Totals -->
+        <div class="app-card rounded-3xl p-4 space-y-3.5 border-t-4 border-t-teal-500 shadow-xl">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
+            <div>
+              <h2 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-line text-teal-500"></i>
+                <span>Business Analytics & Insights</span>
+              </h2>
+              <p class="text-[10px] text-slate-400">Financial performance, partner shares & capital metrics</p>
+            </div>
+            <span class="text-[9px] px-2.5 py-0.5 rounded-full font-bold bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300">
+              Live Overview
+            </span>
           </div>
 
-          <!-- Range Switcher Pills -->
-          <div class="flex space-x-1.5 pt-1">
-            <button onclick="setAnalyticsRange('7')" id="range-7" class="flex-1 py-1.5 text-xs rounded-xl font-bold bg-teal-600 text-white text-center shadow-sm">7 Days</button>
-            <button onclick="setAnalyticsRange('30')" id="range-30" class="flex-1 py-1.5 text-xs rounded-xl font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center">30 Days</button>
-            <button onclick="setAnalyticsRange('all')" id="range-all" class="flex-1 py-1.5 text-xs rounded-xl font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center">All</button>
+          <!-- Range Switcher 4 Pills -->
+          <div class="grid grid-cols-4 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl text-center">
+            <button onclick="setAnalyticsRange('7')" id="range-7" class="py-1.5 text-xs rounded-xl font-bold bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm transition">7 Days</button>
+            <button onclick="setAnalyticsRange('30')" id="range-30" class="py-1.5 text-xs rounded-xl font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">30 Days</button>
+            <button onclick="setAnalyticsRange('month')" id="range-month" class="py-1.5 text-xs rounded-xl font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Month</button>
+            <button onclick="setAnalyticsRange('all')" id="range-all" class="py-1.5 text-xs rounded-xl font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">All-Time</button>
+          </div>
+
+          <!-- Period Totals Grid (Totals Everywhere!) -->
+          <div class="grid grid-cols-4 gap-2 text-center pt-1">
+            <div class="p-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/40">
+              <span class="block text-[8px] uppercase tracking-wider font-extrabold text-emerald-600 dark:text-emerald-400">Total Sales</span>
+              <span class="text-xs font-black text-slate-900 dark:text-white" id="analyticsPeriodSales">₹0</span>
+            </div>
+            <div class="p-2 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/40">
+              <span class="block text-[8px] uppercase tracking-wider font-extrabold text-rose-600 dark:text-rose-400">Total Exp</span>
+              <span class="text-xs font-black text-slate-900 dark:text-white" id="analyticsPeriodExp">₹0</span>
+            </div>
+            <div class="p-2 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-800/40">
+              <span class="block text-[8px] uppercase tracking-wider font-extrabold text-teal-600 dark:text-teal-400">Total Net</span>
+              <span class="text-xs font-black text-emerald-600 dark:text-emerald-400" id="analyticsPeriodNet">₹0</span>
+            </div>
+            <div class="p-2 rounded-2xl bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-100 dark:border-cyan-800/40">
+              <span class="block text-[8px] uppercase tracking-wider font-extrabold text-cyan-600 dark:text-cyan-400">Total Capital</span>
+              <span class="text-xs font-black text-slate-900 dark:text-white" id="analyticsPeriodCapital">₹0</span>
+            </div>
           </div>
         </div>
 
-        <!-- Chart 1: Daily Expense vs Sales -->
-        <div class="app-card rounded-2xl p-4 space-y-3">
-          <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">1. Daily Revenue vs Expenses</h3>
+        <!-- ============================================== -->
+        <!-- 💰 CAPITAL INVESTMENT & TARGET TRACKER (NEW!)  -->
+        <!-- ============================================== -->
+        <div class="app-card rounded-3xl p-4 space-y-4 border-t-4 border-t-amber-500 shadow-xl">
+          
+          <!-- Header with Edit Target button -->
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-base">💰</span>
+                <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                  Partner Capital & Target Tracker
+                </h3>
+              </div>
+              <p class="text-[10px] text-slate-400" id="capitalTargetSubtext">Target: ₹50,000 per partner (₹1,50,000 total pool)</p>
+            </div>
+            <button onclick="openEditInvestmentTargetModal()" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950/40 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-slate-700 flex items-center gap-1 active:scale-95 transition">
+              <i class="fa-solid fa-pen-to-square text-[9px] text-amber-500"></i>
+              <span>Edit Target</span>
+            </button>
+          </div>
+
+          <!-- Total Capital Pool Progress Hero Box -->
+          <div class="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-teal-500/5 to-transparent border border-amber-500/20 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[9px] uppercase tracking-wider font-extrabold text-amber-600 dark:text-amber-400 block">Total Pool Contributed</span>
+                <div class="text-2xl font-black text-slate-900 dark:text-white" id="capitalTotalInvestedText">₹0</div>
+              </div>
+              <div class="text-right">
+                <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block">Total Pool Target</span>
+                <div class="text-sm font-bold text-slate-700 dark:text-slate-300" id="capitalTotalTargetText">₹1,50,000</div>
+              </div>
+            </div>
+
+            <!-- Multi-segment Colored Progress Bar -->
+            <div class="space-y-1">
+              <div class="h-3.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex shadow-inner" id="capitalMultiProgressBar">
+                <!-- Segments dynamically rendered: Balaji (blue), Nagoor (emerald), JP (amber), Remaining (slate) -->
+              </div>
+              <div class="flex items-center justify-between text-[10px] font-bold">
+                <span class="text-teal-600 dark:text-teal-400" id="capitalPercentText">0% Reached</span>
+                <span class="text-amber-600 dark:text-amber-400" id="capitalPendingText">₹1,50,000 Pending</span>
+              </div>
+            </div>
+
+            <!-- Legend pills -->
+            <div class="flex items-center justify-center gap-3 pt-1 text-[10px] text-slate-500 dark:text-slate-400 font-bold flex-wrap">
+              <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span><span>Balaji</span></div>
+              <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span><span>Nagoor</span></div>
+              <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span><span>JP</span></div>
+              <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600"></span><span>Pending</span></div>
+            </div>
+          </div>
+
+          <!-- Visual Stacked Bar Chart: Contributed vs Pending Target -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-column text-amber-500"></i>
+                <span>Investment vs Target Breakdown</span>
+              </span>
+              <span class="text-[10px] text-slate-400">Filled vs Pending</span>
+            </div>
+            <div class="relative h-56 w-full" id="chartCapitalContainer">
+              <canvas id="chartCapital"></canvas>
+            </div>
+          </div>
+
+          <!-- Individual Partner Investment Progress Cards -->
+          <div class="space-y-2 pt-1" id="capitalPartnerCardsContainer">
+            <!-- Balaji, Nagoor, JP cards rendered dynamically -->
+          </div>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- CHART 1: DAILY REVENUE VS EXPENSES             -->
+        <!-- ============================================== -->
+        <div class="app-card rounded-3xl p-4 space-y-3 border-t-4 border-t-teal-500 shadow-xl">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
+            <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-calendar-day text-teal-500"></i>
+              <span>1. Daily Revenue vs Expenses</span>
+            </h3>
+            <span class="text-[9px] font-bold text-slate-400" id="chartDailyTotalBadge">Total: ₹0</span>
+          </div>
           <div class="relative h-56 w-full" id="chartDailyContainer">
             <canvas id="chartDaily"></canvas>
           </div>
-        </div>
-
-        <!-- Chart 2: Partner Spend Share -->
-        <div class="app-card rounded-2xl p-4 space-y-3">
-          <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">2. Partner Expense Share</h3>
-          <div class="relative h-56 w-full flex items-center justify-center" id="chartPartnersContainer">
-            <canvas id="chartPartners"></canvas>
+          <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-[10px] text-slate-600 dark:text-slate-400 flex items-center justify-between font-bold" id="chartDailySummaryText">
+            <!-- Period summary -->
           </div>
         </div>
 
-        <!-- Chart 3: Category Breakdown -->
-        <div class="app-card rounded-2xl p-4 space-y-3">
-          <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200">3. Top Expense Categories</h3>
+        <!-- ============================================== -->
+        <!-- CHART 2: PARTNER EXPENSE SHARE                 -->
+        <!-- ============================================== -->
+        <div class="app-card rounded-3xl p-4 space-y-3 border-t-4 border-t-teal-500 shadow-xl">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
+            <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-pie text-teal-500"></i>
+              <span>2. Partner Expense Share</span>
+            </h3>
+            <span class="text-[9px] font-bold text-slate-400" id="chartPartnerTotalBadge">Total: ₹0</span>
+          </div>
+          <div class="relative h-56 w-full flex items-center justify-center" id="chartPartnersContainer">
+            <canvas id="chartPartners"></canvas>
+          </div>
+          <div class="grid grid-cols-3 gap-1.5 text-center text-[10px] pt-1" id="chartPartnerBreakdownList">
+            <!-- Partner spend totals -->
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- CHART 3: TOP EXPENSE CATEGORIES                -->
+        <!-- ============================================== -->
+        <div class="app-card rounded-3xl p-4 space-y-3 border-t-4 border-t-teal-500 shadow-xl">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
+            <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-tags text-teal-500"></i>
+              <span>3. Top Expense Categories</span>
+            </h3>
+            <span class="text-[9px] font-bold text-slate-400" id="chartCategoryTotalBadge">Total: ₹0</span>
+          </div>
           <div class="relative h-56 w-full" id="chartCategoriesContainer">
             <canvas id="chartCategories"></canvas>
           </div>
@@ -1347,6 +1480,69 @@
     <!-- 👥 CO-FOUNDERS LIVE PRESENCE DETAIL MODAL   -->
     <!-- ========================================== -->
     <!-- ========================================== -->
+    <!-- 🎯 EDIT CAPITAL INVESTMENT TARGET MODAL   -->
+    <!-- ========================================== -->
+    <div id="editInvestmentTargetModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+      <div onclick="closeEditInvestmentTargetModal()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        
+        <!-- Drag Handle -->
+        <div class="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-1"></div>
+
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm font-bold">
+              <i class="fa-solid fa-bullseye"></i>
+            </div>
+            <div>
+              <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">Capital Investment Target</h3>
+              <p class="text-[10px] text-slate-400">Set equal investment target per partner</p>
+            </div>
+          </div>
+          <button onclick="closeEditInvestmentTargetModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-xs flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Target per Partner (₹)</label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-black text-base">₹</span>
+            <input type="number" id="inputCapitalTarget" class="w-full pl-8 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-base font-black text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 outline-none" placeholder="50000">
+          </div>
+          <!-- Preset Chips -->
+          <div class="flex items-center gap-1.5 pt-1.5 overflow-x-auto no-scrollbar">
+            <button type="button" onclick="setTargetPreset(25000)" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-slate-700">₹25,000</button>
+            <button type="button" onclick="setTargetPreset(50000)" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-slate-700">₹50,000</button>
+            <button type="button" onclick="setTargetPreset(75000)" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-slate-700">₹75,000</button>
+            <button type="button" onclick="setTargetPreset(100000)" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-slate-700 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-slate-700">₹1,00,000</button>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-xs space-y-1 text-amber-800 dark:text-amber-300">
+          <div class="font-extrabold flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator text-amber-600 dark:text-amber-400"></i>
+            <span>Total Capital Pool Goal:</span>
+          </div>
+          <p class="text-[10px] text-amber-700 dark:text-amber-400" id="previewTotalPoolText">
+            3 Partners × ₹50,000 = <strong>₹1,50,000 Total Pool</strong>
+          </p>
+        </div>
+
+        <div class="pt-2 grid grid-cols-2 gap-2">
+          <button type="button" onclick="closeEditInvestmentTargetModal()" class="py-3 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold active:scale-95 transition">
+            Cancel
+          </button>
+          <button type="button" onclick="handleSaveInvestmentTarget()" class="py-3 px-4 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-xl text-xs font-black shadow-lg shadow-amber-500/20 active:scale-95 transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-check"></i>
+            <span>Save Target</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- 💳 RECORD PAYMENT / PARTIAL PAYOUT MODAL   -->
     <!-- ========================================== -->
     <div id="recordPaymentModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
@@ -1556,6 +1752,7 @@
       settlementOffsetWeeks: 0,
       settlementSubTab: 'weekly',
       activePayout: null,
+      capitalTargetPerPartner: Number(localStorage.getItem('meenmart_capital_target')) || 50000,
       entryType: 'expense',
       entryPartner: 'Balaji',
       historyFilter: {
@@ -1565,7 +1762,8 @@
         partner: 'all'
       },
       analyticsRange: '7',
-      charts: { daily: null, partners: null, categories: null }
+      charts: { daily: null, partners: null, categories: null,
+        capital: null }
     };
 
     // Init Firebase
@@ -3012,23 +3210,263 @@
       showToast("CSV statement downloaded! 📥");
     };
 
-    // 3. Analytics Charts (Chart.js)
+    // 3. Analytics Charts & Capital Intelligence (Chart.js)
     window.renderAnalytics = function() {
       const isDark = state.theme === 'dark';
       const textColor = isDark ? '#94a3b8' : '#475569';
       const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
 
-      // 1. Day-by-Day Bar Chart
+      const range = state.analyticsRange || '7';
+      const now = new Date();
+      let limitDays = 7;
+      let filterStartDate = null;
+
+      if (range === '7') {
+        limitDays = 7;
+      } else if (range === '30') {
+        limitDays = 30;
+      } else if (range === 'month') {
+        // From first day of this month
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        limitDays = Math.ceil((now - firstDay) / (1000 * 60 * 60 * 24)) + 1;
+        filterStartDate = firstDay.toISOString().split('T')[0];
+      } else if (range === 'all') {
+        limitDays = 9999;
+      }
+
+      // Compute Period Totals for Header Grid
+      let periodSales = 0;
+      let periodExp = 0;
+      let periodCapital = 0;
+      const todayStr = now.toISOString().split('T')[0];
+
+      // Calculate cutoff date string for non-month, non-all ranges
+      let cutoffDateStr = '';
+      if (range === '7' || range === '30') {
+        const dCutoff = new Date();
+        dCutoff.setDate(now.getDate() - (limitDays - 1));
+        cutoffDateStr = dCutoff.toISOString().split('T')[0];
+      } else if (range === 'month') {
+        cutoffDateStr = filterStartDate;
+      }
+
+      state.transactions.forEach(tx => {
+        let inRange = true;
+        if (range !== 'all') {
+          inRange = tx.date >= cutoffDateStr && tx.date <= todayStr;
+        }
+        if (inRange) {
+          const amt = Number(tx.amount) || 0;
+          if (tx.type === 'sales') periodSales += amt;
+          else if (tx.type === 'expense') periodExp += amt;
+          else if (tx.type === 'investment') periodCapital += amt;
+        }
+      });
+
+      const periodNet = periodSales - periodExp;
+
+      // Update Period Grand Totals (Totals everywhere!)
+      const pSalesEl = document.getElementById('analyticsPeriodSales');
+      const pExpEl = document.getElementById('analyticsPeriodExp');
+      const pNetEl = document.getElementById('analyticsPeriodNet');
+      const pCapEl = document.getElementById('analyticsPeriodCapital');
+
+      if (pSalesEl) pSalesEl.innerText = formatINR(periodSales);
+      if (pExpEl) pExpEl.innerText = formatINR(periodExp);
+      if (pNetEl) {
+        pNetEl.innerText = `${periodNet >= 0 ? '+' : '-'}${formatINR(Math.abs(periodNet))}`;
+        pNetEl.className = `text-xs font-black ${periodNet >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`;
+      }
+      if (pCapEl) pCapEl.innerText = formatINR(periodCapital);
+
+      // ========================================================
+      // 💰 SECTION A: CAPITAL INVESTMENT & TARGET TRACKER (NEW!)
+      // ========================================================
+      const partnerInvested = { Balaji: 0, Nagoor: 0, JP: 0 };
+      let totalCapitalInvested = 0;
+
+      state.transactions.forEach(tx => {
+        if (tx.type === 'investment') {
+          const amt = Number(tx.amount) || 0;
+          totalCapitalInvested += amt;
+          if (partnerInvested[tx.partner] !== undefined) {
+            partnerInvested[tx.partner] += amt;
+          }
+        }
+      });
+
+      const targetEach = state.capitalTargetPerPartner || 50000;
+      const targetPool = targetEach * 3;
+      const pendingPool = Math.max(0, targetPool - totalCapitalInvested);
+      const percentPool = targetPool > 0 ? Math.round((totalCapitalInvested / targetPool) * 100) : 0;
+
+      const capTargetSubtext = document.getElementById('capitalTargetSubtext');
+      if (capTargetSubtext) {
+        capTargetSubtext.innerText = `Target: ${formatINR(targetEach)} per partner (${formatINR(targetPool)} total pool)`;
+      }
+
+      const capTotalInvText = document.getElementById('capitalTotalInvestedText');
+      if (capTotalInvText) capTotalInvText.innerText = formatINR(totalCapitalInvested);
+
+      const capTotalTargetText = document.getElementById('capitalTotalTargetText');
+      if (capTotalTargetText) capTotalTargetText.innerText = formatINR(targetPool);
+
+      const capPercentText = document.getElementById('capitalPercentText');
+      if (capPercentText) capPercentText.innerText = `${percentPool}% Reached`;
+
+      const capPendingText = document.getElementById('capitalPendingText');
+      if (capPendingText) {
+        capPendingText.innerText = pendingPool > 0 
+          ? `${formatINR(pendingPool)} Pending Deficit`
+          : `Target Fully Reached! 🎯 ✅`;
+      }
+
+      // Render Multi-Segment Colored Progress Bar
+      const multiBarEl = document.getElementById('capitalMultiProgressBar');
+      if (multiBarEl) {
+        const pctB = targetPool > 0 ? Math.min(100, (partnerInvested.Balaji / targetPool) * 100) : 0;
+        const pctN = targetPool > 0 ? Math.min(100, (partnerInvested.Nagoor / targetPool) * 100) : 0;
+        const pctJ = targetPool > 0 ? Math.min(100, (partnerInvested.JP / targetPool) * 100) : 0;
+        const pctPending = Math.max(0, 100 - (pctB + pctN + pctJ));
+
+        multiBarEl.innerHTML = `
+          <div style="width: ${pctB}%" class="bg-blue-500 h-full transition-all" title="Balaji: ${formatINR(partnerInvested.Balaji)}"></div>
+          <div style="width: ${pctN}%" class="bg-emerald-500 h-full transition-all" title="Nagoor: ${formatINR(partnerInvested.Nagoor)}"></div>
+          <div style="width: ${pctJ}%" class="bg-amber-500 h-full transition-all" title="JP: ${formatINR(partnerInvested.JP)}"></div>
+          <div style="width: ${pctPending}%" class="bg-slate-200 dark:bg-slate-700 h-full transition-all" title="Pending: ${formatINR(pendingPool)}"></div>
+        `;
+      }
+
+      // Render Stacked Bar Chart (Invested vs Pending Target)
+      const capCanvas = document.getElementById('chartCapital');
+      if (capCanvas) {
+        if (state.charts.capital) state.charts.capital.destroy();
+
+        const pendingBalaji = Math.max(0, targetEach - partnerInvested.Balaji);
+        const pendingNagoor = Math.max(0, targetEach - partnerInvested.Nagoor);
+        const pendingJp = Math.max(0, targetEach - partnerInvested.JP);
+
+        state.charts.capital = new Chart(capCanvas, {
+          type: 'bar',
+          data: {
+            labels: ['Balaji', 'Nagoor', 'JP', 'Total Pool'],
+            datasets: [
+              {
+                label: 'Contributed (₹)',
+                data: [partnerInvested.Balaji, partnerInvested.Nagoor, partnerInvested.JP, totalCapitalInvested],
+                backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#0D9488'],
+                borderRadius: 4,
+                stack: 'stack1'
+              },
+              {
+                label: 'Pending to Target (₹)',
+                data: [pendingBalaji, pendingNagoor, pendingJp, pendingPool],
+                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+                borderRadius: 4,
+                stack: 'stack1'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: textColor, font: { size: 10 } }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    return `${ctx.dataset.label}: ${formatINR(ctx.raw)}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                stacked: true,
+                grid: { display: false },
+                ticks: { color: textColor, font: { size: 10, weight: 'bold' } }
+              },
+              y: {
+                stacked: true,
+                grid: { color: gridColor },
+                ticks: {
+                  color: textColor,
+                  font: { size: 9 },
+                  callback: (val) => '₹' + val.toLocaleString('en-IN')
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Render Individual Partner Capital Cards
+      const partnerCardsContainer = document.getElementById('capitalPartnerCardsContainer');
+      if (partnerCardsContainer) {
+        const partnersList = [
+          { name: 'Balaji', role: 'Sales & Tech Lead', color: 'bg-blue-500', barText: 'text-blue-500', amount: partnerInvested.Balaji },
+          { name: 'Nagoor', role: 'Fish Purchase Lead', color: 'bg-emerald-500', barText: 'text-emerald-500', amount: partnerInvested.Nagoor },
+          { name: 'JP', role: 'Delivery & Operations', color: 'bg-amber-500', barText: 'text-amber-500', amount: partnerInvested.JP }
+        ];
+
+        partnerCardsContainer.innerHTML = partnersList.map(p => {
+          const pPending = Math.max(0, targetEach - p.amount);
+          const pPct = Math.round((p.amount / targetEach) * 100);
+          const pSurplus = Math.max(0, p.amount - targetEach);
+          const isComplete = p.amount >= targetEach;
+
+          const statusBadge = isComplete
+            ? `<span class="text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Target Reached! 🎯</span>`
+            : `<span class="text-amber-600 dark:text-amber-400 font-extrabold flex items-center gap-1"><i class="fa-solid fa-hourglass-half text-[9px]"></i> ${pPct}% Contributed</span>`;
+
+          const pendingText = isComplete
+            ? (pSurplus > 0 ? `<strong class="text-teal-600 dark:text-teal-400 font-bold">+${formatINR(pSurplus)} Surplus</strong>` : 'Zero Pending Balance ✅')
+            : `Pending: <strong class="text-slate-900 dark:text-white font-bold">${formatINR(pPending)}</strong> to reach ${formatINR(targetEach)}`;
+
+          return `
+            <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border ${isComplete ? 'border-emerald-200 dark:border-emerald-800/40' : 'border-slate-200 dark:border-slate-800'} shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  ${renderPartnerAvatar(p.name, 'w-8 h-8', 'rounded-xl')}
+                  <div>
+                    <div class="text-xs font-black text-slate-900 dark:text-white">${p.name}</div>
+                    <div class="text-[10px] text-slate-400">${p.role}</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-black text-slate-900 dark:text-white">${formatINR(p.amount)}</div>
+                  <div class="text-[9px] text-slate-400">Target ${formatINR(targetEach)} (${pPct}%)</div>
+                </div>
+              </div>
+
+              <!-- Progress bar -->
+              <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div class="h-full rounded-full ${p.color} transition-all" style="width: ${Math.min(100, pPct)}%"></div>
+              </div>
+
+              <div class="flex items-center justify-between text-[10px] pt-0.5">
+                ${statusBadge}
+                <span class="text-slate-500 dark:text-slate-400">${pendingText}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // ========================================================
+      // 📈 SECTION B: DAILY REVENUE VS EXPENSES CHART
+      // ========================================================
       const dailyCanvas = document.getElementById('chartDaily');
       if (dailyCanvas) {
         if (state.charts.daily) state.charts.daily.destroy();
 
         const daysMap = {};
-        const range = state.analyticsRange;
-        let limitDays = range === '7' ? 7 : (range === '30' ? 30 : 90);
+        let daysToDisplay = limitDays > 30 ? 30 : limitDays; // limit chart bars for readability
 
-        const now = new Date();
-        for (let i = limitDays - 1; i >= 0; i--) {
+        for (let i = daysToDisplay - 1; i >= 0; i--) {
           const d = new Date();
           d.setDate(now.getDate() - i);
           const key = d.toISOString().split('T')[0];
@@ -3050,48 +3488,109 @@
         const salesData = Object.values(daysMap).map(v => v.sales);
         const expData = Object.values(daysMap).map(v => v.expense);
 
+        const totalDailySales = salesData.reduce((a, b) => a + b, 0);
+        const totalDailyExp = expData.reduce((a, b) => a + b, 0);
+
+        const dailyBadge = document.getElementById('chartDailyTotalBadge');
+        if (dailyBadge) dailyBadge.innerText = `Total: ${formatINR(totalDailySales + totalDailyExp)}`;
+
+        const dailySummaryEl = document.getElementById('chartDailySummaryText');
+        if (dailySummaryEl) {
+          const net = totalDailySales - totalDailyExp;
+          dailySummaryEl.innerHTML = `
+            <span>Sales: <strong class="text-emerald-600 dark:text-emerald-400">${formatINR(totalDailySales)}</strong> | Exp: <strong class="text-rose-600 dark:text-rose-400">${formatINR(totalDailyExp)}</strong></span>
+            <span class="${net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">Net: ${net >= 0 ? '+' : '-'}${formatINR(Math.abs(net))}</span>
+          `;
+        }
+
         state.charts.daily = new Chart(dailyCanvas, {
           type: 'bar',
           data: {
             labels,
             datasets: [
-              { label: 'Revenue', data: salesData, backgroundColor: '#10B981', borderRadius: 4, barThickness: 18, maxBarThickness: 28 },
-              { label: 'Expenses', data: expData, backgroundColor: '#EF4444', borderRadius: 4, barThickness: 18, maxBarThickness: 28 }
+              { label: 'Revenue', data: salesData, backgroundColor: '#10B981', borderRadius: 4, barThickness: 16, maxBarThickness: 24 },
+              { label: 'Expenses', data: expData, backgroundColor: '#EF4444', borderRadius: 4, barThickness: 16, maxBarThickness: 24 }
             ]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { labels: { color: textColor, font: { size: 10 } } }
+              legend: { labels: { color: textColor, font: { size: 10 } } },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${formatINR(ctx.raw)}`
+                }
+              }
             },
             scales: {
               x: { grid: { display: false }, ticks: { color: textColor, font: { size: 9 } } },
-              y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 9 } } }
+              y: {
+                grid: { color: gridColor },
+                ticks: {
+                  color: textColor,
+                  font: { size: 9 },
+                  callback: (v) => '₹' + v.toLocaleString('en-IN')
+                }
+              }
             }
           }
         });
       }
 
-      // 2. Partner Spend Share Doughnut
+      // ========================================================
+      // 📊 SECTION C: PARTNER EXPENSE SHARE CHART
+      // ========================================================
       const partnerCanvas = document.getElementById('chartPartners');
       if (partnerCanvas) {
         if (state.charts.partners) state.charts.partners.destroy();
 
         const pExp = { Balaji: 0, Nagoor: 0, JP: 0 };
         state.transactions.forEach(tx => {
-          if (tx.type === 'expense' && pExp[tx.partner] !== undefined) {
+          let inRange = true;
+          if (range !== 'all') {
+            inRange = tx.date >= cutoffDateStr && tx.date <= todayStr;
+          }
+          if (inRange && tx.type === 'expense' && pExp[tx.partner] !== undefined) {
             pExp[tx.partner] += Number(tx.amount) || 0;
           }
         });
 
         const totalPExp = pExp.Balaji + pExp.Nagoor + pExp.JP;
 
+        const pBadge = document.getElementById('chartPartnerTotalBadge');
+        if (pBadge) pBadge.innerText = `Total: ${formatINR(totalPExp)}`;
+
+        const breakdownList = document.getElementById('chartPartnerBreakdownList');
+        if (breakdownList) {
+          const pctB = totalPExp > 0 ? Math.round((pExp.Balaji / totalPExp) * 100) : 0;
+          const pctN = totalPExp > 0 ? Math.round((pExp.Nagoor / totalPExp) * 100) : 0;
+          const pctJ = totalPExp > 0 ? Math.round((pExp.JP / totalPExp) * 100) : 0;
+
+          breakdownList.innerHTML = `
+            <div class="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800">
+              <span class="text-slate-400 block text-[9px]">Balaji</span>
+              <strong class="text-blue-600 dark:text-blue-400 text-xs font-bold">${formatINR(pExp.Balaji)}</strong>
+              <span class="text-slate-400 block text-[8px]">${pctB}%</span>
+            </div>
+            <div class="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800">
+              <span class="text-slate-400 block text-[9px]">Nagoor</span>
+              <strong class="text-emerald-600 dark:text-emerald-400 text-xs font-bold">${formatINR(pExp.Nagoor)}</strong>
+              <span class="text-slate-400 block text-[8px]">${pctN}%</span>
+            </div>
+            <div class="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800">
+              <span class="text-slate-400 block text-[9px]">JP</span>
+              <strong class="text-amber-600 dark:text-amber-400 text-xs font-bold">${formatINR(pExp.JP)}</strong>
+              <span class="text-slate-400 block text-[8px]">${pctJ}%</span>
+            </div>
+          `;
+        }
+
         if (totalPExp === 0) {
           document.getElementById('chartPartnersContainer').innerHTML = `
             <div class="text-center py-8 space-y-1">
               <span class="text-2xl">📊</span>
-              <p class="text-xs text-slate-400 font-medium">No expense entries yet</p>
+              <p class="text-xs text-slate-400 font-medium">No expense entries in this period</p>
             </div>
           `;
         } else {
@@ -3112,25 +3611,43 @@
               responsive: true,
               maintainAspectRatio: false,
               plugins: {
-                legend: { position: 'bottom', labels: { color: textColor, font: { size: 10 } } }
+                legend: { position: 'bottom', labels: { color: textColor, font: { size: 10 } } },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) => `${ctx.label}: ${formatINR(ctx.raw)}`
+                  }
+                }
               }
             }
           });
         }
       }
 
-      // 3. Category Breakdown Bar
+      // ========================================================
+      // 📦 SECTION D: CATEGORY BREAKDOWN BAR
+      // ========================================================
       const catCanvas = document.getElementById('chartCategories');
       if (catCanvas) {
         if (state.charts.categories) state.charts.categories.destroy();
 
         const catMap = {};
+        let totalCatExp = 0;
+
         state.transactions.forEach(tx => {
-          if (tx.type === 'expense') {
+          let inRange = true;
+          if (range !== 'all') {
+            inRange = tx.date >= cutoffDateStr && tx.date <= todayStr;
+          }
+          if (inRange && tx.type === 'expense') {
             const cat = getCategoryLabel('expense', tx.category);
-            catMap[cat] = (catMap[cat] || 0) + (Number(tx.amount) || 0);
+            const amt = Number(tx.amount) || 0;
+            catMap[cat] = (catMap[cat] || 0) + amt;
+            totalCatExp += amt;
           }
         });
+
+        const catBadge = document.getElementById('chartCategoryTotalBadge');
+        if (catBadge) catBadge.innerText = `Total: ${formatINR(totalCatExp)}`;
 
         const catLabels = Object.keys(catMap);
         const catValues = Object.values(catMap);
@@ -3139,7 +3656,7 @@
           document.getElementById('chartCategoriesContainer').innerHTML = `
             <div class="text-center py-8 space-y-1">
               <span class="text-2xl">📦</span>
-              <p class="text-xs text-slate-400 font-medium">No expense categories yet</p>
+              <p class="text-xs text-slate-400 font-medium">No expense categories in this period</p>
             </div>
           `;
         } else {
@@ -3161,9 +3678,23 @@
               indexAxis: 'y',
               responsive: true,
               maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) => `Expenses: ${formatINR(ctx.raw)}`
+                  }
+                }
+              },
               scales: {
-                x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 9 } } },
+                x: {
+                  grid: { color: gridColor },
+                  ticks: {
+                    color: textColor,
+                    font: { size: 9 },
+                    callback: (v) => '₹' + v.toLocaleString('en-IN')
+                  }
+                },
                 y: { grid: { display: false }, ticks: { color: textColor, font: { size: 9 } } }
               }
             }
@@ -3171,6 +3702,7 @@
         }
       }
     };
+
 
     // 4. Accounts & Monday Settlement Calculations
     function getWeekRange(offsetWeeks = 0) {
@@ -3215,6 +3747,66 @@
         if (btnAllTime) btnAllTime.className = "flex-1 py-2 text-xs font-extrabold rounded-xl transition text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-1.5";
         renderAccounts();
       }
+    };
+
+    
+    // Capital Target Modal Logic
+    window.openEditInvestmentTargetModal = function() {
+      const input = document.getElementById('inputCapitalTarget');
+      const cur = state.capitalTargetPerPartner || 50000;
+      if (input) input.value = cur;
+      updateTargetPreview(cur);
+      const modal = document.getElementById('editInvestmentTargetModal');
+      if (modal) modal.classList.remove('hidden');
+      pushModalState('editInvestmentTargetModal');
+    };
+
+    window.closeEditInvestmentTargetModal = function(fromPopState = false) {
+      const modal = document.getElementById('editInvestmentTargetModal');
+      if (modal) modal.classList.add('hidden');
+      popModalState('editInvestmentTargetModal', fromPopState);
+    };
+
+    window.setTargetPreset = function(val) {
+      const input = document.getElementById('inputCapitalTarget');
+      if (input) {
+        input.value = val;
+        updateTargetPreview(val);
+      }
+    };
+
+    function updateTargetPreview(val) {
+      const pText = document.getElementById('previewTotalPoolText');
+      const num = Number(val) || 0;
+      if (pText) {
+        pText.innerHTML = `3 Partners × ${formatINR(num)} = <strong>${formatINR(num * 3)} Total Pool Target</strong>`;
+      }
+    }
+
+    window.handleSaveInvestmentTarget = async function() {
+      const input = document.getElementById('inputCapitalTarget');
+      const val = Number(input.value);
+      if (isNaN(val) || val <= 0) {
+        alert("Please enter a valid target amount.");
+        return;
+      }
+
+      state.capitalTargetPerPartner = val;
+      localStorage.setItem('meenmart_capital_target', val);
+
+      try {
+        await setDoc(doc(db, "settings", "metadata"), {
+          capitalTargetPerPartner: val,
+          updatedAt: Date.now(),
+          updatedBy: state.currentUser ? state.currentUser.email : 'partner'
+        }, { merge: true });
+      } catch (err) {
+        console.warn("Target Firestore sync warning:", err);
+      }
+
+      closeEditInvestmentTargetModal();
+      renderAnalytics();
+      showToast(`Investment target updated to ${formatINR(val)} each! 🎯`);
     };
 
     // Open Record Payment Modal
@@ -4389,6 +4981,8 @@ ${transferSection}
           closeTxDetailsModal(true);
         } else if (topModal === 'recordPaymentModal') {
           closeRecordPaymentModal(true);
+        } else if (topModal === 'editInvestmentTargetModal') {
+          closeEditInvestmentTargetModal(true);
         } else if (topModal === 'categoryManagerModal') {
           closeCategoryManagerModal(true);
         } else if (topModal === 'partnerIconsModal') {
@@ -4840,12 +5434,12 @@ ${transferSection}
 
     window.setAnalyticsRange = function(r) {
       state.analyticsRange = r;
-      ['7', '30', 'all'].forEach(k => {
+      ['7', '30', 'month', 'all'].forEach(k => {
         const btn = document.getElementById(`range-${k}`);
         if (btn) {
           btn.className = (String(k) === String(r))
-            ? "flex-1 py-1.5 text-xs rounded-xl font-bold bg-teal-600 text-white text-center shadow-sm"
-            : "flex-1 py-1.5 text-xs rounded-xl font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center";
+            ? "py-1.5 text-xs rounded-xl font-bold bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm transition"
+            : "py-1.5 text-xs rounded-xl font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition";
         }
       });
       renderAnalytics();
