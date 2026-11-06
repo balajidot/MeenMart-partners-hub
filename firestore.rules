@@ -69,6 +69,16 @@ rules_version = '2';
 //   - updatedAt: timestamp or number or string (optional)
 //   - updatedBy: string (optional, max 100 chars)
 //
+// Collection: settings
+// Document ID: partners
+// Purpose: Stores partner profile icons/avatars managed exclusively by Balaji
+// Fields:
+//   - Balaji: map (optional, with avatar string max 20 chars)
+//   - Nagoor: map (optional, with avatar string max 20 chars)
+//   - JP: map (optional, with avatar string max 20 chars)
+//   - updatedAt: timestamp or number (optional)
+//   - updatedBy: string (optional, max 100 chars)
+//
 // Collection: metadata / settings (other) / profiles
 // Document ID: {settingId} / {metadataId} / {partnerName}
 // Purpose: Stores application metadata, settings, and partner profile avatars
@@ -126,6 +136,27 @@ service cloud.firestore {
         (
           'email' in request.auth.token &&
           request.auth.token.email.matches('.*@example[.]com$')
+        )
+      );
+    }
+
+    // Check if authenticated user is Balaji (lead developer / co-founder)
+    // Permitted:
+    // - Custom claim admin == true
+    // - Custom claim partner == 'Balaji'
+    // - Email in ['itzbalajir@gmail.com', 'balajibala93843@gmail.com', 'balaji@example.com']
+    function isBalaji() {
+      return isPartner() && (
+        ('admin' in request.auth.token && request.auth.token.admin == true) ||
+        ('partner' in request.auth.token && request.auth.token.partner == 'Balaji') ||
+        (
+          'email' in request.auth.token && (
+            request.auth.token.email in [
+              'itzbalajir@gmail.com',
+              'balajibala93843@gmail.com',
+              'balaji@example.com'
+            ]
+          )
         )
       );
     }
@@ -409,12 +440,34 @@ service cloud.firestore {
         (!('updatedBy' in data) || (data.updatedBy is string && data.updatedBy.size() <= 100));
     }
 
+    // Validates an individual partner's avatar object in settings/partners
+    function isValidPartnerAvatar(entry) {
+      return entry is map &&
+        hasRequiredFields(entry, ['avatar']) &&
+        hasOnlyAllowedFields(entry, ['avatar']) &&
+        entry.avatar is string &&
+        entry.avatar.size() <= 20;
+    }
+
+    // Validates partner profile icons/avatars configuration document (settings/partners)
+    function isValidPartnersSettings(data) {
+      return data.size() <= 10 &&
+        hasOnlyAllowedFields(data, ['Balaji', 'Nagoor', 'JP', 'updatedAt', 'updatedBy']) &&
+        data.keys().hasAny(['Balaji', 'Nagoor', 'JP']) &&
+        (!('Balaji' in data) || isValidPartnerAvatar(data.Balaji)) &&
+        (!('Nagoor' in data) || isValidPartnerAvatar(data.Nagoor)) &&
+        (!('JP' in data) || isValidPartnerAvatar(data.JP)) &&
+        (!('updatedAt' in data) || (data.updatedAt is number || data.updatedAt is timestamp)) &&
+        (!('updatedBy' in data) || (data.updatedBy is string && data.updatedBy.size() <= 100));
+    }
+
     // Validates general settings, metadata, and partner profile updates
     function isValidMetadataDoc(data) {
       return data.size() <= 100 &&
         (!('updatedBy' in data) || (data.updatedBy is string && data.updatedBy.size() <= 100)) &&
         (!('updatedAt' in data) || (data.updatedAt is number || data.updatedAt is timestamp || data.updatedAt is string)) &&
         (!('version' in data) || (data.version is string && data.version.size() <= 50) || (data.version is number)) &&
+        (!('avatar' in data) || (data.avatar is string && data.avatar.size() <= 20)) &&
         (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 200000));
     }
 
@@ -477,23 +530,38 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Specific partner profile icons/avatars document (settings/partners)
+    // Co-founders can read, but ONLY Balaji can create, update, or delete.
+    // Nagoor and JP CANNOT modify partner profile icons.
+    match /settings/partners {
+      allow read: if isPartner();
+      allow create, update: if isBalaji() && isValidPartnersSettings(request.resource.data);
+      allow delete: if isBalaji();
+    }
+
     // General app settings
     match /settings/{settingId} {
       allow read: if isPartner();
-      allow create, update: if isPartner() && settingId != 'categories' && isValidMetadataDoc(request.resource.data);
-      allow delete: if isPartner() && settingId != 'categories';
+      allow create, update: if isPartner() &&
+        settingId != 'categories' &&
+        settingId != 'partners' &&
+        isValidMetadataDoc(request.resource.data);
+      allow delete: if isPartner() &&
+        settingId != 'categories' &&
+        settingId != 'partners';
     }
 
     // ---------------------------------------------------------------
     // 4. Partner Profiles Collection
     // Stores partner-specific settings and avatars
+    // Co-founders can read, but ONLY Balaji can modify partner profile icons.
     // ---------------------------------------------------------------
     match /profiles/{partnerName} {
       allow read: if isPartner();
-      allow create, update: if isPartner() &&
+      allow create, update: if isBalaji() &&
         isValidPartnerName(partnerName) &&
         isValidMetadataDoc(request.resource.data);
-      allow delete: if isPartner();
+      allow delete: if isBalaji();
     }
 
   }

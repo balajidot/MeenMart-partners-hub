@@ -251,10 +251,11 @@
         <!-- Right: Current Partner, Theme, Sign Out -->
         <div class="flex items-center space-x-2">
           
-          <div class="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl text-xs">
+          <button onclick="handlePartnerPillClick()" id="currentPartnerPill" class="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl text-xs active:scale-95 transition cursor-pointer" title="Partner Profile & Icons (Balaji Only)">
             <span id="currentPartnerAvatar">👨‍💻</span>
             <span id="currentPartnerName" class="font-bold text-slate-900 dark:text-slate-100">Balaji</span>
-          </div>
+            <i id="partnerAdminBadge" class="fa-solid fa-crown text-[10px] text-amber-500 ml-0.5" title="Admin"></i>
+          </button>
 
           <button onclick="toggleTheme()" title="Theme" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-amber-500 dark:text-amber-300 text-xs shadow-sm active:scale-95 transition">
             <i id="themeToggleIcon" class="fa-solid fa-sun"></i>
@@ -452,12 +453,12 @@
           <!-- Date Filter Chips -->
           <div class="space-y-1">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date Filter:</span>
-            <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5">
-              <button onclick="setHistoryDateFilter('all')" id="hDate-all" class="px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white whitespace-nowrap">All</button>
-              <button onclick="setHistoryDateFilter('today')" id="hDate-today" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">Innaiku</button>
-              <button onclick="setHistoryDateFilter('yesterday')" id="hDate-yesterday" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">Nethu</button>
-              <button onclick="setHistoryDateFilter('this-week')" id="hDate-this-week" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">Indha Vaaram</button>
-              <button onclick="setHistoryDateFilter('this-month')" id="hDate-this-month" class="px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">Indha Maasam</button>
+            <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1 pr-6 -mx-1 px-1">
+              <button onclick="setHistoryDateFilter('all')" id="hDate-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white flex-shrink-0 whitespace-nowrap shadow-sm">All</button>
+              <button onclick="setHistoryDateFilter('today')" id="hDate-today" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">Innaiku</button>
+              <button onclick="setHistoryDateFilter('yesterday')" id="hDate-yesterday" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">Nethu</button>
+              <button onclick="setHistoryDateFilter('this-week')" id="hDate-this-week" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">Indha Vaaram</button>
+              <button onclick="setHistoryDateFilter('this-month')" id="hDate-this-month" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">Indha Maasam</button>
             </div>
           </div>
 
@@ -632,10 +633,14 @@
           </div>
 
           <!-- Category Customizer Button -->
-          <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-center">
-            <button onclick="openCategoryManagerModal()" class="text-xs font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5 py-1.5 px-3.5 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-500/30">
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-2">
+            <button onclick="openCategoryManagerModal()" class="text-xs font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-500/30 active:scale-95 transition">
               <i class="fa-solid fa-sliders"></i>
               <span>Category Settings</span>
+            </button>
+            <button onclick="handlePartnerPillClick()" class="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/30 active:scale-95 transition">
+              <i class="fa-solid fa-crown"></i>
+              <span>Partner Icons</span>
             </button>
           </div>
 
@@ -895,6 +900,116 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- 👤 5b. PARTNER PROFILE ICONS (BALAJI ONLY) -->
+    <!-- ========================================== -->
+    <div id="partnerIconsModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+      <div onclick="closePartnerIconsModal()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+        
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
+          <div class="flex items-center space-x-2">
+            <span class="text-xl">👑</span>
+            <div>
+              <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">Partner Profile Icons</h3>
+              <p class="text-[10px] text-amber-600 dark:text-amber-400 font-bold">Balaji Admin Controls 🔒</p>
+            </div>
+          </div>
+          <button onclick="closePartnerIconsModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          3 Partners-kum profile icon / emoji inga customize pannalam (Balaji mattum):
+        </p>
+
+        <!-- 3 Partner Cards -->
+        <div class="space-y-3">
+          
+          <!-- Balaji -->
+          <div class="app-card rounded-2xl p-3 space-y-2 border-l-4 border-l-blue-500">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span id="previewAvatar-Balaji" class="text-2xl w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center border border-blue-200 dark:border-blue-500/30">👨‍💻</span>
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900 dark:text-white">Balaji</h4>
+                  <span class="text-[10px] text-slate-400">Tech & Vasool</span>
+                </div>
+              </div>
+              <input type="text" id="customAvatar-Balaji" maxlength="8" class="w-14 text-center py-1 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-900 dark:text-white" placeholder="👨‍💻" oninput="updateAvatarPreview('Balaji', this.value)" />
+            </div>
+            <!-- Quick emoji picks -->
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+              <button type="button" onclick="selectQuickAvatar('Balaji', '👨‍💻')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">👨‍💻</button>
+              <button type="button" onclick="selectQuickAvatar('Balaji', '👑')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">👑</button>
+              <button type="button" onclick="selectQuickAvatar('Balaji', '💼')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">💼</button>
+              <button type="button" onclick="selectQuickAvatar('Balaji', '⚡')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">⚡</button>
+              <button type="button" onclick="selectQuickAvatar('Balaji', '😎')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">😎</button>
+              <button type="button" onclick="selectQuickAvatar('Balaji', '🚀')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🚀</button>
+              <button type="button" onclick="selectQuickAvatar('Balaji', '📱')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">📱</button>
+            </div>
+          </div>
+
+          <!-- Nagoor -->
+          <div class="app-card rounded-2xl p-3 space-y-2 border-l-4 border-l-emerald-500">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span id="previewAvatar-Nagoor" class="text-2xl w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center border border-emerald-200 dark:border-emerald-500/30">🦐</span>
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900 dark:text-white">Nagoor</h4>
+                  <span class="text-[10px] text-slate-400">Fish Purchase</span>
+                </div>
+              </div>
+              <input type="text" id="customAvatar-Nagoor" maxlength="8" class="w-14 text-center py-1 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-900 dark:text-white" placeholder="🦐" oninput="updateAvatarPreview('Nagoor', this.value)" />
+            </div>
+            <!-- Quick emoji picks -->
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+              <button type="button" onclick="selectQuickAvatar('Nagoor', '🦐')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🦐</button>
+              <button type="button" onclick="selectQuickAvatar('Nagoor', '🐟')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🐟</button>
+              <button type="button" onclick="selectQuickAvatar('Nagoor', '🦈')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🦈</button>
+              <button type="button" onclick="selectQuickAvatar('Nagoor', '🦀')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🦀</button>
+              <button type="button" onclick="selectQuickAvatar('Nagoor', '⚓')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">⚓</button>
+              <button type="button" onclick="selectQuickAvatar('Nagoor', '🚤')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🚤</button>
+              <button type="button" onclick="selectQuickAvatar('Nagoor', '🎣')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🎣</button>
+            </div>
+          </div>
+
+          <!-- JP -->
+          <div class="app-card rounded-2xl p-3 space-y-2 border-l-4 border-l-amber-500">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span id="previewAvatar-JP" class="text-2xl w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center border border-amber-200 dark:border-amber-500/30">🛵</span>
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900 dark:text-white">JP</h4>
+                  <span class="text-[10px] text-slate-400">Delivery & Petrol</span>
+                </div>
+              </div>
+              <input type="text" id="customAvatar-JP" maxlength="8" class="w-14 text-center py-1 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-900 dark:text-white" placeholder="🛵" oninput="updateAvatarPreview('JP', this.value)" />
+            </div>
+            <!-- Quick emoji picks -->
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+              <button type="button" onclick="selectQuickAvatar('JP', '🛵')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🛵</button>
+              <button type="button" onclick="selectQuickAvatar('JP', '🏍️')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🏍️</button>
+              <button type="button" onclick="selectQuickAvatar('JP', '📦')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">📦</button>
+              <button type="button" onclick="selectQuickAvatar('JP', '⛽')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">⛽</button>
+              <button type="button" onclick="selectQuickAvatar('JP', '⚡')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">⚡</button>
+              <button type="button" onclick="selectQuickAvatar('JP', '🏎️')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🏎️</button>
+              <button type="button" onclick="selectQuickAvatar('JP', '💨')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">💨</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Save Button -->
+        <button type="button" onclick="handleSavePartnerIcons()" id="btnSavePartnerIcons" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center space-x-2 text-xs active:scale-98 transition">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>Save Profile Icons</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- EDIT TRANSACTION MODAL                     -->
     <!-- (Strictly Ownership Protected)             -->
     <!-- ========================================== -->
@@ -1026,7 +1141,7 @@
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     // 3 Fixed Partners & Emails
-    const PARTNERS = {
+    let PARTNERS = {
       Balaji: { name: "Balaji", role: "Tech & Vasool", avatar: "👨‍💻", color: "#3B82F6" },
       Nagoor: { name: "Nagoor", role: "Fish Purchase", avatar: "🦐", color: "#10B981" },
       JP: { name: "JP", role: "Delivery & Petrol", avatar: "🛵", color: "#F59E0B" }
@@ -1163,6 +1278,7 @@
           document.getElementById('currentPartnerAvatar').innerText = PARTNERS[matchedPartner].avatar;
           selectEntryPartner(matchedPartner);
 
+          initPartnersSync();
           initCategoriesSync();
           initLiveSync();
           initSettlementsSync();
@@ -1185,6 +1301,113 @@
         }
       }
     });
+
+    // Real-time Partner Avatars Sync with Firestore (settings/partners)
+    function initPartnersSync() {
+      const partnersDocRef = doc(db, "settings", "partners");
+      onSnapshot(partnersDocRef, (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          ['Balaji', 'Nagoor', 'JP'].forEach(p => {
+            if (data[p] && data[p].avatar) {
+              PARTNERS[p].avatar = data[p].avatar;
+            }
+          });
+
+          // Update header avatar
+          if (state.currentPartner && PARTNERS[state.currentPartner]) {
+            const topAv = document.getElementById('currentPartnerAvatar');
+            if (topAv) topAv.innerText = PARTNERS[state.currentPartner].avatar;
+          }
+
+          // Update Quick Add lock UI
+          updateSheetPartnerLockUI();
+
+          // Refresh UI components with updated avatars
+          updateUI();
+        }
+      }, (err) => {
+        console.warn("Partners avatar sync warning:", err);
+      });
+    }
+
+    // Partner Profile Icons Modal Logic (Balaji Admin Only)
+    window.handlePartnerPillClick = function() {
+      if (state.currentPartner === 'Balaji') {
+        openPartnerIconsModal();
+      } else {
+        showToast("Balaji mattum dhaan partner icons maatha mudiyum! 🔒", "⚠️");
+      }
+    };
+
+    window.openPartnerIconsModal = function() {
+      if (state.currentPartner !== 'Balaji') {
+        alert("Balaji mattum dhaan partner icons maatha mudiyum! 🔒");
+        return;
+      }
+
+      ['Balaji', 'Nagoor', 'JP'].forEach(p => {
+        const input = document.getElementById(`customAvatar-${p}`);
+        const preview = document.getElementById(`previewAvatar-${p}`);
+        if (input && PARTNERS[p]) input.value = PARTNERS[p].avatar;
+        if (preview && PARTNERS[p]) preview.innerText = PARTNERS[p].avatar;
+      });
+
+      document.getElementById('partnerIconsModal').classList.remove('hidden');
+    };
+
+    window.closePartnerIconsModal = function() {
+      document.getElementById('partnerIconsModal').classList.add('hidden');
+    };
+
+    window.selectQuickAvatar = function(partner, emoji) {
+      const input = document.getElementById(`customAvatar-${partner}`);
+      if (input) input.value = emoji;
+      updateAvatarPreview(partner, emoji);
+    };
+
+    window.updateAvatarPreview = function(partner, val) {
+      const preview = document.getElementById(`previewAvatar-${partner}`);
+      if (preview) preview.innerText = val.trim() || '👤';
+    };
+
+    window.handleSavePartnerIcons = async function() {
+      if (state.currentPartner !== 'Balaji') {
+        alert("Balaji mattum dhaan partner icons maatha mudiyum! 🔒");
+        return;
+      }
+
+      const btn = document.getElementById('btnSavePartnerIcons');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Saving...</span>`;
+
+      const bAvatar = (document.getElementById('customAvatar-Balaji').value || '').trim() || '👨‍💻';
+      const nAvatar = (document.getElementById('customAvatar-Nagoor').value || '').trim() || '🦐';
+      const jAvatar = (document.getElementById('customAvatar-JP').value || '').trim() || '🛵';
+
+      try {
+        await setDoc(doc(db, "settings", "partners"), {
+          Balaji: { avatar: bAvatar },
+          Nagoor: { avatar: nAvatar },
+          JP: { avatar: jAvatar },
+          updatedAt: Date.now(),
+          updatedBy: state.currentUser ? state.currentUser.email : 'Balaji'
+        }, { merge: true });
+
+        PARTNERS.Balaji.avatar = bAvatar;
+        PARTNERS.Nagoor.avatar = nAvatar;
+        PARTNERS.JP.avatar = jAvatar;
+
+        showToast("Partner icons update aagiduchi! ✅");
+        closePartnerIconsModal();
+        updateUI();
+      } catch (err) {
+        alert("Icons save error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Save Profile Icons</span>`;
+      }
+    };
 
     // Real-time Categories Sync with Firestore
     function initCategoriesSync() {
@@ -1506,11 +1729,11 @@
         `;
       } else {
         const top3 = state.transactions.slice(0, 3);
-        recentContainer.innerHTML = top3.map(tx => renderTransactionItem(tx, false)).join('');
+        recentContainer.innerHTML = top3.map(tx => renderTransactionItem(tx, false, true)).join('');
       }
     }
 
-    // 2. History List Rendering
+    // 2. History List Rendering (Date-wise Grouping & Summary)
     window.renderHistoryList = function() {
       const container = document.getElementById('historyListContainer');
       const search = (document.getElementById('historySearchInput').value || '').toLowerCase().trim();
@@ -1548,6 +1771,12 @@
         return true;
       });
 
+      // Sort: Newest date first, then newest createdAt first
+      filtered.sort((a, b) => {
+        if ((b.date || '') !== (a.date || '')) return (b.date || '').localeCompare(a.date || '');
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
+
       // Update count & total
       let sum = 0;
       filtered.forEach(tx => sum += Number(tx.amount) || 0);
@@ -1562,12 +1791,87 @@
             <p class="text-[11px] text-slate-400">Filter-ku thagundhamari entries illa.</p>
           </div>
         `;
-      } else {
-        container.innerHTML = filtered.map(tx => renderTransactionItem(tx, true)).join('');
+        return;
       }
+
+      // Group by Date (YYYY-MM-DD)
+      const groups = [];
+      const dateMap = {};
+      filtered.forEach(tx => {
+        const d = tx.date || 'Unknown';
+        if (!dateMap[d]) {
+          dateMap[d] = { date: d, items: [], totalSales: 0, totalExp: 0 };
+          groups.push(dateMap[d]);
+        }
+        dateMap[d].items.push(tx);
+        const amt = Number(tx.amount) || 0;
+        if (tx.type === 'sales') dateMap[d].totalSales += amt;
+        else if (tx.type === 'expense') dateMap[d].totalExp += amt;
+      });
+
+      // Render Date Groups
+      container.innerHTML = groups.map(g => {
+        let headerBadge = '';
+        let subDate = '';
+        const dParts = (g.date || '').split('-');
+
+        let formattedDate = g.date;
+        let dayOfWeek = '';
+        if (dParts.length === 3) {
+          const parsedD = new Date(Number(dParts[0]), Number(dParts[1]) - 1, Number(dParts[2]));
+          if (!isNaN(parsedD.getTime())) {
+            formattedDate = parsedD.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            dayOfWeek = parsedD.toLocaleDateString('en-GB', { weekday: 'short' });
+          }
+        }
+
+        if (g.date === todayStr) {
+          headerBadge = `<span class="px-2.5 py-1 rounded-xl text-[11px] font-black bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30">Innaiku (Today)</span>`;
+          subDate = `<span class="text-[10px] text-slate-400 font-bold">${formattedDate}</span>`;
+        } else if (g.date === yesterdayStr) {
+          headerBadge = `<span class="px-2.5 py-1 rounded-xl text-[11px] font-black bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30">Nethu (Yesterday)</span>`;
+          subDate = `<span class="text-[10px] text-slate-400 font-bold">${formattedDate}</span>`;
+        } else {
+          headerBadge = `<span class="px-2.5 py-1 rounded-xl text-[11px] font-black bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">${formattedDate}</span>`;
+          if (dayOfWeek) {
+            subDate = `<span class="text-[10px] text-slate-400 font-bold">(${dayOfWeek})</span>`;
+          }
+        }
+
+        // Daily Summary on Right
+        let daySummary = '';
+        if (g.totalSales > 0 && g.totalExp > 0) {
+          daySummary = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">+${formatINR(g.totalSales)}</span> <span class="text-slate-400">•</span> <span class="text-rose-600 dark:text-rose-400 font-bold">-${formatINR(g.totalExp)}</span>`;
+        } else if (g.totalSales > 0) {
+          daySummary = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">Varavu: +${formatINR(g.totalSales)}</span>`;
+        } else if (g.totalExp > 0) {
+          daySummary = `<span class="text-rose-600 dark:text-rose-400 font-bold">Selavu: -${formatINR(g.totalExp)}</span>`;
+        }
+
+        return `
+          <div class="space-y-2 pt-2.5 first:pt-0">
+            <!-- Dynamic Date Header -->
+            <div class="flex items-center justify-between px-1 py-1">
+              <div class="flex items-center space-x-2">
+                ${headerBadge}
+                ${subDate}
+              </div>
+              <div class="text-[11px]">
+                ${daySummary}
+              </div>
+            </div>
+
+            <!-- Transactions for this Date -->
+            <div class="space-y-2">
+              ${g.items.map(tx => renderTransactionItem(tx, true, false)).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
     };
 
-    function renderTransactionItem(tx, showActions = true) {
+    // Transaction Card: Notes Priority & Clean Visual Hierarchy
+    function renderTransactionItem(tx, showActions = true, showDate = false) {
       const p = PARTNERS[tx.partner] || { avatar: '👤', name: tx.partner };
       const isExp = tx.type === 'expense';
       const isSales = tx.type === 'sales';
@@ -1593,48 +1897,79 @@
       const catLabel = getCategoryLabel(tx.type, tx.category);
       const isOwner = canUserModify(tx);
 
+      // NOTES-FIRST TITLE HIERARCHY:
+      // If user typed Notes (Description), Notes is the big bold title!
+      // Category is displayed underneath as sub-label.
+      // If Notes is empty, Category becomes the title.
+      const hasNotes = tx.description && tx.description.trim().length > 0;
+      const primaryTitle = hasNotes ? escapeHtml(tx.description.trim()) : catLabel;
+      const secondaryLabel = hasNotes ? catLabel : (isExp ? 'Selavu' : (isSales ? 'Varavu' : 'Mudhaleedu'));
+
+      // Time formatting if available
+      let timeText = '';
+      if (tx.createdAt) {
+        const d = new Date(tx.createdAt);
+        if (!isNaN(d.getTime())) {
+          timeText = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+      }
+
       return `
-        <div class="app-card rounded-2xl p-3 space-y-2 transition active:scale-[0.99] border border-slate-100 dark:border-slate-800">
-          <!-- Top Row: Category (Left) and Amount + Type Badge (Right) -->
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center space-x-2 min-w-0">
-              <span class="text-base flex-shrink-0">${p.avatar}</span>
-              <span class="font-extrabold text-xs text-slate-900 dark:text-white truncate">${catLabel}</span>
+        <div class="app-card rounded-2xl p-3.5 space-y-2.5 transition active:scale-[0.99] border border-slate-100 dark:border-slate-800 shadow-sm">
+          
+          <!-- Top Row: Notes (Bold Title) on Left & Amount + Type Badge on Right -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start space-x-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-lg flex-shrink-0 mt-0.5 shadow-xs">
+                ${p.avatar}
+              </div>
+              <div class="min-w-0">
+                <!-- Notes (Prominent & Bold) -->
+                <h4 class="font-extrabold text-sm text-slate-900 dark:text-white leading-tight break-words line-clamp-2">
+                  ${primaryTitle}
+                </h4>
+                <!-- Category Tag (Below Notes) -->
+                <div class="flex items-center space-x-1.5 mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                  <span class="font-medium truncate">${secondaryLabel}</span>
+                </div>
+              </div>
             </div>
-            <div class="flex items-center space-x-2 flex-shrink-0">
-              ${typeBadge}
-              <span class="text-xs font-black ${amountColor}">${sign}${formatINR(tx.amount)}</span>
+
+            <!-- Right: Amount & Badge -->
+            <div class="text-right flex-shrink-0">
+              <div class="text-sm font-black ${amountColor}">${sign}${formatINR(tx.amount)}</div>
+              <div class="mt-1">${typeBadge}</div>
             </div>
           </div>
 
-          <!-- Bottom Row: Partner & Date & Notes (Left), Actions (Right) -->
-          <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+          <!-- Bottom Row: Partner Name • Time/Date & Actions -->
+          <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800/80">
             <div class="flex items-center space-x-1.5 truncate">
-              <span class="font-bold text-slate-600 dark:text-slate-300">${p.name}</span>
-              <span>•</span>
-              <span>${tx.date}</span>
-              ${tx.description ? `<span>•</span><span class="truncate max-w-[140px] text-slate-500 italic">${escapeHtml(tx.description)}</span>` : ''}
+              <span class="font-bold text-slate-700 dark:text-slate-300">${p.name}</span>
+              ${timeText ? `<span>•</span><span>${timeText}</span>` : ''}
+              ${showDate ? `<span>•</span><span>${tx.date}</span>` : ''}
             </div>
 
             ${showActions ? (
               isOwner ? `
-                <div class="flex space-x-1 flex-shrink-0 pl-1">
-                  <button onclick="openEditModal('${tx.id}')" title="Edit" class="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-teal-500 flex items-center justify-center text-[10px]">
+                <div class="flex space-x-1.5 flex-shrink-0 pl-1">
+                  <button onclick="openEditModal('${tx.id}')" title="Edit" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-teal-500 flex items-center justify-center text-xs active:scale-90 transition">
                     <i class="fa-solid fa-pen"></i>
                   </button>
-                  <button onclick="handleDeleteTx('${tx.id}')" title="Delete" class="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-rose-500 flex items-center justify-center text-[10px]">
+                  <button onclick="handleDeleteTx('${tx.id}')" title="Delete" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-rose-500 flex items-center justify-center text-xs active:scale-90 transition">
                     <i class="fa-solid fa-trash"></i>
                   </button>
                 </div>
               ` : `
                 <div class="flex-shrink-0 pl-1">
-                  <span class="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[9px] text-slate-400 font-bold">
-                    🔒 ${p.name}
+                  <span class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-400 font-bold flex items-center gap-1">
+                    <i class="fa-solid fa-lock text-[9px]"></i> ${p.name}
                   </span>
                 </div>
               `
             ) : ''}
           </div>
+
         </div>
       `;
     }
@@ -2586,8 +2921,8 @@ ${transferSection}
         const btn = document.getElementById(`hDate-${k}`);
         if (btn) {
           btn.className = (k === p) 
-            ? "px-3 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white whitespace-nowrap" 
-            : "px-3 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap";
+            ? "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white flex-shrink-0 whitespace-nowrap shadow-sm" 
+            : "px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap";
         }
       });
       renderHistoryList();
