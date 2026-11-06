@@ -245,7 +245,7 @@
           <h1 class="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">
             MeenMart <span class="text-[10px] px-2 py-0.5 rounded-full bg-teal-500/15 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 font-bold border border-teal-500/30">Hub</span>
           </h1>
-          <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">தினசரி கணக்கு (Daily Accounts)</span>
+          <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Daily Accounts</span>
         </div>
 
         <!-- Right: Current Partner, Theme, Sign Out -->
@@ -292,17 +292,17 @@
         <!-- DATE FILTER BAR -->
         <div class="app-card rounded-2xl p-2.5 space-y-2">
           <div class="flex items-center justify-between px-1">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">தேதி (Filter):</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Filter:</span>
             <button onclick="toggleCustomDateRangeModal()" class="text-[10px] font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1">
               <i class="fa-solid fa-calendar-days"></i> <span id="dashRangeLabel">Innaiku</span>
             </button>
           </div>
 
           <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5">
-            <button onclick="setDashboardDateScope('today')" id="dashScope-today" class="flex-1 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white text-center whitespace-nowrap shadow-sm">இன்னைக்கு (Today)</button>
-            <button onclick="setDashboardDateScope('yesterday')" id="dashScope-yesterday" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">நேத்து (Yesterday)</button>
-            <button onclick="setDashboardDateScope('week')" id="dashScope-week" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">இந்த வாரம் (Week)</button>
-            <button onclick="setDashboardDateScope('month')" id="dashScope-month" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">இந்த மாதம் (Month)</button>
+            <button onclick="setDashboardDateScope('today')" id="dashScope-today" class="flex-1 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white text-center whitespace-nowrap shadow-sm">Innaiku</button>
+            <button onclick="setDashboardDateScope('yesterday')" id="dashScope-yesterday" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">Nethu</button>
+            <button onclick="setDashboardDateScope('week')" id="dashScope-week" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">Indha Vaaram</button>
+            <button onclick="setDashboardDateScope('month')" id="dashScope-month" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">Indha Maasam</button>
           </div>
 
           <!-- Custom Date Range Row -->
@@ -333,15 +333,15 @@
           <!-- 3 Mini Metric Cards -->
           <div class="grid grid-cols-3 gap-2 pt-1 border-t border-white/10 text-center">
             <div class="bg-white/10 rounded-xl p-2">
-              <span class="block text-[9px] text-teal-100 font-medium">வரவு (Sales)</span>
+              <span class="block text-[9px] text-teal-100 font-medium">Varavu</span>
               <span class="text-xs font-extrabold text-emerald-300" id="dashHeroSales">₹0</span>
             </div>
             <div class="bg-white/10 rounded-xl p-2">
-              <span class="block text-[9px] text-teal-100 font-medium">செலவு (Expense)</span>
+              <span class="block text-[9px] text-teal-100 font-medium">Selavu</span>
               <span class="text-xs font-extrabold text-rose-300" id="dashHeroExpenses">₹0</span>
             </div>
             <div class="bg-white/10 rounded-xl p-2">
-              <span class="block text-[9px] text-teal-100 font-medium">முதலீடு (Capital)</span>
+              <span class="block text-[9px] text-teal-100 font-medium">Mudhaleedu</span>
               <span class="text-xs font-extrabold text-teal-200" id="dashHeroCapital">₹0</span>
             </div>
           </div>
@@ -353,7 +353,7 @@
             <div class="flex items-center space-x-1.5">
               <span class="text-sm">💵</span>
               <h2 class="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                இப்போ யார் கிட்ட காசு இருக்கு?
+                Ippo Yaar Kitta Kaasu Irukku?
               </h2>
             </div>
             <span class="text-[9px] text-slate-400">Cash in Hand</span>
@@ -368,7 +368,7 @@
         <div class="space-y-2">
           <div class="flex items-center justify-between px-1">
             <h2 class="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              யார் எவ்வளவு செலவு பண்ணா?
+              Yaaru Evlo Selavu Panna?
             </h2>
             <span class="text-[10px] text-slate-400">Partner Spends</span>
           </div>
@@ -413,10 +413,10 @@
         <div class="space-y-2">
           <div class="flex items-center justify-between px-1">
             <h2 class="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              சமீபத்திய பதிவுகள் (Recent Entries)
+              Recent Entries
             </h2>
             <button onclick="switchTab('history')" class="text-xs text-teal-600 dark:text-teal-400 font-bold hover:underline">
-              அனைத்தும் (View All) &rarr;
+              View All &rarr;
             </button>
           </div>
 
@@ -450,7 +450,7 @@
                 data-lpignore="true"
                 data-form-type="other"
                 oninput="renderHistoryList()" 
-                placeholder="குறிப்பு, வகை, தொகை தேட... (Search)" 
+                placeholder="Search notes, category, amount..." 
                 class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" 
               />
             </div>
@@ -468,32 +468,32 @@
 
           <!-- Date Filter Chips -->
           <div class="space-y-1">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">தேதி தேர்வு (Date Filter):</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date Filter:</span>
             <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1 pr-6 -mx-1 px-1">
-              <button onclick="setHistoryDateFilter('all')" id="hDate-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white flex-shrink-0 whitespace-nowrap shadow-sm">அனைத்தும் (All)</button>
-              <button onclick="setHistoryDateFilter('today')" id="hDate-today" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">இன்னைக்கு (Today)</button>
-              <button onclick="setHistoryDateFilter('yesterday')" id="hDate-yesterday" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">நேத்து (Yesterday)</button>
-              <button onclick="setHistoryDateFilter('this-week')" id="hDate-this-week" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">இந்த வாரம் (Week)</button>
-              <button onclick="setHistoryDateFilter('this-month')" id="hDate-this-month" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">இந்த மாதம் (Month)</button>
+              <button onclick="setHistoryDateFilter('all')" id="hDate-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white flex-shrink-0 whitespace-nowrap shadow-sm">All</button>
+              <button onclick="setHistoryDateFilter('today')" id="hDate-today" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">Innaiku</button>
+              <button onclick="setHistoryDateFilter('yesterday')" id="hDate-yesterday" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">Nethu</button>
+              <button onclick="setHistoryDateFilter('this-week')" id="hDate-this-week" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">Indha Vaaram</button>
+              <button onclick="setHistoryDateFilter('this-month')" id="hDate-this-month" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">Indha Maasam</button>
             </div>
           </div>
 
           <!-- Type & Partner Segmented Selectors -->
           <div class="grid grid-cols-2 gap-2 pt-1">
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 mb-1">வகை (Type):</label>
+              <label class="block text-[10px] font-bold text-slate-400 mb-1">Type:</label>
               <select id="hFilterType" onchange="renderHistoryList()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none">
-                <option value="all">அனைத்து வகைகள் (All Types)</option>
-                <option value="expense">💸 செலவு (Expense)</option>
-                <option value="sales">📈 வரவு (Sales)</option>
-                <option value="investment">💰 முதலீடு (Investment)</option>
+                <option value="all">All Types</option>
+                <option value="expense">💸 Selavu</option>
+                <option value="sales">📈 Varavu</option>
+                <option value="investment">💰 Mudhaleedu</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 mb-1">பார்ட்னர் (Partner):</label>
+              <label class="block text-[10px] font-bold text-slate-400 mb-1">Partner:</label>
               <select id="hFilterPartner" onchange="renderHistoryList()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none">
-                <option value="all">அனைத்து பார்ட்னர்கள் (All Partners)</option>
+                <option value="all">All Partners</option>
                 <option value="Balaji">👨‍💻 Balaji</option>
                 <option value="Nagoor">🦐 Nagoor</option>
                 <option value="JP">🛵 JP</option>
@@ -602,7 +602,7 @@
           <!-- Step 1: Expense Reimbursements -->
           <div class="space-y-2">
             <div class="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
-              <span>1. செலவு திருப்பி செலுத்துதல் (Reimbursement)</span>
+              <span>1. Selavu Refund</span>
               <span class="text-[10px] text-slate-400">Pocket Spends</span>
             </div>
             <div id="settleReimbursementList" class="space-y-1.5">
@@ -613,8 +613,8 @@
           <!-- Step 2: Equal Profit Split -->
           <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
             <div class="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
-              <span>2. சம பங்கு (1/3 Partner Share)</span>
-              <span id="settleEachPartnerShare" class="text-xs font-extrabold text-teal-600 dark:text-teal-400">ஒருவருக்கு: ₹0</span>
+              <span>2. 1/3 Partner Share</span>
+              <span id="settleEachPartnerShare" class="text-xs font-extrabold text-teal-600 dark:text-teal-400">Thala: ₹0</span>
             </div>
             <div id="settleProfitSplitGrid" class="grid grid-cols-3 gap-2 text-center">
               <!-- Balaji, Nagoor, JP profit shares -->
@@ -625,10 +625,10 @@
           <div class="rounded-2xl p-3.5 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-500/30 space-y-2.5">
             <div class="flex items-center space-x-2 text-teal-900 dark:text-teal-200 font-extrabold text-xs">
               <span>🚀</span>
-              <span>3. யார் யாருக்கு பணம் அனுப்ப வேண்டும்? (Transfers)</span>
+              <span>3. Kaasu Yaaru Yaarukku Kudukanum?</span>
             </div>
             <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-snug">
-              விற்பனை பணம் பாலாஜி வசம் இருப்பதால், பாலாஜி மற்றவர்களுக்கு அனுப்ப வேண்டியது:
+              Sales cash & bank balance Balaji kaila iruppadhaala, Balaji Nagoor & JP-ku anuppa vendiyadhu:
             </p>
             <div id="settleTransfersContainer" class="space-y-2 pt-1">
               <!-- Balaji to Nagoor, Balaji to JP -->
@@ -640,17 +640,17 @@
             <div class="grid grid-cols-2 gap-2">
               <button onclick="copyWeeklyReportWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-3 rounded-2xl shadow-md flex items-center justify-center space-x-1.5 text-xs active:scale-98 transition">
                 <i class="fa-brands fa-whatsapp text-base"></i>
-                <span>வாட்ஸ்அப் பகிர்வு (WhatsApp)</span>
+                <span>WhatsApp Share</span>
               </button>
               <button onclick="exportWeeklySettlementPDF()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 px-3 rounded-2xl shadow-md flex items-center justify-center space-x-1.5 text-xs active:scale-98 transition">
                 <i class="fa-solid fa-file-pdf text-base"></i>
-                <span>வார அறிக்கை (Weekly PDF)</span>
+                <span>Weekly PDF</span>
               </button>
             </div>
 
             <button onclick="toggleWeekSettlementStatus()" id="btnToggleSettle" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3 px-4 rounded-2xl shadow-md flex items-center justify-center space-x-2 text-xs active:scale-98 transition">
               <i class="fa-solid fa-check-double"></i>
-              <span id="btnToggleSettleText">இந்த வார கணக்கை முடிக்க (Mark Settled)</span>
+              <span id="btnToggleSettleText">Indha Vaara Kanakka Mudikka (Mark Settled)</span>
             </button>
           </div>
 
@@ -658,11 +658,11 @@
           <div class="pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2">
             <button onclick="openCategoryManagerModal()" class="py-2.5 px-3 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-500/30 text-teal-700 dark:text-teal-300 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition">
               <i class="fa-solid fa-sliders"></i>
-              <span>வகை அமைப்புகள் (Categories)</span>
+              <span>Categories</span>
             </button>
             <button onclick="handlePartnerPillClick()" class="py-2.5 px-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition">
               <i class="fa-solid fa-camera"></i>
-              <span>பார்ட்னர் புகைப்படங்கள் (Photos)</span>
+              <span>Partner Photos</span>
             </button>
           </div>
 
@@ -698,7 +698,7 @@
             <!-- Tab 2: History -->
             <button onclick="switchTab('history')" id="nav-history" class="flex flex-col items-center justify-center py-1 text-slate-500 dark:text-slate-400">
               <i class="fa-solid fa-list-ul text-sm"></i>
-              <span class="text-[10px] font-semibold mt-1">வரலாறு (History)</span>
+              <span class="text-[10px] font-semibold mt-1">History</span>
             </button>
 
             <!-- Center Column Spacer -->
@@ -709,13 +709,13 @@
             <!-- Tab 3: Analytics -->
             <button onclick="switchTab('analytics')" id="nav-analytics" class="flex flex-col items-center justify-center py-1 text-slate-500 dark:text-slate-400">
               <i class="fa-solid fa-chart-simple text-sm"></i>
-              <span class="text-[10px] font-semibold mt-1">அறிக்கை (Analytics)</span>
+              <span class="text-[10px] font-semibold mt-1">Analytics</span>
             </button>
 
             <!-- Tab 4: Accounts / Settlement -->
             <button onclick="switchTab('accounts')" id="nav-accounts" class="flex flex-col items-center justify-center py-1 text-slate-500 dark:text-slate-400">
               <i class="fa-solid fa-wallet text-sm"></i>
-              <span class="text-[10px] font-semibold mt-1">கணக்கு (Settlement)</span>
+              <span class="text-[10px] font-semibold mt-1">Settlement</span>
             </button>
 
           </div>
@@ -749,23 +749,23 @@
         <div id="entryForm" class="space-y-3.5">
           <!-- 1. Entry Type -->
           <div>
-            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">வகை (Type):</label>
+            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">Type:</label>
             <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
               <button type="button" onclick="selectEntryType('expense')" id="typeBtn-expense" class="py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center space-x-1 bg-white dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-300 dark:border-rose-500/40 shadow-sm">
-                <span>💸</span><span>செலவு (Expense)</span>
+                <span>💸</span><span>Selavu</span>
               </button>
               <button type="button" onclick="selectEntryType('sales')" id="typeBtn-sales" class="py-2.5 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
-                <span>📈</span><span>வரவு (Sales)</span>
+                <span>📈</span><span>Varavu</span>
               </button>
               <button type="button" onclick="selectEntryType('investment')" id="typeBtn-investment" class="py-2.5 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
-                <span>💰</span><span>முதலீடு (Capital)</span>
+                <span>💰</span><span>Mudhaleedu</span>
               </button>
             </div>
           </div>
 
           <!-- 2. Partner (Locked to logged-in user) -->
           <div>
-            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5" id="entryPartnerLabel">பார்ட்னர் (Partner - Locked):</label>
+            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5" id="entryPartnerLabel">Partner (Locked):</label>
             <div class="grid grid-cols-3 gap-2" id="sheetPartnerSelector">
               <button type="button" onclick="selectEntryPartner('Balaji')" id="sheetPartner-Balaji" class="py-2.5 px-1 rounded-2xl border border-teal-500 bg-teal-50 dark:bg-teal-500/20 text-center font-bold text-xs text-slate-900 dark:text-white">
                 👨‍💻 Balaji
@@ -782,12 +782,12 @@
           <!-- 3. Date & Category -->
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">தேதி (Date)</label>
+              <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">Date</label>
               <input type="date" id="entryDate" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-900 dark:text-white font-medium" />
             </div>
             <div>
               <div class="flex items-center justify-between mb-1">
-                <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300">பிரிவு (Category)</label>
+                <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300">Category</label>
                 <button type="button" onclick="openCategoryManagerModal()" class="text-[10px] text-teal-600 dark:text-teal-400 font-bold hover:underline">+ Edit</button>
               </div>
               <select id="entryCategory" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs text-slate-900 dark:text-white font-medium"></select>
@@ -797,7 +797,7 @@
           <!-- 4. Amount -->
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300">தொகை ₹ (Amount)</label>
+              <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300">Amount (₹)</label>
               <div class="flex space-x-1">
                 <button type="button" onclick="addAmountValue(500)" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300">+500</button>
                 <button type="button" onclick="addAmountValue(1000)" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300">+1k</button>
@@ -1092,8 +1092,8 @@
         
         <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
           <div>
-            <h3 class="font-bold text-sm text-slate-900 dark:text-white">பதிவை திருத்த (Edit Entry)</h3>
-            <p class="text-[10px] text-slate-400" id="editOwnershipBadge">உங்கள் பதிவு 🔒 (Your Entry)</p>
+            <h3 class="font-bold text-sm text-slate-900 dark:text-white">Edit Entry</h3>
+            <p class="text-[10px] text-slate-400" id="editOwnershipBadge">Unga Entry 🔒</p>
           </div>
           <button onclick="closeEditModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs">
             <i class="fa-solid fa-xmark"></i>
@@ -1173,14 +1173,14 @@
           </div>
 
           <div class="flex space-x-2 pt-2">
-            <button type="button" onclick="closeEditModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold">ரத்து (Cancel)</button>
-            <button type="button" onclick="handleEditSubmit(event)" class="w-1/2 py-2.5 rounded-xl bg-teal-600 text-white text-xs font-bold shadow-sm">மாற்றங்களை சேமிக்க (Save)</button>
+            <button type="button" onclick="closeEditModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold">Cancel</button>
+            <button type="button" onclick="handleEditSubmit(event)" class="w-1/2 py-2.5 rounded-xl bg-teal-600 text-white text-xs font-bold shadow-sm">Save Changes</button>
           </div>
 
           <!-- Prominent Delete Button inside Edit Modal -->
           <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
             <button type="button" onclick="handleDeleteFromEditModal()" class="w-full py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition">
-              <i class="fa-solid fa-trash-can"></i> இந்த பதிவை நீக்கு (Delete Entry)
+              <i class="fa-solid fa-trash-can"></i> Indha Entry-ah Delete Pannu
             </button>
           </div>
         </div>
@@ -1199,7 +1199,7 @@
           <div class="flex items-center gap-2.5">
             <div id="viewTxPartnerAvatar"></div>
             <div>
-              <h3 class="font-extrabold text-sm text-slate-900 dark:text-white" id="viewTxTitle">பதிவு விவரம் (Entry Details)</h3>
+              <h3 class="font-extrabold text-sm text-slate-900 dark:text-white" id="viewTxTitle">Entry Vivaram</h3>
               <p class="text-[10px] text-slate-400 font-medium" id="viewTxPartnerSub">Created by ...</p>
             </div>
           </div>
@@ -1219,7 +1219,7 @@
 
         <!-- Full Uncut Notes (Fix for truncated text!) -->
         <div class="space-y-1.5">
-          <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">முழு விவரம் / குறிப்பு (Full Notes):</label>
+          <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Kurippu / Notes (Full Details):</label>
           <div id="viewTxNotes" class="p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-xs font-semibold text-slate-800 dark:text-slate-100 whitespace-pre-wrap break-words leading-relaxed min-h-[50px]">
           </div>
         </div>
@@ -1227,11 +1227,11 @@
         <!-- Info Grid: Category, Date & Time -->
         <div class="grid grid-cols-2 gap-2 text-xs">
           <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-            <span class="text-[10px] text-slate-400 block font-medium">பிரிவு (Category)</span>
+            <span class="text-[10px] text-slate-400 block font-medium">Category</span>
             <span class="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block" id="viewTxCategory">-</span>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-            <span class="text-[10px] text-slate-400 block font-medium">தேதி & நேரம் (Date & Time)</span>
+            <span class="text-[10px] text-slate-400 block font-medium">Date & Time</span>
             <span class="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block" id="viewTxDateTime">-</span>
           </div>
         </div>
@@ -1246,7 +1246,7 @@
 
         <!-- Close Button -->
         <button type="button" onclick="closeTxDetailsModal()" class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-sm active:scale-95 transition">
-          சரி (Close)
+          Seri / Close
         </button>
 
       </div>
@@ -1398,10 +1398,7 @@
     };
 
     window.handleSignOut = async function() {
-      if (confirm("வெளியேற (Logout) வேண்டுமா?")) {
-        try {
-          await sendPresenceHeartbeat(false);
-        } catch (e) {}
+      if (confirm("Logout panna poringala?")) {
         await signOut(auth);
       }
     };
@@ -2047,8 +2044,8 @@
           <div class="flex items-center space-x-2.5">
             ${renderPartnerAvatar('Balaji', 'w-7 h-7', 'rounded-lg')}
             <div>
-              <span class="font-bold text-slate-800 dark:text-slate-200">பாலாஜி கையில் உள்ள விற்பனை வசூல் (Sales Cash):</span>
-              <div class="text-[10px] text-slate-400">வசூல் (Sales) ${formatINR(cashflowHold.Balaji.collected)} - செலவு (Expenses) ${formatINR(cashflowHold.Balaji.spent)}</div>
+              <span class="font-bold text-slate-800 dark:text-slate-200">Balaji kitta irukura Sales cash:</span>
+              <div class="text-[10px] text-slate-400">Vasool ${formatINR(cashflowHold.Balaji.collected)} - Selavu ${formatINR(cashflowHold.Balaji.spent)}</div>
             </div>
           </div>
           <span class="font-extrabold ${balajiColorClass} text-sm">${formatINR(balajiNetCash)}</span>
@@ -2058,8 +2055,8 @@
           <div class="flex items-center space-x-2.5">
             ${renderPartnerAvatar('Nagoor', 'w-7 h-7', 'rounded-lg')}
             <div>
-              <span class="font-bold text-slate-800 dark:text-slate-200">நாகூருக்கு திருப்பித் தர வேண்டிய செலவு:</span>
-              <div class="text-[10px] text-slate-400">மீன் கொள்முதல் செலவு (Fish Purchase) ${formatINR(cashflowHold.Nagoor.spent)}</div>
+              <span class="font-bold text-slate-800 dark:text-slate-200">Nagoor-ku thiruppi thara vendiya Selavu:</span>
+              <div class="text-[10px] text-slate-400">Fish purchase selavu ${formatINR(cashflowHold.Nagoor.spent)}</div>
             </div>
           </div>
           <span class="font-extrabold ${nagoorSpentNet > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400'} text-sm">${formatINR(nagoorSpentNet)}</span>
@@ -2069,8 +2066,8 @@
           <div class="flex items-center space-x-2.5">
             ${renderPartnerAvatar('JP', 'w-7 h-7', 'rounded-lg')}
             <div>
-              <span class="font-bold text-slate-800 dark:text-slate-200">JP-க்கு திருப்பித் தர வேண்டிய செலவு:</span>
-              <div class="text-[10px] text-slate-400">பெட்ரோல் & டெலிவரி செலவு (Delivery) ${formatINR(cashflowHold.JP.spent)}</div>
+              <span class="font-bold text-slate-800 dark:text-slate-200">JP-ku thiruppi thara vendiya Selavu:</span>
+              <div class="text-[10px] text-slate-400">Petrol & delivery selavu ${formatINR(cashflowHold.JP.spent)}</div>
             </div>
           </div>
           <span class="font-extrabold ${jpSpentNet > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400'} text-sm">${formatINR(jpSpentNet)}</span>
@@ -2083,10 +2080,10 @@
         recentContainer.innerHTML = `
           <div class="app-card rounded-2xl p-6 text-center space-y-2">
             <div class="text-3xl">📭</div>
-            <div class="text-xs font-bold text-slate-700 dark:text-slate-300">இன்னும் எந்த பதிவும் இல்லை (No entries yet)</div>
-            <p class="text-[11px] text-slate-400">புதிய வரவு / செலவு சேர்க்க கீழே உள்ள '+' பட்டனை அழுத்தவும்.</p>
+            <div class="text-xs font-bold text-slate-700 dark:text-slate-300">Innum endha entry-yum illa</div>
+            <p class="text-[11px] text-slate-400">Pudhiya Selavu / Varavu add panna keezha ulla '+' button press pannunga.</p>
             <button onclick="openEntryBottomSheet()" class="mt-2 px-3 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold shadow-md">
-              + புதிய பதிவு (Add Entry)
+              + Add Entry
             </button>
           </div>
         `;
@@ -2189,10 +2186,10 @@
         }
 
         if (g.date === todayStr) {
-          headerBadge = `<span class="px-2.5 py-1 rounded-xl text-[11px] font-black bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30">இன்னைக்கு (Today)</span>`;
+          headerBadge = `<span class="px-2.5 py-1 rounded-xl text-[11px] font-black bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30">Innaiku (Today)</span>`;
           subDate = `<span class="text-[10px] text-slate-400 font-bold">${formattedDate}</span>`;
         } else if (g.date === yesterdayStr) {
-          headerBadge = `<span class="px-2.5 py-1 rounded-xl text-[11px] font-black bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30">நேத்து (Yesterday)</span>`;
+          headerBadge = `<span class="px-2.5 py-1 rounded-xl text-[11px] font-black bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30">Nethu (Yesterday)</span>`;
           subDate = `<span class="text-[10px] text-slate-400 font-bold">${formattedDate}</span>`;
         } else {
           headerBadge = `<span class="px-2.5 py-1 rounded-xl text-[11px] font-black bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">${formattedDate}</span>`;
@@ -2244,15 +2241,15 @@
       let sign = '';
 
       if (isExp) {
-        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold">செலவு (Expense)</span>';
+        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold">Selavu</span>';
         amountColor = 'text-rose-600 dark:text-rose-400';
         sign = '-';
       } else if (isSales) {
-        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold">வரவு (Sales)</span>';
+        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold">Varavu</span>';
         amountColor = 'text-emerald-600 dark:text-emerald-400';
         sign = '+';
       } else {
-        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-300 text-[10px] font-bold">முதலீடு (Capital)</span>';
+        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-300 text-[10px] font-bold">Mudhaleedu</span>';
         amountColor = 'text-teal-600 dark:text-teal-400';
         sign = '';
       }
@@ -2792,7 +2789,7 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showToast("CSV அறிக்கை பதிவிறக்கப்பட்டது! 📥 (Downloaded)");
+      showToast("CSV File Download Aagiduchi! 📥");
     };
 
     // 3. Analytics Charts (Chart.js)
@@ -2985,7 +2982,7 @@
       const weekId = `week_${monStr}_${sunStr}`;
 
       // Update Header Text
-      document.getElementById('settleWeekLabel').innerText = state.settlementOffsetWeeks === 0 ? "இந்த வாரம் (This Week)" : `${state.settlementOffsetWeeks} வாரம் முன் (${state.settlementOffsetWeeks}w ago)`;
+      document.getElementById('settleWeekLabel').innerText = state.settlementOffsetWeeks === 0 ? "Indha Vaaram" : `${state.settlementOffsetWeeks} Vaaram Mun`;
       document.getElementById('settleWeekRangeText').innerText = `${monday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${sunday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
       // Check settlement status in Firestore
@@ -2994,13 +2991,13 @@
       const btnToggle = document.getElementById('btnToggleSettleText');
 
       if (isSettled) {
-        statusBadge.innerText = "கணக்கு முடிந்தது ✅ (Settled)";
+        statusBadge.innerText = "Settled ✅";
         statusBadge.className = "text-[9px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300";
-        btnToggle.innerText = "கணக்கை மீண்டும் திறக்க (Reopen)";
+        btnToggle.innerText = "Kanakka Reopen Pannu";
       } else {
-        statusBadge.innerText = "நிலுவையில் உள்ளது ⏳ (Pending)";
+        statusBadge.innerText = "Pending ⏳";
         statusBadge.className = "text-[9px] px-2 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300";
-        btnToggle.innerText = "இந்த வார கணக்கை முடிக்க (Mark Settled)";
+        btnToggle.innerText = "Indha Vaara Kanakka Mudikka (Mark Settled)";
       }
 
       let weeklySales = 0;
@@ -3030,12 +3027,12 @@
       const titleEl = document.getElementById('settleStatusTitle');
       const netProfitEl = document.getElementById('settleNetProfit');
       if (isProfit) {
-        titleEl.innerText = "லாபம் (Profit)";
+        titleEl.innerText = "Profit";
         titleEl.className = "text-[10px] uppercase tracking-wider font-extrabold text-emerald-500";
         netProfitEl.className = "text-3xl font-black text-emerald-600 dark:text-emerald-400";
         netProfitEl.innerText = `+${formatINR(netProfit)}`;
       } else {
-        titleEl.innerText = "நஷ்டம் (Loss)";
+        titleEl.innerText = "Loss";
         titleEl.className = "text-[10px] uppercase tracking-wider font-extrabold text-rose-500";
         netProfitEl.className = "text-3xl font-black text-rose-600 dark:text-rose-400";
         netProfitEl.innerText = `-${formatINR(Math.abs(netProfit))}`;
@@ -3050,28 +3047,28 @@
         <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
           <div class="flex items-center gap-1.5">
             ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
-            <span class="font-medium text-slate-800 dark:text-slate-200">Nagoor (மீன் கொள்முதல்):</span>
+            <span class="font-medium text-slate-800 dark:text-slate-200">Nagoor (Fish Purchase):</span>
           </div>
           <strong class="text-rose-600 dark:text-rose-400 font-bold">${formatINR(weeklyPartnerExp.Nagoor)}</strong>
         </div>
         <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
           <div class="flex items-center gap-1.5">
             ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
-            <span class="font-medium text-slate-800 dark:text-slate-200">Balaji (சுத்தம், ஐஸ், கவர், ஆப்):</span>
+            <span class="font-medium text-slate-800 dark:text-slate-200">Balaji (Clean, Ice, Covers, Ads):</span>
           </div>
           <strong class="text-rose-600 dark:text-rose-400 font-bold">${formatINR(weeklyPartnerExp.Balaji)}</strong>
         </div>
         <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
           <div class="flex items-center gap-1.5">
             ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
-            <span class="font-medium text-slate-800 dark:text-slate-200">JP (பெட்ரோல் & டெலிவரி):</span>
+            <span class="font-medium text-slate-800 dark:text-slate-200">JP (Petrol & Delivery):</span>
           </div>
           <strong class="text-rose-600 dark:text-rose-400 font-bold">${formatINR(weeklyPartnerExp.JP)}</strong>
         </div>
       `;
 
       // 3. Step 2: Equal Partner Split (1/3)
-      const shareLabel = isProfit ? `ஒருவருக்கு: +${formatINR(equalShare)}` : `ஒருவர் நஷ்டம்: -${formatINR(lossShare)}`;
+      const shareLabel = isProfit ? `Thala: +${formatINR(equalShare)}` : `Thala Loss: -${formatINR(lossShare)}`;
       document.getElementById('settleEachPartnerShare').innerText = shareLabel;
       const splitGrid = document.getElementById('settleProfitSplitGrid');
       const shareColor = isProfit ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400";
@@ -3139,8 +3136,8 @@
               </div>
             </div>
             <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
-              <span>மீன் செலவு ${formatINR(weeklyPartnerExp.Nagoor)} + லாப பங்கு ${formatINR(equalShare)}</span>
-              <span class="text-teal-600 dark:text-teal-400 font-bold">நாகூருக்கு அனுப்ப வேண்டியது</span>
+              <span>Fish refund ${formatINR(weeklyPartnerExp.Nagoor)} + Profit share ${formatINR(equalShare)}</span>
+              <span class="text-teal-600 dark:text-teal-400 font-bold">Nagoor-ku Anupa Vendiyadhu</span>
             </div>
           </div>
         `;
@@ -3165,8 +3162,8 @@
               </div>
             </div>
             <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
-              <span>பெட்ரோல் செலவு ${formatINR(weeklyPartnerExp.JP)} + லாப பங்கு ${formatINR(equalShare)}</span>
-              <span class="text-teal-600 dark:text-teal-400 font-bold">JP-க்கு அனுப்ப வேண்டியது</span>
+              <span>Petrol refund ${formatINR(weeklyPartnerExp.JP)} + Profit share ${formatINR(equalShare)}</span>
+              <span class="text-teal-600 dark:text-teal-400 font-bold">JP-ku Anupa Vendiyadhu</span>
             </div>
           </div>
         `;
@@ -3176,8 +3173,8 @@
             <div class="flex items-center gap-2.5">
               ${renderPartnerAvatar('Balaji', 'w-8 h-8', 'rounded-xl')}
               <div>
-                <span class="font-bold text-teal-950 dark:text-teal-200">பாலாஜி கையில் இருக்க வேண்டிய மீதம் (Balaji Balance)</span>
-                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">செலவு ${formatINR(weeklyPartnerExp.Balaji)} + லாப பங்கு ${formatINR(equalShare)}</div>
+                <span class="font-bold text-teal-950 dark:text-teal-200">Balaji Kaila Meedham Irukka Vendiyadhu</span>
+                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Selavu refund ${formatINR(weeklyPartnerExp.Balaji)} + Profit share ${formatINR(equalShare)}</div>
               </div>
             </div>
             <span class="font-black text-teal-600 dark:text-teal-400 text-sm">${formatINR(balajiTotal)}</span>
@@ -3209,8 +3206,8 @@
                 </div>
               </div>
               <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
-                <span>மீன் செலவு ${formatINR(weeklyPartnerExp.Nagoor)} - நஷ்ட பங்கு ${formatINR(lossShare)}</span>
-                <span class="text-teal-600 dark:text-teal-400 font-bold">நாகூருக்கு அனுப்ப வேண்டியது</span>
+                <span>Fish refund ${formatINR(weeklyPartnerExp.Nagoor)} - Loss share ${formatINR(lossShare)}</span>
+                <span class="text-teal-600 dark:text-teal-400 font-bold">Nagoor-ku Anupa Vendiyadhu</span>
               </div>
             </div>
           `;
@@ -3236,8 +3233,8 @@
                 </div>
               </div>
               <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
-                <span>நஷ்ட பங்கு ${formatINR(lossShare)} - மீன் செலவு ${formatINR(weeklyPartnerExp.Nagoor)}</span>
-                <span class="text-rose-600 dark:text-rose-400 font-bold">பாலாஜிக்கு தர வேண்டியது</span>
+                <span>Loss share ${formatINR(lossShare)} - Fish refund ${formatINR(weeklyPartnerExp.Nagoor)}</span>
+                <span class="text-rose-600 dark:text-rose-400 font-bold">Balaji-ku Thara Vendiyadhu</span>
               </div>
             </div>
           `;
@@ -3264,8 +3261,8 @@
                 </div>
               </div>
               <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
-                <span>பெட்ரோல் செலவு ${formatINR(weeklyPartnerExp.JP)} - நஷ்ட பங்கு ${formatINR(lossShare)}</span>
-                <span class="text-teal-600 dark:text-teal-400 font-bold">JP-க்கு அனுப்ப வேண்டியது</span>
+                <span>Petrol refund ${formatINR(weeklyPartnerExp.JP)} - Loss share ${formatINR(lossShare)}</span>
+                <span class="text-teal-600 dark:text-teal-400 font-bold">JP-ku Anupa Vendiyadhu</span>
               </div>
             </div>
           `;
@@ -3291,8 +3288,8 @@
                 </div>
               </div>
               <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
-                <span>நஷ்ட பங்கு ${formatINR(lossShare)} - பெட்ரோல் செலவு ${formatINR(weeklyPartnerExp.JP)}</span>
-                <span class="text-rose-600 dark:text-rose-400 font-bold">பாலாஜிக்கு தர வேண்டியது</span>
+                <span>Loss share ${formatINR(lossShare)} - Petrol refund ${formatINR(weeklyPartnerExp.JP)}</span>
+                <span class="text-rose-600 dark:text-rose-400 font-bold">Balaji-ku Thara Vendiyadhu</span>
               </div>
             </div>
           `;
@@ -3394,16 +3391,16 @@
   ➔ Balaji Loss: -${formatINR(lossShare)}`;
       }
 
-      const msg = `*MeenMart Hub - வார கணக்கு (Weekly Statement)* 🐟
-📅 வாரம் (Week): ${mStr} - ${sStr}
+      const msg = `*MeenMart Hub - Vaara Kanakku* 🐟
+📅 Vaaram: ${mStr} - ${sStr}
 -----------------------
-📈 மொத்த வரவு (Sales): ${formatINR(sales)}
-💸 மொத்த செலவு (Expenses): ${formatINR(exp)}
-💎 ${isProfit ? 'லாபம் (Profit)' : 'நஷ்டம் (Loss)'}: ${formatINR(Math.abs(profit))}
+📈 Varavu: ${formatINR(sales)}
+💸 Selavu: ${formatINR(exp)}
+💎 ${isProfit ? 'Profit' : 'Loss'}: ${formatINR(profit)}
 -----------------------
-🤝 சம பங்கு (1/3 Share): ${isProfit ? '+' : '-'}${formatINR(Math.abs(split))}
+🤝 1/3 Partner Share: ${isProfit ? '+' : '-'}${formatINR(Math.abs(split))}
 -----------------------
-🔄 செலவு திருப்பி செலுத்துதல் (Refund):
+🔄 Selavu Refund:
   🦐 Nagoor: ${formatINR(pExp.Nagoor)}
   👨‍💻 Balaji: ${formatINR(pExp.Balaji)}
   🛵 JP: ${formatINR(pExp.JP)}
@@ -3624,7 +3621,7 @@ ${transferSection}
 
       try {
         await addDoc(collection(db, "transactions"), newTx);
-        showToast("பதிவு சேமிக்கப்பட்டது! ✅ (Saved)");
+        showToast("Entry Save Aagiduchi! ✅");
         closeEntryBottomSheet();
         document.getElementById('entryAmount').value = '';
         document.getElementById('entryDescription').value = '';
@@ -3646,10 +3643,10 @@ ${transferSection}
         return;
       }
 
-      if (confirm("இந்த பதிவை நிச்சயமாக நீக்க வேண்டுமா? 🗑️ (Confirm Delete)")) {
+      if (confirm("Indha entry-ah delete panna poringala?")) {
         try {
           await deleteDoc(doc(db, "transactions", id));
-          showToast("பதிவு நீக்கப்பட்டது! 🗑️ (Deleted)");
+          showToast("Entry Delete Aagiduchi! 🗑️");
         } catch (err) {
           alert("Delete panradhula error: " + err.message);
         }
@@ -3707,14 +3704,6 @@ ${transferSection}
 
     window.sendPresenceHeartbeat = async function(isOnline = true) {
       if (!state.currentPartner) return;
-      // Optimistic local state update for zero latency
-      if (!state.presence) state.presence = {};
-      state.presence[state.currentPartner] = {
-        online: isOnline,
-        lastSeen: Date.now()
-      };
-      renderPartnerPresence();
-
       try {
         await setDoc(doc(db, "metadata", "presence"), {
           [state.currentPartner]: {
@@ -3762,18 +3751,12 @@ ${transferSection}
         renderPartnerPresence();
       }, 15000);
 
-      // Visibility listener with 15s grace period to prevent flickering during app switching
-      let hideGraceTimer = null;
+      // Visibility listener
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-          if (hideGraceTimer) clearTimeout(hideGraceTimer);
           sendPresenceHeartbeat(true);
         } else {
-          hideGraceTimer = setTimeout(() => {
-            if (document.visibilityState === 'hidden') {
-              sendPresenceHeartbeat(false);
-            }
-          }, 15000);
+          sendPresenceHeartbeat(false);
         }
       });
 
@@ -3852,7 +3835,7 @@ ${transferSection}
       }
       document.getElementById('viewTxDateTime').innerText = `${tx.date || ''}${timeStr}`;
 
-      document.getElementById('viewTxLockText').innerText = `இதை பதிவு செய்தவர் ${p.name} மட்டுமே திருத்த அல்லது நீக்க முடியும். பார்வையிட மட்டுமே அனுமதி (View Only) 🔒`;
+      document.getElementById('viewTxLockText').innerText = `Idha create panna ${p.name} mattum dhaan edit / delete panna mudiyum. Ungaluku view access mattum irukku. 🔒`;
 
       document.getElementById('txDetailsModal').classList.remove('hidden');
     };
@@ -3871,7 +3854,7 @@ ${transferSection}
         return;
       }
 
-      if (confirm("இந்த பதிவை நிச்சயமாக நீக்க வேண்டுமா? 🗑️ (Confirm Delete)")) {
+      if (confirm("Indha entry-ah nichayama delete panna venduma? 🗑️")) {
         try {
           await deleteDoc(doc(db, "transactions", id));
           closeEditModal();
@@ -3946,7 +3929,7 @@ ${transferSection}
 
       try {
         await updateDoc(doc(db, "transactions", id), updated);
-        showToast("பதிவு மாற்றப்பட்டது! ✏️ (Updated)");
+        showToast("Entry Update Aagiduchi! ✏️");
         closeEditModal();
       } catch (err) {
         alert("Update panradhula error: " + err.message);
