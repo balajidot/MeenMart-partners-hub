@@ -289,31 +289,47 @@
       <!-- ======================================== -->
       <section id="tab-dashboard" class="space-y-3.5 fade-in">
         
-        <!-- DATE FILTER BAR -->
-        <div class="app-card rounded-2xl p-2.5 space-y-2">
-          <div class="flex items-center justify-between px-1">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date Filter:</span>
-            <button onclick="toggleCustomDateRangeModal()" class="text-[10px] font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1">
-              <i class="fa-solid fa-calendar-days"></i> <span id="dashRangeLabel">Innaiku</span>
+        <!-- DATE FILTER & WEEKLY CALENDAR STRIP -->
+        <div class="app-card rounded-3xl p-3.5 space-y-3 border-t-4 border-t-teal-500 shadow-xl">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar-check text-teal-500 text-xs"></i>
+              <span class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Date Scope</span>
+            </div>
+            <button onclick="toggleCustomDateRangeModal()" class="text-[10px] text-teal-600 dark:text-teal-400 font-extrabold bg-teal-50 dark:bg-teal-950/50 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <i class="fa-solid fa-calendar-days text-[9px]"></i>
+              <span id="dashRangeLabel">Today</span>
             </button>
           </div>
 
-          <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5">
-            <button onclick="setDashboardDateScope('today')" id="dashScope-today" class="flex-1 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white text-center whitespace-nowrap shadow-sm">Today</button>
-            <button onclick="setDashboardDateScope('yesterday')" id="dashScope-yesterday" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">Yesterday</button>
-            <button onclick="setDashboardDateScope('week')" id="dashScope-week" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">This Week</button>
-            <button onclick="setDashboardDateScope('month')" id="dashScope-month" class="flex-1 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-center whitespace-nowrap">This Month</button>
+          <!-- 4 Scope Pills: Today, This Week, This Month, Total -->
+          <div class="grid grid-cols-4 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl text-center">
+            <button onclick="setDashboardDateScope('today')" id="dashScope-today" class="py-1.5 rounded-xl text-xs font-extrabold bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm transition">Today</button>
+            <button onclick="setDashboardDateScope('week')" id="dashScope-week" class="py-1.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">This Week</button>
+            <button onclick="setDashboardDateScope('month')" id="dashScope-month" class="py-1.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">This Month</button>
+            <button onclick="setDashboardDateScope('all')" id="dashScope-all" class="py-1.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Total</button>
+          </div>
+
+          <!-- Interactive 7-Day Weekly Calendar Strip -->
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-2 px-1">
+              <span class="flex items-center gap-1"><i class="fa-regular fa-calendar text-[9px] text-teal-500"></i> Current Week Calendar</span>
+              <span id="dashCalMonthLabel" class="text-teal-600 dark:text-teal-400 font-extrabold">Nov 2026</span>
+            </div>
+            <div id="dashWeeklyCalendarStrip" class="grid grid-cols-7 gap-1 text-center select-none">
+              <!-- Rendered dynamically: Mon to Sun with active indicator -->
+            </div>
           </div>
 
           <!-- Custom Date Range Row -->
-          <div id="dashCustomDateRow" class="hidden pt-1.5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
+          <div id="dashCustomDateRow" class="hidden pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
             <div>
               <label class="block text-[9px] text-slate-400 font-bold mb-0.5">From Date:</label>
-              <input type="date" id="dashCustomFrom" onchange="applyCustomDateRange()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs" />
+              <input type="date" id="dashCustomFrom" onchange="applyCustomDateRange()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-white" />
             </div>
             <div>
               <label class="block text-[9px] text-slate-400 font-bold mb-0.5">To Date:</label>
-              <input type="date" id="dashCustomTo" onchange="applyCustomDateRange()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs" />
+              <input type="date" id="dashCustomTo" onchange="applyCustomDateRange()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-white" />
             </div>
           </div>
         </div>
@@ -325,7 +341,7 @@
           <div>
             <div class="flex items-center justify-between text-teal-100 text-xs font-semibold">
               <span id="dashNetTitle">Profit</span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-sm" id="dashHeroDateBadge">Innaiku</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-sm" id="dashHeroDateBadge">Today</span>
             </div>
             <div class="text-3xl font-black tracking-tight mt-1" id="dashHeroNetBalance">₹0</div>
           </div>
@@ -382,7 +398,7 @@
               <div id="partnerCardPresence-Balaji" class="min-h-[16px]"></div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Expenses: <strong class="text-rose-600 dark:text-rose-400" id="cardBalajiExp">₹0</strong></div>
-                <div class="text-slate-500">Vasool: <strong class="text-emerald-600 dark:text-emerald-400" id="cardBalajiSales">₹0</strong></div>
+                <div class="text-slate-500">Revenue: <strong class="text-emerald-600 dark:text-emerald-400" id="cardBalajiSales">₹0</strong></div>
               </div>
             </div>
 
@@ -394,7 +410,7 @@
               <div id="partnerCardPresence-Nagoor" class="min-h-[16px]"></div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Expenses: <strong class="text-rose-600 dark:text-rose-400" id="cardNagoorExp">₹0</strong></div>
-                <div class="text-slate-500">Vasool: <strong class="text-emerald-600 dark:text-emerald-400" id="cardNagoorSales">₹0</strong></div>
+                <div class="text-slate-500">Revenue: <strong class="text-emerald-600 dark:text-emerald-400" id="cardNagoorSales">₹0</strong></div>
               </div>
             </div>
 
@@ -406,7 +422,7 @@
               <div id="partnerCardPresence-JP" class="min-h-[16px]"></div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Expenses: <strong class="text-rose-600 dark:text-rose-400" id="cardJpExp">₹0</strong></div>
-                <div class="text-slate-500">Vasool: <strong class="text-emerald-600 dark:text-emerald-400" id="cardJpSales">₹0</strong></div>
+                <div class="text-slate-500">Revenue: <strong class="text-emerald-600 dark:text-emerald-400" id="cardJpSales">₹0</strong></div>
               </div>
             </div>
           </div>
@@ -2539,9 +2555,9 @@
           </div>
           <div class="text-right flex-shrink-0">
             <span class="font-black ${nagoorPendingRefund > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'} text-sm block">
-              ${nagoorPendingRefund > 0 ? formatINR(nagoorPendingRefund) : 'Nil (Settled)'}
+              ${nagoorPendingRefund > 0 ? formatINR(nagoorPendingRefund) + ' Due' : '₹0 Due ✅'}
             </span>
-            <span class="text-[9px] text-slate-400 font-medium">${nagoorPendingRefund > 0 ? 'Pending Due' : 'All Cleared'}</span>
+            <span class="text-[9px] text-slate-400 font-medium">${nagoorPendingRefund > 0 ? 'Refund Due' : 'Fully Reimbursed'}</span>
           </div>
         </div>
 
@@ -2563,9 +2579,9 @@
           </div>
           <div class="text-right flex-shrink-0">
             <span class="font-black ${jpPendingRefund > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'} text-sm block">
-              ${jpPendingRefund > 0 ? formatINR(jpPendingRefund) : 'Nil (Settled)'}
+              ${jpPendingRefund > 0 ? formatINR(jpPendingRefund) + ' Due' : '₹0 Due ✅'}
             </span>
-            <span class="text-[9px] text-slate-400 font-medium">${jpPendingRefund > 0 ? 'Pending Due' : 'All Cleared'}</span>
+            <span class="text-[9px] text-slate-400 font-medium">${jpPendingRefund > 0 ? 'Refund Due' : 'Fully Reimbursed'}</span>
           </div>
         </div>
       `;
@@ -4249,7 +4265,7 @@
       const transfersData = currentSettlement?.transfers || {};
 
       // Helper function to build partner transfer card
-      function renderTransferCard(partner, baseDue, carriedDue, reasonText, roleLabel) {
+      function renderTransferCard(partner, baseDue, carriedDue, reasonText, roleLabel, baseExp, shareAmt) {
         const totalDue = Math.max(0, baseDue + carriedDue);
         const record = transfersData[partner];
         const paidAmount = record ? (Number(record.paidAmount) || 0) : 0;
@@ -4264,73 +4280,120 @@
           status = 'partial';
         }
 
-        let statusBadgeHtml = '';
-        let payBtnLabel = '';
-        let payBtnClass = '';
-        let paidInfoHtml = '';
+        let cardBorderClass = 'border-teal-200 dark:border-teal-500/30';
+        let statusBannerBg = 'bg-slate-50 dark:bg-slate-800/80';
+        let statusBannerBorder = 'border-slate-200 dark:border-slate-700/60';
+        let statusTextClass = 'text-slate-600 dark:text-slate-400';
+        let statusBadgeText = 'Unpaid ⏳';
+        let statusIcon = '<i class="fa-solid fa-hourglass-half text-[11px] text-slate-400"></i>';
+        let paymentDetailsText = 'Payment pending';
+        let statusDetailsClass = 'text-slate-400';
+        let payBtnLabel = 'Record Payment 💳';
+        let payBtnClass = 'bg-teal-600 hover:bg-teal-500 text-white';
+        let payBtnIcon = 'fa-solid fa-money-bill-transfer';
 
         if (status === 'paid') {
-          statusBadgeHtml = `<span class="text-[9px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">Paid in Full ✅</span>`;
+          cardBorderClass = 'border-emerald-200 dark:border-emerald-800/40';
+          statusBannerBg = 'bg-emerald-50 dark:bg-emerald-950/40';
+          statusBannerBorder = 'border-emerald-200 dark:border-emerald-800/50';
+          statusTextClass = 'text-emerald-700 dark:text-emerald-300';
+          statusBadgeText = 'Paid in Full ✅';
+          statusIcon = '<i class="fa-solid fa-circle-check text-xs text-emerald-500"></i>';
           payBtnLabel = 'Edit Receipt 📝';
           payBtnClass = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700';
+          payBtnIcon = 'fa-solid fa-receipt';
           if (record && record.paidAt) {
-            paidInfoHtml = `<span class="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">${record.paymentMethod || 'GPay'} paid (${formatINR(paidAmount)})</span>`;
+            paymentDetailsText = `${record.paymentMethod || 'GPay'} (${formatINR(paidAmount)}) paid`;
+            statusDetailsClass = 'text-emerald-600 dark:text-emerald-400';
           }
         } else if (status === 'partial') {
-          statusBadgeHtml = `<span class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">Paid ${formatINR(paidAmount)} • Due ${formatINR(remainingDue)} 🟡</span>`;
+          cardBorderClass = 'border-amber-200 dark:border-amber-700/50';
+          statusBannerBg = 'bg-amber-50 dark:bg-amber-950/40';
+          statusBannerBorder = 'border-amber-200 dark:border-amber-800/50';
+          statusTextClass = 'text-amber-700 dark:text-amber-300';
+          statusBadgeText = `Paid ${formatINR(paidAmount)} • Due ${formatINR(remainingDue)} 🟡`;
+          statusIcon = '<i class="fa-solid fa-triangle-exclamation text-xs text-amber-500"></i>';
           payBtnLabel = `Pay Balance (${formatINR(remainingDue)}) 💳`;
-          payBtnClass = 'bg-teal-600 hover:bg-teal-500 text-white shadow-sm';
-          paidInfoHtml = `<span class="text-[9px] text-amber-600 dark:text-amber-400 font-bold">${record.paymentMethod || 'GPay'}: ${formatINR(paidAmount)} paid</span>`;
-        } else {
-          statusBadgeHtml = `<span class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">Unpaid ⏳</span>`;
-          payBtnLabel = `Record Payment 💳`;
-          payBtnClass = 'bg-teal-600 hover:bg-teal-500 text-white shadow-sm';
+          payBtnClass = 'bg-teal-600 hover:bg-teal-500 text-white';
+          payBtnIcon = 'fa-solid fa-money-bill-transfer';
+          if (record && record.paidAt) {
+            paymentDetailsText = `${record.paymentMethod || 'GPay'} paid (${formatINR(paidAmount)})`;
+            statusDetailsClass = 'text-amber-600 dark:text-amber-400';
+          }
         }
 
-        const carryForwardBadge = carriedDue > 0
-          ? `<div class="text-[10px] text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1 pt-0.5"><i class="fa-solid fa-arrow-turn-down text-[9px]"></i> Includes ${formatINR(carriedDue)} carry-forward from previous week</div>`
+        const carryForwardHtml = carriedDue > 0
+          ? `<div class="flex items-center justify-between text-amber-600 dark:text-amber-400 font-bold">
+               <span class="flex items-center gap-1"><i class="fa-solid fa-arrow-turn-down text-[9px]"></i> Previous Week Pending Due:</span>
+               <span>+${formatINR(carriedDue)}</span>
+             </div>`
           : '';
 
         const escapedReason = reasonText.replace(/'/g, "\\'");
+        const roleExpenseLabel = partner === 'Nagoor' ? 'Fish Expense Reimbursement' : 'Petrol & Delivery Reimbursement';
 
         return `
-          <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border ${status === 'paid' ? 'border-emerald-200 dark:border-emerald-800/40' : (status === 'partial' ? 'border-amber-200 dark:border-amber-700/50' : 'border-teal-200 dark:border-teal-500/30')} shadow-sm space-y-2.5">
-            <div class="flex items-center justify-between gap-2 flex-wrap">
-              <div class="flex items-center gap-1.5">
-                <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
-                  ${renderPartnerAvatar('Balaji', 'w-4 h-4', 'rounded-md')}
-                  <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Balaji</span>
-                </div>
-                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
-                <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
-                  ${renderPartnerAvatar(partner, 'w-4 h-4', 'rounded-md')}
-                  <span class="text-xs font-bold text-slate-800 dark:text-slate-200">${partner}</span>
-                </div>
-              </div>
+          <div class="p-4 rounded-3xl bg-white dark:bg-slate-900 border ${cardBorderClass} shadow-md space-y-3">
+            
+            <!-- Top Row: Transfer Route & Total Due -->
+            <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
               <div class="flex items-center gap-2">
-                ${statusBadgeHtml}
-                <span class="text-sm font-black text-teal-600 dark:text-teal-400">${formatINR(totalDue)}</span>
+                <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-lg')}
+                  <span class="text-xs font-black text-slate-900 dark:text-white">Balaji</span>
+                </div>
+                <i class="fa-solid fa-arrow-right text-xs text-teal-500"></i>
+                <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                  ${renderPartnerAvatar(partner, 'w-5 h-5', 'rounded-lg')}
+                  <span class="text-xs font-black text-slate-900 dark:text-white">${partner}</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block">Total Due</span>
+                <span class="text-base font-black text-teal-600 dark:text-teal-400">${formatINR(totalDue)}</span>
               </div>
             </div>
 
-            <div class="text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800 space-y-0.5">
-              <div class="flex items-center justify-between">
-                <span>${reasonText}</span>
-                ${paidInfoHtml}
+            <!-- Middle Row: Status Banner & Payment Info -->
+            <div class="p-2.5 rounded-2xl ${statusBannerBg} border ${statusBannerBorder} flex items-center justify-between text-xs">
+              <div class="flex items-center gap-1.5 font-extrabold ${statusTextClass}">
+                ${statusIcon}
+                <span>${statusBadgeText}</span>
               </div>
-              ${carryForwardBadge}
+              <div class="text-[10px] font-bold ${statusDetailsClass}">
+                ${paymentDetailsText}
+              </div>
             </div>
 
-            <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/60">
-              <button onclick="openRecordPaymentModal('${partner}', ${totalDue}, ${paidAmount}, ${remainingDue}, ${carriedDue}, '${weekId}', '${escapedReason}')" class="flex-1 py-2 px-3 rounded-xl ${payBtnClass} text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition">
-                <i class="fa-solid fa-money-bill-transfer"></i>
+            <!-- Structured Math Breakdown Inset Box (No Squishing!) -->
+            <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/50 space-y-1.5 text-xs">
+              <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                <span>${roleExpenseLabel}:</span>
+                <strong class="font-bold text-slate-900 dark:text-white">${formatINR(baseExp)}</strong>
+              </div>
+              <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                <span>Equal 1/3 Profit Share:</span>
+                <strong class="font-bold text-teal-600 dark:text-teal-400">+${formatINR(shareAmt)}</strong>
+              </div>
+              ${carryForwardHtml}
+              <div class="pt-1.5 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between font-black text-slate-900 dark:text-white">
+                <span>Total Payable Amount:</span>
+                <span class="text-teal-600 dark:text-teal-400 text-sm">${formatINR(totalDue)}</span>
+              </div>
+            </div>
+
+            <!-- Bottom Row: 2 Big Equal Action Buttons -->
+            <div class="grid grid-cols-2 gap-2 pt-0.5">
+              <button type="button" onclick="openRecordPaymentModal('${partner}', ${totalDue}, ${paidAmount}, ${remainingDue}, ${carriedDue}, '${weekId}', '${escapedReason}')" class="w-full py-2.5 px-3 rounded-xl ${payBtnClass} text-xs font-extrabold flex items-center justify-center gap-1.5 active:scale-95 transition shadow-sm">
+                <i class="${payBtnIcon}"></i>
                 <span>${payBtnLabel}</span>
               </button>
-              <button onclick="copyToClipboard('${remainingDue > 0 ? remainingDue : totalDue}', '${partner} Amount')" class="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200 dark:border-slate-700 active:scale-95 transition flex items-center gap-1" title="Copy Amount">
-                <i class="fa-regular fa-copy text-[11px]"></i>
-                <span>Copy</span>
+              <button type="button" onclick="copyToClipboard('${remainingDue > 0 ? remainingDue : totalDue}', '${partner} Amount')" class="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-extrabold border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1.5 active:scale-95 transition" title="Copy Amount">
+                <i class="fa-regular fa-copy text-xs"></i>
+                <span>Copy Amount</span>
               </button>
             </div>
+
           </div>
         `;
       }
@@ -4342,11 +4405,11 @@
       if (isProfit) {
         const baseNagoor = weeklyPartnerExp.Nagoor + equalShare;
         const nagoorReason = `Fish refund ${formatINR(weeklyPartnerExp.Nagoor)} + Profit share ${formatINR(equalShare)}`;
-        nagoorHtml = renderTransferCard('Nagoor', baseNagoor, prevNagoorRemaining, nagoorReason, 'Fish Purchase');
+        nagoorHtml = renderTransferCard('Nagoor', baseNagoor, prevNagoorRemaining, nagoorReason, 'Fish Purchase', weeklyPartnerExp.Nagoor, equalShare);
 
         const baseJp = weeklyPartnerExp.JP + equalShare;
         const jpReason = `Petrol refund ${formatINR(weeklyPartnerExp.JP)} + Profit share ${formatINR(equalShare)}`;
-        jpHtml = renderTransferCard('JP', baseJp, prevJpRemaining, jpReason, 'Delivery & Petrol');
+        jpHtml = renderTransferCard('JP', baseJp, prevJpRemaining, jpReason, 'Delivery & Petrol', weeklyPartnerExp.JP, equalShare);
 
         const balajiTotal = weeklyPartnerExp.Balaji + equalShare;
         balajiHtml = `
