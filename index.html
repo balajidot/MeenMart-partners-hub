@@ -268,6 +268,17 @@
         </div>
 
       </div>
+
+      <!-- LIVE CO-FOUNDERS PRESENCE STRIP -->
+      <div id="partnerPresenceBar" class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-extrabold text-[10px] tracking-wider uppercase">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Online:</span>
+        </div>
+        <div id="partnerPresenceList" class="flex items-center gap-1.5">
+          <!-- Dynamically populated by renderPartnerPresence() -->
+        </div>
+      </div>
     </header>
 
     <!-- MAIN BODY TABS -->
@@ -1165,7 +1176,79 @@
             <button type="button" onclick="closeEditModal()" class="w-1/2 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold">Cancel</button>
             <button type="button" onclick="handleEditSubmit(event)" class="w-1/2 py-2.5 rounded-xl bg-teal-600 text-white text-xs font-bold shadow-sm">Save Changes</button>
           </div>
+
+          <!-- Prominent Delete Button inside Edit Modal -->
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <button type="button" onclick="handleDeleteFromEditModal()" class="w-full py-2.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition">
+              <i class="fa-solid fa-trash-can"></i> Indha Entry-ah Delete Pannu
+            </button>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TRANSACTION DETAILS MODAL (VIEW ONLY)      -->
+    <!-- ========================================== -->
+    <div id="txDetailsModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
+      <div onclick="closeTxDetailsModal()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div id="viewTxPartnerAvatar"></div>
+            <div>
+              <h3 class="font-extrabold text-sm text-slate-900 dark:text-white" id="viewTxTitle">Entry Vivaram</h3>
+              <p class="text-[10px] text-slate-400 font-medium" id="viewTxPartnerSub">Created by ...</p>
+            </div>
+          </div>
+          <button onclick="closeTxDetailsModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-xs flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Amount & Badge Hero -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Amount</span>
+            <div class="text-2xl font-black mt-0.5" id="viewTxAmount">₹0</div>
+          </div>
+          <div id="viewTxTypeBadge"></div>
+        </div>
+
+        <!-- Full Uncut Notes (Fix for truncated text!) -->
+        <div class="space-y-1.5">
+          <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400">Kurippu / Notes (Full Details):</label>
+          <div id="viewTxNotes" class="p-3.5 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-xs font-semibold text-slate-800 dark:text-slate-100 whitespace-pre-wrap break-words leading-relaxed min-h-[50px]">
+          </div>
+        </div>
+
+        <!-- Info Grid: Category, Date & Time -->
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+            <span class="text-[10px] text-slate-400 block font-medium">Category</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block" id="viewTxCategory">-</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+            <span class="text-[10px] text-slate-400 block font-medium">Date & Time</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block" id="viewTxDateTime">-</span>
+          </div>
+        </div>
+
+        <!-- Ownership / Lock Notice -->
+        <div id="viewTxLockNotice" class="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/50 flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+          <i class="fa-solid fa-lock text-amber-500 mt-0.5 flex-shrink-0"></i>
+          <span class="text-[11px] font-medium leading-tight" id="viewTxLockText">
+            Idha create panna partner mattum dhaan edit / delete panna mudiyum. Ungaluku view access mattum irukku. 🔒
+          </span>
+        </div>
+
+        <!-- Close Button -->
+        <button type="button" onclick="closeTxDetailsModal()" class="w-full py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-sm active:scale-95 transition">
+          Seri / Close
+        </button>
+
       </div>
     </div>
 
@@ -1244,6 +1327,7 @@
     const state = {
       currentUser: null,
       currentPartner: null,
+      presence: {},
       theme: localStorage.getItem('meenmart_theme') || 'dark',
       currentTab: 'dashboard',
       dashboardScope: 'today', // 'today', 'yesterday', 'week', 'month', 'custom'
@@ -1344,6 +1428,7 @@
           initCategoriesSync();
           initLiveSync();
           initSettlementsSync();
+          initPresenceSync();
         } else {
           gate.classList.remove('hidden');
           appContainer.classList.add('hidden');
@@ -2170,7 +2255,6 @@
       }
 
       const catLabel = getCategoryLabel(tx.type, tx.category);
-      const isOwner = canUserModify(tx);
 
       // Notes-First Hierarchy with deduplication
       const hasNotes = tx.description && tx.description.trim().length > 0;
@@ -2190,56 +2274,43 @@
         }
       }
 
+      const isOnline = isPartnerOnline(tx.partner);
+
       return `
-        <div class="app-card rounded-2xl px-3.5 py-2.5 transition active:scale-[0.99] border border-slate-100 dark:border-slate-800 shadow-xs">
+        <div onclick="handleTransactionCardClick('${tx.id}')" role="button" tabindex="0" class="app-card rounded-2xl px-3.5 py-2.5 transition active:scale-[0.98] border border-slate-100 dark:border-slate-800 shadow-xs cursor-pointer hover:border-teal-500/30">
           
           <div class="flex items-center justify-between gap-2.5">
             
             <!-- Left: Partner Photo Avatar + Notes & Metadata -->
             <div class="flex items-center space-x-2.5 min-w-0 flex-1">
-              <div class="flex-shrink-0">
+              <div class="relative flex-shrink-0">
                 ${renderPartnerAvatar(tx.partner, 'w-10 h-10', 'rounded-xl')}
+                ${isOnline ? '<span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" title="Online"></span>' : ''}
               </div>
               <div class="min-w-0 flex-1">
-                <!-- Notes / Description (Bold Headline) -->
-                <h4 class="font-extrabold text-sm text-slate-900 dark:text-white leading-snug truncate">
+                <!-- Notes / Description: wraps cleanly up to 2 lines without truncation -->
+                <h4 class="font-extrabold text-sm text-slate-900 dark:text-white leading-snug break-words line-clamp-2">
                   ${primaryTitle}
                 </h4>
                 <!-- Metadata sub-line: Partner • Time • Category -->
-                <div class="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate">
+                <div class="flex items-center flex-wrap gap-1 text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
                   <span class="font-bold text-slate-600 dark:text-slate-300">${p.name}</span>
                   ${timeText ? `<span>•</span><span>${timeText}</span>` : ''}
                   ${showDate ? `<span>•</span><span>${tx.date}</span>` : ''}
-                  ${secondaryLabel ? `<span>•</span><span class="text-teal-600 dark:text-teal-400 font-semibold truncate">${secondaryLabel}</span>` : ''}
+                  ${secondaryLabel ? `<span>•</span><span class="text-teal-600 dark:text-teal-400 font-semibold">${secondaryLabel}</span>` : ''}
                 </div>
               </div>
             </div>
 
-            <!-- Right: Amount + Type Badge & Quick Actions -->
-            <div class="flex items-center gap-2 flex-shrink-0">
+            <!-- Right: Amount + Type Badge & Chevron -->
+            <div class="flex items-center gap-1.5 flex-shrink-0">
               <div class="text-right">
                 <div class="text-sm font-black ${amountColor}">${sign}${formatINR(tx.amount)}</div>
                 <div class="mt-0.5">${typeBadge}</div>
               </div>
-
-              ${showActions ? (
-                isOwner ? `
-                  <div class="flex items-center gap-1 pl-1.5 border-l border-slate-100 dark:border-slate-800">
-                    <button onclick="openEditModal('${tx.id}')" title="Edit" class="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-teal-600 flex items-center justify-center text-xs active:scale-90 transition">
-                      <i class="fa-solid fa-pen"></i>
-                    </button>
-                    <button onclick="handleDeleteTx('${tx.id}')" title="Delete" class="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-600 flex items-center justify-center text-xs active:scale-90 transition">
-                      <i class="fa-solid fa-trash"></i>
-                    </button>
-                  </div>
-                ` : `
-                  <div class="pl-1.5 border-l border-slate-100 dark:border-slate-800">
-                    <span class="w-7 h-7 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-600 flex items-center justify-center text-xs" title="Locked to ${p.name}">
-                      <i class="fa-solid fa-lock text-[10px]"></i>
-                    </span>
-                  </div>
-                `
-              ) : ''}
+              <div class="text-slate-300 dark:text-slate-600 text-xs pl-0.5">
+                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+              </div>
             </div>
 
           </div>
@@ -3575,6 +3646,218 @@ ${transferSection}
       if (confirm("Indha entry-ah delete panna poringala?")) {
         try {
           await deleteDoc(doc(db, "transactions", id));
+          showToast("Entry Delete Aagiduchi! 🗑️");
+        } catch (err) {
+          alert("Delete panradhula error: " + err.message);
+        }
+      }
+    };
+
+    // ==========================================
+    // 🟢 REAL-TIME PRESENCE SYNC & ONLINE STATUS
+    // ==========================================
+    window.isPartnerOnline = function(p) {
+      if (!state.presence || !state.presence[p]) return false;
+      const item = state.presence[p];
+      if (!item.online) return false;
+      // Online if lastSeen within 65 seconds
+      return (Date.now() - (item.lastSeen || 0)) < 65000;
+    };
+
+    window.getPartnerLastSeenText = function(p) {
+      if (isPartnerOnline(p)) return 'Online';
+      if (!state.presence || !state.presence[p] || !state.presence[p].lastSeen) return 'Offline';
+      const diffMs = Date.now() - state.presence[p].lastSeen;
+      const mins = Math.floor(diffMs / 60000);
+      if (mins < 1) return 'Just now';
+      if (mins < 60) return `${mins}m`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours}h`;
+      return `${Math.floor(hours / 24)}d`;
+    };
+
+    window.renderPartnerPresence = function() {
+      const list = document.getElementById('partnerPresenceList');
+      if (!list) return;
+      const partners = ['Balaji', 'Nagoor', 'JP'];
+      list.innerHTML = partners.map(p => {
+        const isOnline = isPartnerOnline(p);
+        const lastSeenStr = getPartnerLastSeenText(p);
+        const isMe = state.currentPartner === p;
+        const dotColor = isOnline ? 'bg-emerald-500 ring-2 ring-emerald-200 dark:ring-emerald-950' : 'bg-slate-300 dark:bg-slate-600';
+        const statusText = isOnline ? 'Online' : lastSeenStr;
+        const statusClass = isOnline ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400 dark:text-slate-500 font-medium';
+        const bgClass = isOnline ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200/50 dark:border-emerald-800/40' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/40';
+
+        return `
+          <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${bgClass} text-[10px] shadow-2xs" title="${p}: ${statusText}">
+            <div class="relative flex items-center">
+              ${renderPartnerAvatar(p, 'w-4 h-4', 'rounded-full')}
+              <span class="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotColor}"></span>
+            </div>
+            <span class="font-bold text-slate-700 dark:text-slate-200">${p}</span>
+            <span class="${statusClass} text-[9px]">${isOnline ? '🟢' : statusText}</span>
+          </div>
+        `;
+      }).join('');
+    };
+
+    window.sendPresenceHeartbeat = async function(isOnline = true) {
+      if (!state.currentPartner) return;
+      try {
+        await setDoc(doc(db, "metadata", "presence"), {
+          [state.currentPartner]: {
+            online: isOnline,
+            lastSeen: Date.now()
+          },
+          updatedAt: Date.now(),
+          updatedBy: state.currentPartner
+        }, { merge: true });
+      } catch (err) {
+        console.warn("Presence heartbeat warning:", err);
+      }
+    };
+
+    function initPresenceSync() {
+      // Real-time Firestore presence subscription
+      onSnapshot(doc(db, "metadata", "presence"), (snap) => {
+        if (snap.exists()) {
+          state.presence = snap.data() || {};
+          renderPartnerPresence();
+          if (state.currentTab === 'history') {
+            renderHistoryList();
+          } else if (state.currentTab === 'dashboard') {
+            renderRecentTransactions();
+          }
+        }
+      }, (err) => {
+        console.warn("Presence sync warning:", err);
+      });
+
+      // Initial online ping
+      sendPresenceHeartbeat(true);
+
+      // Ping every 25 seconds while active
+      if (window._presenceInterval) clearInterval(window._presenceInterval);
+      window._presenceInterval = setInterval(() => {
+        if (document.visibilityState === 'visible' && state.currentPartner) {
+          sendPresenceHeartbeat(true);
+        }
+      }, 25000);
+
+      // Local UI timer to update relative time text (e.g. 5m) every 15 seconds
+      if (window._presenceUIRefresh) clearInterval(window._presenceUIRefresh);
+      window._presenceUIRefresh = setInterval(() => {
+        renderPartnerPresence();
+      }, 15000);
+
+      // Visibility listener
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          sendPresenceHeartbeat(true);
+        } else {
+          sendPresenceHeartbeat(false);
+        }
+      });
+
+      // Page unload / exit
+      window.addEventListener('beforeunload', () => {
+        sendPresenceHeartbeat(false);
+      });
+      window.addEventListener('pagehide', () => {
+        sendPresenceHeartbeat(false);
+      });
+    }
+
+    // ==========================================
+    // 👆 TRANSACTION CARD CLICK & DETAILS VIEW
+    // ==========================================
+    window.handleTransactionCardClick = function(id) {
+      const tx = state.transactions.find(t => t.id === id);
+      if (!tx) return;
+      if (canUserModify(tx)) {
+        openEditModal(id);
+      } else {
+        openTxDetailsModal(id);
+      }
+    };
+
+    window.openTxDetailsModal = function(id) {
+      const tx = state.transactions.find(t => t.id === id);
+      if (!tx) return;
+      const p = PARTNERS[tx.partner] || { name: tx.partner, avatar: '👤' };
+
+      const avatarContainer = document.getElementById('viewTxPartnerAvatar');
+      if (avatarContainer) {
+        avatarContainer.innerHTML = renderPartnerAvatar(tx.partner, 'w-9 h-9', 'rounded-xl');
+      }
+
+      document.getElementById('viewTxTitle').innerText = `${p.name}-oda Entry`;
+      document.getElementById('viewTxPartnerSub').innerText = `${p.name} • ${p.role || 'Partner'}`;
+
+      const isExp = tx.type === 'expense';
+      const isSales = tx.type === 'sales';
+      const sign = isExp ? '-' : (isSales ? '+' : '');
+      const amountColor = isExp ? 'text-rose-600 dark:text-rose-400' : (isSales ? 'text-emerald-600 dark:text-emerald-400' : 'text-teal-600 dark:text-teal-400');
+
+      const amtEl = document.getElementById('viewTxAmount');
+      amtEl.className = `text-2xl font-black mt-0.5 ${amountColor}`;
+      amtEl.innerText = `${sign}${formatINR(tx.amount)}`;
+
+      let typeBadgeHtml = '';
+      if (isExp) {
+        typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-300 text-xs font-bold">💸 Selavu</span>';
+      } else if (isSales) {
+        typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-300 text-xs font-bold">📈 Varavu</span>';
+      } else {
+        typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-300 text-xs font-bold">💰 Mudhaleedu</span>';
+      }
+      document.getElementById('viewTxTypeBadge').innerHTML = typeBadgeHtml;
+
+      // 100% Full Uncut Description / Notes
+      const notesEl = document.getElementById('viewTxNotes');
+      if (tx.description && tx.description.trim().length > 0) {
+        notesEl.innerText = tx.description.trim();
+        notesEl.classList.remove('italic', 'text-slate-400');
+      } else {
+        notesEl.innerText = 'Kurippu (Notes) edhum illai.';
+        notesEl.classList.add('italic', 'text-slate-400');
+      }
+
+      document.getElementById('viewTxCategory').innerText = getCategoryLabel(tx.type, tx.category);
+
+      let timeStr = '';
+      if (tx.createdAt) {
+        const d = new Date(tx.createdAt);
+        if (!isNaN(d.getTime())) {
+          timeStr = ' • ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+      }
+      document.getElementById('viewTxDateTime').innerText = `${tx.date || ''}${timeStr}`;
+
+      document.getElementById('viewTxLockText').innerText = `Idha create panna ${p.name} mattum dhaan edit / delete panna mudiyum. Ungaluku view access mattum irukku. 🔒`;
+
+      document.getElementById('txDetailsModal').classList.remove('hidden');
+    };
+
+    window.closeTxDetailsModal = function() {
+      const modal = document.getElementById('txDetailsModal');
+      if (modal) modal.classList.add('hidden');
+    };
+
+    window.handleDeleteFromEditModal = async function() {
+      const id = document.getElementById('editTxId').value;
+      if (!id) return;
+      const tx = state.transactions.find(t => t.id === id);
+      if (!tx || !canUserModify(tx)) {
+        alert("Idha delete panna ungalluku permission illa! 🔒");
+        return;
+      }
+
+      if (confirm("Indha entry-ah nichayama delete panna venduma? 🗑️")) {
+        try {
+          await deleteDoc(doc(db, "transactions", id));
+          closeEditModal();
           showToast("Entry Delete Aagiduchi! 🗑️");
         } catch (err) {
           alert("Delete panradhula error: " + err.message);
