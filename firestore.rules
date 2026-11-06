@@ -71,11 +71,11 @@ rules_version = '2';
 //
 // Collection: settings
 // Document ID: partners
-// Purpose: Stores partner profile icons/avatars managed exclusively by Balaji
+// Purpose: Stores partner profile icons/avatars and photos managed exclusively by Balaji
 // Fields:
-//   - Balaji: map (optional, with avatar string max 20 chars)
-//   - Nagoor: map (optional, with avatar string max 20 chars)
-//   - JP: map (optional, with avatar string max 20 chars)
+//   - Balaji: map (optional, with avatar string max 20 chars, photoUrl string max 150,000 chars)
+//   - Nagoor: map (optional, with avatar string max 20 chars, photoUrl string max 150,000 chars)
+//   - JP: map (optional, with avatar string max 20 chars, photoUrl string max 150,000 chars)
 //   - updatedAt: timestamp or number (optional)
 //   - updatedBy: string (optional, max 100 chars)
 //
@@ -441,12 +441,14 @@ service cloud.firestore {
     }
 
     // Validates an individual partner's avatar object in settings/partners
+    // Supports optional short avatar string (emoji/text max 20 chars) and/or
+    // compressed photoUrl (data URL or https link max 150,000 chars)
     function isValidPartnerAvatar(entry) {
       return entry is map &&
-        hasRequiredFields(entry, ['avatar']) &&
-        hasOnlyAllowedFields(entry, ['avatar']) &&
-        entry.avatar is string &&
-        entry.avatar.size() <= 20;
+        hasOnlyAllowedFields(entry, ['avatar', 'photoUrl']) &&
+        entry.keys().hasAny(['avatar', 'photoUrl']) &&
+        (!('avatar' in entry) || (entry.avatar is string && entry.avatar.size() <= 20)) &&
+        (!('photoUrl' in entry) || (entry.photoUrl is string && entry.photoUrl.size() <= 150000));
     }
 
     // Validates partner profile icons/avatars configuration document (settings/partners)
@@ -468,7 +470,8 @@ service cloud.firestore {
         (!('updatedAt' in data) || (data.updatedAt is number || data.updatedAt is timestamp || data.updatedAt is string)) &&
         (!('version' in data) || (data.version is string && data.version.size() <= 50) || (data.version is number)) &&
         (!('avatar' in data) || (data.avatar is string && data.avatar.size() <= 20)) &&
-        (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 200000));
+        (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 200000)) &&
+        (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 200000));
     }
 
     // ===============================================================

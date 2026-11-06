@@ -177,21 +177,21 @@
       <!-- 3 Fixed Partners Icons -->
       <div class="py-2 flex items-center justify-center space-x-3">
         <div class="flex flex-col items-center">
-          <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 flex items-center justify-center text-xl shadow-sm">
+          <div id="loginAvatar-Balaji" class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 flex items-center justify-center text-xl shadow-sm overflow-hidden flex-shrink-0">
             👨‍💻
           </div>
           <span class="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1">Balaji</span>
           <span class="text-[9px] text-slate-400">Tech & Vasool</span>
         </div>
         <div class="flex flex-col items-center">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-xl shadow-sm">
+          <div id="loginAvatar-Nagoor" class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-xl shadow-sm overflow-hidden flex-shrink-0">
             🦐
           </div>
           <span class="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1">Nagoor</span>
           <span class="text-[9px] text-slate-400">Fish Purchase</span>
         </div>
         <div class="flex flex-col items-center">
-          <div class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center text-xl shadow-sm">
+          <div id="loginAvatar-JP" class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center text-xl shadow-sm overflow-hidden flex-shrink-0">
             🛵
           </div>
           <span class="text-[11px] font-bold text-slate-700 dark:text-slate-300 mt-1">JP</span>
@@ -252,7 +252,7 @@
         <div class="flex items-center space-x-2">
           
           <button onclick="handlePartnerPillClick()" id="currentPartnerPill" class="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl text-xs active:scale-95 transition cursor-pointer" title="Partner Profile & Icons (Balaji Only)">
-            <span id="currentPartnerAvatar">👨‍💻</span>
+            <span id="currentPartnerAvatar" class="flex-shrink-0 flex items-center justify-center">👨‍💻</span>
             <span id="currentPartnerName" class="font-bold text-slate-900 dark:text-slate-100">Balaji</span>
             <i id="partnerAdminBadge" class="fa-solid fa-crown text-[10px] text-amber-500 ml-0.5" title="Admin"></i>
           </button>
@@ -365,8 +365,8 @@
           <div class="grid grid-cols-3 gap-2" id="partnerSummaryCards">
             <!-- Balaji -->
             <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-blue-500">
-              <div class="text-lg">👨‍💻</div>
-              <div class="font-extrabold text-xs text-slate-900 dark:text-white">Balaji</div>
+              <div class="flex justify-center">${renderPartnerAvatar('Balaji', 'w-8 h-8', 'rounded-xl')}</div>
+              <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">Balaji</div>
               <div class="text-[9px] text-slate-400">Clean, Cover, Ads</div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Selavu: <strong class="text-rose-600 dark:text-rose-400" id="cardBalajiExp">₹0</strong></div>
@@ -376,8 +376,8 @@
 
             <!-- Nagoor -->
             <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-emerald-500">
-              <div class="text-lg">🦐</div>
-              <div class="font-extrabold text-xs text-slate-900 dark:text-white">Nagoor</div>
+              <div class="flex justify-center">${renderPartnerAvatar('Nagoor', 'w-8 h-8', 'rounded-xl')}</div>
+              <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">Nagoor</div>
               <div class="text-[9px] text-slate-400">Fish Purchase</div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Selavu: <strong class="text-rose-600 dark:text-rose-400" id="cardNagoorExp">₹0</strong></div>
@@ -387,8 +387,8 @@
 
             <!-- JP -->
             <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-amber-500">
-              <div class="text-lg">🛵</div>
-              <div class="font-extrabold text-xs text-slate-900 dark:text-white">JP</div>
+              <div class="flex justify-center">${renderPartnerAvatar('JP', 'w-8 h-8', 'rounded-xl')}</div>
+              <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">JP</div>
               <div class="text-[9px] text-slate-400">Delivery & Petrol</div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Selavu: <strong class="text-rose-600 dark:text-rose-400" id="cardJpExp">₹0</strong></div>
@@ -640,7 +640,7 @@
             </button>
             <button onclick="handlePartnerPillClick()" class="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/30 active:scale-95 transition">
               <i class="fa-solid fa-crown"></i>
-              <span>Partner Icons</span>
+              <span>Partner Photos 👑</span>
             </button>
           </div>
 
@@ -900,18 +900,18 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- 👤 5b. PARTNER PROFILE ICONS (BALAJI ONLY) -->
+    <!-- 👤 5b. PARTNER PROFILE PHOTOS (BALAJI ONLY) -->
     <!-- ========================================== -->
     <div id="partnerIconsModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
       <div onclick="closePartnerIconsModal()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
-      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-t-3xl p-5 border-t border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[88vh] overflow-y-auto no-scrollbar">
         
         <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
           <div class="flex items-center space-x-2">
             <span class="text-xl">👑</span>
             <div>
-              <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">Partner Profile Icons</h3>
-              <p class="text-[10px] text-amber-600 dark:text-amber-400 font-bold">Balaji Admin Controls 🔒</p>
+              <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">Partner Profile Photos</h3>
+              <p class="text-[10px] text-amber-600 dark:text-amber-400 font-bold">Balaji Admin Controls • Auto Compress ⚡</p>
             </div>
           </div>
           <button onclick="closePartnerIconsModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-xs">
@@ -920,81 +920,132 @@
         </div>
 
         <p class="text-xs text-slate-500 dark:text-slate-400">
-          3 Partners-kum profile icon / emoji inga customize pannalam (Balaji mattum):
+          3 Partners-kum profile photos upload pannalam (Auto-compress aagi lightweight-ah save aagum):
         </p>
 
-        <!-- 3 Partner Cards -->
+        <!-- 3 Partner Photo Cards -->
         <div class="space-y-3">
           
           <!-- Balaji -->
-          <div class="app-card rounded-2xl p-3 space-y-2 border-l-4 border-l-blue-500">
+          <div class="app-card rounded-2xl p-3.5 space-y-3 border-l-4 border-l-blue-500">
             <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-2">
-                <span id="previewAvatar-Balaji" class="text-2xl w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center border border-blue-200 dark:border-blue-500/30">👨‍💻</span>
+              <div class="flex items-center space-x-3">
+                <div class="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-blue-500 shadow-sm flex items-center justify-center flex-shrink-0 cursor-pointer" onclick="document.getElementById('fileInput-Balaji').click()">
+                  <img id="previewPhoto-Balaji" src="" class="w-full h-full object-cover hidden" alt="Balaji" />
+                  <span id="previewEmoji-Balaji" class="text-2xl">👨‍💻</span>
+                  <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition">
+                    <i class="fa-solid fa-camera text-xs"></i>
+                  </div>
+                </div>
                 <div>
                   <h4 class="text-xs font-bold text-slate-900 dark:text-white">Balaji</h4>
-                  <span class="text-[10px] text-slate-400">Tech & Vasool</span>
+                  <span class="text-[10px] text-slate-400 block">Tech & Vasool</span>
+                  <span id="photoBadge-Balaji" class="inline-block mt-0.5 text-[9px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-500">Emoji</span>
                 </div>
               </div>
-              <input type="text" id="customAvatar-Balaji" maxlength="8" class="w-14 text-center py-1 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-900 dark:text-white" placeholder="👨‍💻" oninput="updateAvatarPreview('Balaji', this.value)" />
+              <div class="flex items-center space-x-1.5">
+                <input type="file" id="fileInput-Balaji" accept="image/*" class="hidden" onchange="handlePartnerPhotoSelect('Balaji', event)" />
+                <button type="button" onclick="document.getElementById('fileInput-Balaji').click()" class="px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-500/30 text-xs font-bold flex items-center gap-1 active:scale-95 transition">
+                  <i class="fa-solid fa-camera"></i>
+                  <span>Photo</span>
+                </button>
+                <button type="button" onclick="removePartnerPhoto('Balaji')" id="btnRemovePhoto-Balaji" class="hidden px-2 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 text-xs font-bold active:scale-95 transition" title="Remove photo">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
             </div>
-            <!-- Quick emoji picks -->
-            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-              <button type="button" onclick="selectQuickAvatar('Balaji', '👨‍💻')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">👨‍💻</button>
-              <button type="button" onclick="selectQuickAvatar('Balaji', '👑')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">👑</button>
-              <button type="button" onclick="selectQuickAvatar('Balaji', '💼')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">💼</button>
-              <button type="button" onclick="selectQuickAvatar('Balaji', '⚡')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">⚡</button>
-              <button type="button" onclick="selectQuickAvatar('Balaji', '😎')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">😎</button>
-              <button type="button" onclick="selectQuickAvatar('Balaji', '🚀')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🚀</button>
-              <button type="button" onclick="selectQuickAvatar('Balaji', '📱')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">📱</button>
+            <!-- Emoji fallback picker -->
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400">
+              <span>Fallback Icon:</span>
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="selectQuickAvatar('Balaji', '👨‍💻')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">👨‍💻</button>
+                <button type="button" onclick="selectQuickAvatar('Balaji', '👑')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">👑</button>
+                <button type="button" onclick="selectQuickAvatar('Balaji', '💼')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">💼</button>
+                <button type="button" onclick="selectQuickAvatar('Balaji', '⚡')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">⚡</button>
+                <button type="button" onclick="selectQuickAvatar('Balaji', '😎')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">😎</button>
+              </div>
             </div>
           </div>
 
           <!-- Nagoor -->
-          <div class="app-card rounded-2xl p-3 space-y-2 border-l-4 border-l-emerald-500">
+          <div class="app-card rounded-2xl p-3.5 space-y-3 border-l-4 border-l-emerald-500">
             <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-2">
-                <span id="previewAvatar-Nagoor" class="text-2xl w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center border border-emerald-200 dark:border-emerald-500/30">🦐</span>
+              <div class="flex items-center space-x-3">
+                <div class="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-emerald-500 shadow-sm flex items-center justify-center flex-shrink-0 cursor-pointer" onclick="document.getElementById('fileInput-Nagoor').click()">
+                  <img id="previewPhoto-Nagoor" src="" class="w-full h-full object-cover hidden" alt="Nagoor" />
+                  <span id="previewEmoji-Nagoor" class="text-2xl">🦐</span>
+                  <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition">
+                    <i class="fa-solid fa-camera text-xs"></i>
+                  </div>
+                </div>
                 <div>
                   <h4 class="text-xs font-bold text-slate-900 dark:text-white">Nagoor</h4>
-                  <span class="text-[10px] text-slate-400">Fish Purchase</span>
+                  <span class="text-[10px] text-slate-400 block">Fish Purchase</span>
+                  <span id="photoBadge-Nagoor" class="inline-block mt-0.5 text-[9px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-500">Emoji</span>
                 </div>
               </div>
-              <input type="text" id="customAvatar-Nagoor" maxlength="8" class="w-14 text-center py-1 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-900 dark:text-white" placeholder="🦐" oninput="updateAvatarPreview('Nagoor', this.value)" />
+              <div class="flex items-center space-x-1.5">
+                <input type="file" id="fileInput-Nagoor" accept="image/*" class="hidden" onchange="handlePartnerPhotoSelect('Nagoor', event)" />
+                <button type="button" onclick="document.getElementById('fileInput-Nagoor').click()" class="px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-500/30 text-xs font-bold flex items-center gap-1 active:scale-95 transition">
+                  <i class="fa-solid fa-camera"></i>
+                  <span>Photo</span>
+                </button>
+                <button type="button" onclick="removePartnerPhoto('Nagoor')" id="btnRemovePhoto-Nagoor" class="hidden px-2 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 text-xs font-bold active:scale-95 transition" title="Remove photo">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
             </div>
-            <!-- Quick emoji picks -->
-            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-              <button type="button" onclick="selectQuickAvatar('Nagoor', '🦐')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🦐</button>
-              <button type="button" onclick="selectQuickAvatar('Nagoor', '🐟')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🐟</button>
-              <button type="button" onclick="selectQuickAvatar('Nagoor', '🦈')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🦈</button>
-              <button type="button" onclick="selectQuickAvatar('Nagoor', '🦀')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🦀</button>
-              <button type="button" onclick="selectQuickAvatar('Nagoor', '⚓')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">⚓</button>
-              <button type="button" onclick="selectQuickAvatar('Nagoor', '🚤')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🚤</button>
-              <button type="button" onclick="selectQuickAvatar('Nagoor', '🎣')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🎣</button>
+            <!-- Emoji fallback picker -->
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400">
+              <span>Fallback Icon:</span>
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="selectQuickAvatar('Nagoor', '🦐')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">🦐</button>
+                <button type="button" onclick="selectQuickAvatar('Nagoor', '🐟')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">🐟</button>
+                <button type="button" onclick="selectQuickAvatar('Nagoor', '🦈')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">🦈</button>
+                <button type="button" onclick="selectQuickAvatar('Nagoor', '🦀')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">🦀</button>
+                <button type="button" onclick="selectQuickAvatar('Nagoor', '⚓')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">⚓</button>
+              </div>
             </div>
           </div>
 
           <!-- JP -->
-          <div class="app-card rounded-2xl p-3 space-y-2 border-l-4 border-l-amber-500">
+          <div class="app-card rounded-2xl p-3.5 space-y-3 border-l-4 border-l-amber-500">
             <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-2">
-                <span id="previewAvatar-JP" class="text-2xl w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center border border-amber-200 dark:border-amber-500/30">🛵</span>
+              <div class="flex items-center space-x-3">
+                <div class="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border-2 border-amber-500 shadow-sm flex items-center justify-center flex-shrink-0 cursor-pointer" onclick="document.getElementById('fileInput-JP').click()">
+                  <img id="previewPhoto-JP" src="" class="w-full h-full object-cover hidden" alt="JP" />
+                  <span id="previewEmoji-JP" class="text-2xl">🛵</span>
+                  <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition">
+                    <i class="fa-solid fa-camera text-xs"></i>
+                  </div>
+                </div>
                 <div>
                   <h4 class="text-xs font-bold text-slate-900 dark:text-white">JP</h4>
-                  <span class="text-[10px] text-slate-400">Delivery & Petrol</span>
+                  <span class="text-[10px] text-slate-400 block">Delivery & Petrol</span>
+                  <span id="photoBadge-JP" class="inline-block mt-0.5 text-[9px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-500">Emoji</span>
                 </div>
               </div>
-              <input type="text" id="customAvatar-JP" maxlength="8" class="w-14 text-center py-1 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-900 dark:text-white" placeholder="🛵" oninput="updateAvatarPreview('JP', this.value)" />
+              <div class="flex items-center space-x-1.5">
+                <input type="file" id="fileInput-JP" accept="image/*" class="hidden" onchange="handlePartnerPhotoSelect('JP', event)" />
+                <button type="button" onclick="document.getElementById('fileInput-JP').click()" class="px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-500/30 text-xs font-bold flex items-center gap-1 active:scale-95 transition">
+                  <i class="fa-solid fa-camera"></i>
+                  <span>Photo</span>
+                </button>
+                <button type="button" onclick="removePartnerPhoto('JP')" id="btnRemovePhoto-JP" class="hidden px-2 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30 text-xs font-bold active:scale-95 transition" title="Remove photo">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
             </div>
-            <!-- Quick emoji picks -->
-            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-              <button type="button" onclick="selectQuickAvatar('JP', '🛵')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🛵</button>
-              <button type="button" onclick="selectQuickAvatar('JP', '🏍️')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🏍️</button>
-              <button type="button" onclick="selectQuickAvatar('JP', '📦')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">📦</button>
-              <button type="button" onclick="selectQuickAvatar('JP', '⛽')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">⛽</button>
-              <button type="button" onclick="selectQuickAvatar('JP', '⚡')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">⚡</button>
-              <button type="button" onclick="selectQuickAvatar('JP', '🏎️')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">🏎️</button>
-              <button type="button" onclick="selectQuickAvatar('JP', '💨')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-base hover:scale-110 transition">💨</button>
+            <!-- Emoji fallback picker -->
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400">
+              <span>Fallback Icon:</span>
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="selectQuickAvatar('JP', '🛵')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">🛵</button>
+                <button type="button" onclick="selectQuickAvatar('JP', '🏍️')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">🏍️</button>
+                <button type="button" onclick="selectQuickAvatar('JP', '📦')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">📦</button>
+                <button type="button" onclick="selectQuickAvatar('JP', '⛽')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">⛽</button>
+                <button type="button" onclick="selectQuickAvatar('JP', '⚡')" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm hover:scale-110 transition">⚡</button>
+              </div>
             </div>
           </div>
 
@@ -1003,7 +1054,7 @@
         <!-- Save Button -->
         <button type="button" onclick="handleSavePartnerIcons()" id="btnSavePartnerIcons" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg flex items-center justify-center space-x-2 text-xs active:scale-98 transition">
           <i class="fa-solid fa-floppy-disk"></i>
-          <span>Save Profile Icons</span>
+          <span>Save Profile Photos</span>
         </button>
 
       </div>
@@ -1142,9 +1193,9 @@
 
     // 3 Fixed Partners & Emails
     let PARTNERS = {
-      Balaji: { name: "Balaji", role: "Tech & Vasool", avatar: "👨‍💻", color: "#3B82F6" },
-      Nagoor: { name: "Nagoor", role: "Fish Purchase", avatar: "🦐", color: "#10B981" },
-      JP: { name: "JP", role: "Delivery & Petrol", avatar: "🛵", color: "#F59E0B" }
+      Balaji: { name: "Balaji", role: "Tech & Vasool", avatar: "👨‍💻", photoUrl: "", color: "#3B82F6" },
+      Nagoor: { name: "Nagoor", role: "Fish Purchase", avatar: "🦐", photoUrl: "", color: "#10B981" },
+      JP: { name: "JP", role: "Delivery & Petrol", avatar: "🛵", photoUrl: "", color: "#F59E0B" }
     };
 
     const PARTNER_EMAILS = {
@@ -1275,7 +1326,7 @@
           appContainer.classList.remove('hidden');
 
           document.getElementById('currentPartnerName').innerText = PARTNERS[matchedPartner].name;
-          document.getElementById('currentPartnerAvatar').innerText = PARTNERS[matchedPartner].avatar;
+          updateHeaderAvatar();
           selectEntryPartner(matchedPartner);
 
           initPartnersSync();
@@ -1302,28 +1353,173 @@
       }
     });
 
-    // Real-time Partner Avatars Sync with Firestore (settings/partners)
+// ==========================================
+    // 🖼️ UNIVERSAL AVATAR RENDERER & AUTO-COMPRESS
+    // ==========================================
+    function renderPartnerAvatar(partnerName, sizeClass = 'w-9 h-9', roundedClass = 'rounded-xl') {
+      const p = PARTNERS[partnerName] || { name: partnerName, avatar: '👤', photoUrl: '' };
+      if (p.photoUrl && p.photoUrl.trim().length > 0) {
+        return `<img src="${p.photoUrl}" alt="${p.name}" class="${sizeClass} ${roundedClass} object-cover border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex-shrink-0 inline-block align-middle" />`;
+      }
+      let fontSize = 'text-base';
+      if (sizeClass.includes('w-5') || sizeClass.includes('h-5')) fontSize = 'text-[11px]';
+      else if (sizeClass.includes('w-6') || sizeClass.includes('w-7')) fontSize = 'text-xs';
+      else if (sizeClass.includes('w-12') || sizeClass.includes('w-14')) fontSize = 'text-2xl';
+
+      return `<div class="${sizeClass} ${roundedClass} bg-slate-100 dark:bg-slate-800 flex items-center justify-center ${fontSize} flex-shrink-0 shadow-xs font-normal leading-none inline-flex align-middle">${p.avatar || '👤'}</div>`;
+    }
+
+    function updateLoginAvatars() {
+      ['Balaji', 'Nagoor', 'JP'].forEach(p => {
+        const el = document.getElementById(`loginAvatar-${p}`);
+        if (el) {
+          if (PARTNERS[p].photoUrl) {
+            el.innerHTML = `<img src="${PARTNERS[p].photoUrl}" class="w-full h-full object-cover" alt="${p}" />`;
+          } else {
+            el.innerText = PARTNERS[p].avatar || '👤';
+          }
+        }
+      });
+    }
+
+    // High-performance Client-Side Image Compressor (Square center-crop, WebP/JPEG, ~10KB)
+    function compressImageFile(file, targetSize = 180, quality = 0.8) {
+      return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith('image/')) {
+          return reject(new Error('Valid image file thevai!'));
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = targetSize;
+              canvas.height = targetSize;
+              const ctx = canvas.getContext('2d');
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+
+              // Center-crop square calculation to preserve aspect ratio without stretching
+              const minDim = Math.min(img.width, img.height);
+              const sx = (img.width - minDim) / 2;
+              const sy = (img.height - minDim) / 2;
+              ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, targetSize, targetSize);
+
+              // Compress to WebP (fallback to JPEG if browser doesn't support WebP export)
+              let dataUrl = canvas.toDataURL('image/webp', quality);
+              if (!dataUrl.startsWith('data:image/webp')) {
+                dataUrl = canvas.toDataURL('image/jpeg', quality);
+              }
+              // Safety reduction if dataUrl exceeds 90KB
+              if (dataUrl.length > 90000) {
+                dataUrl = canvas.toDataURL('image/jpeg', 0.65);
+              }
+              resolve(dataUrl);
+            } catch (err) {
+              reject(err);
+            }
+          };
+          img.onerror = () => reject(new Error('Image decode panna mudiyala!'));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('File read error!'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Temporary staging state for photo modal
+    const pendingPhotos = {
+      Balaji: null,
+      Nagoor: null,
+      JP: null
+    };
+
+    window.handlePartnerPhotoSelect = async function(partner, event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      try {
+        showToast("Compressing photo... ⏳");
+        const compressedDataUrl = await compressImageFile(file, 180, 0.8);
+        pendingPhotos[partner] = compressedDataUrl;
+
+        // Update preview in modal
+        const imgEl = document.getElementById(`previewPhoto-${partner}`);
+        const emojiEl = document.getElementById(`previewEmoji-${partner}`);
+        const badgeEl = document.getElementById(`photoBadge-${partner}`);
+        const removeBtn = document.getElementById(`btnRemovePhoto-${partner}`);
+
+        if (imgEl && emojiEl) {
+          imgEl.src = compressedDataUrl;
+          imgEl.classList.remove('hidden');
+          emojiEl.classList.add('hidden');
+        }
+        if (badgeEl) {
+          const kb = Math.round((compressedDataUrl.length * 3 / 4) / 1024);
+          badgeEl.innerText = `Photo (${kb} KB) ⚡`;
+          badgeEl.className = "inline-block mt-0.5 text-[9px] px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 font-bold";
+        }
+        if (removeBtn) removeBtn.classList.remove('hidden');
+
+        showToast(`${partner} photo compressed! Click Save to apply ✅`);
+      } catch (err) {
+        alert("Photo compress error: " + err.message);
+      }
+    };
+
+    window.removePartnerPhoto = function(partner) {
+      pendingPhotos[partner] = ''; // explicitly cleared
+
+      const imgEl = document.getElementById(`previewPhoto-${partner}`);
+      const emojiEl = document.getElementById(`previewEmoji-${partner}`);
+      const badgeEl = document.getElementById(`photoBadge-${partner}`);
+      const removeBtn = document.getElementById(`btnRemovePhoto-${partner}`);
+
+      if (imgEl && emojiEl) {
+        imgEl.src = '';
+        imgEl.classList.add('hidden');
+        emojiEl.classList.remove('hidden');
+      }
+      if (badgeEl) {
+        badgeEl.innerText = "Emoji";
+        badgeEl.className = "inline-block mt-0.5 text-[9px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-500";
+      }
+      if (removeBtn) removeBtn.classList.add('hidden');
+      showToast(`${partner} photo reset to emoji.`);
+    };
+
+    // Real-time Partner Avatars & Photos Sync with Firestore (settings/partners)
     function initPartnersSync() {
       const partnersDocRef = doc(db, "settings", "partners");
       onSnapshot(partnersDocRef, (snap) => {
         if (snap.exists()) {
           const data = snap.data();
           ['Balaji', 'Nagoor', 'JP'].forEach(p => {
-            if (data[p] && data[p].avatar) {
-              PARTNERS[p].avatar = data[p].avatar;
+            if (data[p]) {
+              if (data[p].avatar) PARTNERS[p].avatar = data[p].avatar;
+              PARTNERS[p].photoUrl = data[p].photoUrl || '';
             }
           });
 
           // Update header avatar
-          if (state.currentPartner && PARTNERS[state.currentPartner]) {
-            const topAv = document.getElementById('currentPartnerAvatar');
-            if (topAv) topAv.innerText = PARTNERS[state.currentPartner].avatar;
-          }
+          updateHeaderAvatar();
 
           // Update Quick Add lock UI
           updateSheetPartnerLockUI();
 
-          // Refresh UI components with updated avatars
+          // Cache in localStorage for instant offline/startup display
+          try {
+            localStorage.setItem('meenmart_partners_cache', JSON.stringify({
+              Balaji: { avatar: PARTNERS.Balaji.avatar, photoUrl: PARTNERS.Balaji.photoUrl },
+              Nagoor: { avatar: PARTNERS.Nagoor.avatar, photoUrl: PARTNERS.Nagoor.photoUrl },
+              JP: { avatar: PARTNERS.JP.avatar, photoUrl: PARTNERS.JP.photoUrl }
+            }));
+          } catch (e) {}
+
+          updateLoginAvatars();
+
+          // Refresh UI components with updated photos/avatars
           updateUI();
         }
       }, (err) => {
@@ -1331,26 +1527,68 @@
       });
     }
 
-    // Partner Profile Icons Modal Logic (Balaji Admin Only)
+    function updateHeaderAvatar() {
+      const topAv = document.getElementById('currentPartnerAvatar');
+      if (topAv && state.currentPartner) {
+        topAv.innerHTML = renderPartnerAvatar(state.currentPartner, 'w-6 h-6', 'rounded-lg');
+      }
+      const adminBadge = document.getElementById('partnerAdminBadge');
+      if (adminBadge) {
+        if (state.currentPartner === 'Balaji') {
+          adminBadge.classList.remove('hidden');
+        } else {
+          adminBadge.classList.add('hidden');
+        }
+      }
+    }
+
+    // Partner Profile Photos Modal Logic (Balaji Admin Only)
     window.handlePartnerPillClick = function() {
       if (state.currentPartner === 'Balaji') {
         openPartnerIconsModal();
       } else {
-        showToast("Balaji mattum dhaan partner icons maatha mudiyum! 🔒", "⚠️");
+        showToast("Balaji mattum dhaan partner photos maatha mudiyum! 🔒", "⚠️");
       }
     };
 
     window.openPartnerIconsModal = function() {
       if (state.currentPartner !== 'Balaji') {
-        alert("Balaji mattum dhaan partner icons maatha mudiyum! 🔒");
+        alert("Balaji mattum dhaan partner photos maatha mudiyum! 🔒");
         return;
       }
 
       ['Balaji', 'Nagoor', 'JP'].forEach(p => {
-        const input = document.getElementById(`customAvatar-${p}`);
-        const preview = document.getElementById(`previewAvatar-${p}`);
-        if (input && PARTNERS[p]) input.value = PARTNERS[p].avatar;
-        if (preview && PARTNERS[p]) preview.innerText = PARTNERS[p].avatar;
+        pendingPhotos[p] = null; // reset pending state
+        const pObj = PARTNERS[p] || {};
+        const imgEl = document.getElementById(`previewPhoto-${p}`);
+        const emojiEl = document.getElementById(`previewEmoji-${p}`);
+        const badgeEl = document.getElementById(`photoBadge-${p}`);
+        const removeBtn = document.getElementById(`btnRemovePhoto-${p}`);
+
+        if (pObj.photoUrl) {
+          if (imgEl && emojiEl) {
+            imgEl.src = pObj.photoUrl;
+            imgEl.classList.remove('hidden');
+            emojiEl.classList.add('hidden');
+          }
+          if (badgeEl) {
+            badgeEl.innerText = "Photo Active ⚡";
+            badgeEl.className = "inline-block mt-0.5 text-[9px] px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 font-bold";
+          }
+          if (removeBtn) removeBtn.classList.remove('hidden');
+        } else {
+          if (imgEl && emojiEl) {
+            imgEl.src = '';
+            imgEl.classList.add('hidden');
+            emojiEl.innerText = pObj.avatar || '👤';
+            emojiEl.classList.remove('hidden');
+          }
+          if (badgeEl) {
+            badgeEl.innerText = "Emoji";
+            badgeEl.className = "inline-block mt-0.5 text-[9px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-bold text-slate-500";
+          }
+          if (removeBtn) removeBtn.classList.add('hidden');
+        }
       });
 
       document.getElementById('partnerIconsModal').classList.remove('hidden');
@@ -1361,19 +1599,18 @@
     };
 
     window.selectQuickAvatar = function(partner, emoji) {
-      const input = document.getElementById(`customAvatar-${partner}`);
-      if (input) input.value = emoji;
-      updateAvatarPreview(partner, emoji);
-    };
-
-    window.updateAvatarPreview = function(partner, val) {
-      const preview = document.getElementById(`previewAvatar-${partner}`);
-      if (preview) preview.innerText = val.trim() || '👤';
+      if (PARTNERS[partner]) PARTNERS[partner].avatar = emoji;
+      const emojiEl = document.getElementById(`previewEmoji-${partner}`);
+      if (emojiEl) emojiEl.innerText = emoji;
+      // If photo was not uploaded, show emoji
+      if (!pendingPhotos[partner] && !PARTNERS[partner].photoUrl) {
+        showToast(`${partner} fallback emoji set to ${emoji}`);
+      }
     };
 
     window.handleSavePartnerIcons = async function() {
       if (state.currentPartner !== 'Balaji') {
-        alert("Balaji mattum dhaan partner icons maatha mudiyum! 🔒");
+        alert("Balaji mattum dhaan partner photos maatha mudiyum! 🔒");
         return;
       }
 
@@ -1381,35 +1618,42 @@
       btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Saving...</span>`;
 
-      const bAvatar = (document.getElementById('customAvatar-Balaji').value || '').trim() || '👨‍💻';
-      const nAvatar = (document.getElementById('customAvatar-Nagoor').value || '').trim() || '🦐';
-      const jAvatar = (document.getElementById('customAvatar-JP').value || '').trim() || '🛵';
+      const updatePayload = {
+        updatedAt: Date.now(),
+        updatedBy: state.currentUser ? state.currentUser.email : 'Balaji'
+      };
+
+      ['Balaji', 'Nagoor', 'JP'].forEach(p => {
+        let finalPhoto = PARTNERS[p].photoUrl || '';
+        if (pendingPhotos[p] !== null) {
+          finalPhoto = pendingPhotos[p]; // updated or cleared
+        }
+        updatePayload[p] = {
+          avatar: PARTNERS[p].avatar || '👤',
+          photoUrl: finalPhoto
+        };
+      });
 
       try {
-        await setDoc(doc(db, "settings", "partners"), {
-          Balaji: { avatar: bAvatar },
-          Nagoor: { avatar: nAvatar },
-          JP: { avatar: jAvatar },
-          updatedAt: Date.now(),
-          updatedBy: state.currentUser ? state.currentUser.email : 'Balaji'
-        }, { merge: true });
+        await setDoc(doc(db, "settings", "partners"), updatePayload, { merge: true });
 
-        PARTNERS.Balaji.avatar = bAvatar;
-        PARTNERS.Nagoor.avatar = nAvatar;
-        PARTNERS.JP.avatar = jAvatar;
+        ['Balaji', 'Nagoor', 'JP'].forEach(p => {
+          PARTNERS[p].photoUrl = updatePayload[p].photoUrl;
+        });
 
-        showToast("Partner icons update aagiduchi! ✅");
+        showToast("Partner profile photos update aagiduchi! ✅");
         closePartnerIconsModal();
+        updateHeaderAvatar();
         updateUI();
       } catch (err) {
-        alert("Icons save error: " + err.message);
+        alert("Photos save error: " + err.message);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Save Profile Icons</span>`;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Save Profile Photos</span>`;
       }
     };
 
-    // Real-time Categories Sync with Firestore
+        // Real-time Categories Sync with Firestore
     function initCategoriesSync() {
       const catDocRef = doc(db, "settings", "categories");
       onSnapshot(catDocRef, (snap) => {
@@ -1920,8 +2164,8 @@
           <!-- Top Row: Notes (Bold Title) on Left & Amount + Type Badge on Right -->
           <div class="flex items-start justify-between gap-3">
             <div class="flex items-start space-x-2.5 min-w-0">
-              <div class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-lg flex-shrink-0 mt-0.5 shadow-xs">
-                ${p.avatar}
+              <div class="mt-0.5">
+                ${renderPartnerAvatar(tx.partner, 'w-9 h-9', 'rounded-xl')}
               </div>
               <div class="min-w-0">
                 <!-- Notes (Prominent & Bold) -->
@@ -2270,15 +2514,24 @@
       const reimbList = document.getElementById('settleReimbursementList');
       reimbList.innerHTML = `
         <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
-          <span>🦐 Nagoor (Fish Purchase):</span>
+          <div class="flex items-center gap-1.5">
+            ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
+            <span class="font-medium text-slate-800 dark:text-slate-200">Nagoor (Fish Purchase):</span>
+          </div>
           <strong class="text-rose-600 dark:text-rose-400 font-bold">${formatINR(weeklyPartnerExp.Nagoor)}</strong>
         </div>
         <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
-          <span>👨‍💻 Balaji (Clean, Ice, Covers, Ads):</span>
+          <div class="flex items-center gap-1.5">
+            ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+            <span class="font-medium text-slate-800 dark:text-slate-200">Balaji (Clean, Ice, Covers, Ads):</span>
+          </div>
           <strong class="text-rose-600 dark:text-rose-400 font-bold">${formatINR(weeklyPartnerExp.Balaji)}</strong>
         </div>
         <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs">
-          <span>🛵 JP (Petrol & Delivery):</span>
+          <div class="flex items-center gap-1.5">
+            ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
+            <span class="font-medium text-slate-800 dark:text-slate-200">JP (Petrol & Delivery):</span>
+          </div>
           <strong class="text-rose-600 dark:text-rose-400 font-bold">${formatINR(weeklyPartnerExp.JP)}</strong>
         </div>
       `;
@@ -2292,18 +2545,18 @@
 
       splitGrid.innerHTML = `
         <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
-          <div class="text-sm">👨‍💻</div>
-          <div class="text-[10px] text-slate-400 mt-0.5">Balaji</div>
+          <div class="flex justify-center">${renderPartnerAvatar('Balaji', 'w-7 h-7', 'rounded-lg')}</div>
+          <div class="text-[10px] text-slate-400 mt-0.5 font-bold">Balaji</div>
           <div class="text-xs font-bold ${shareColor}">${shareText}</div>
         </div>
         <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
-          <div class="text-sm">🦐</div>
-          <div class="text-[10px] text-slate-400 mt-0.5">Nagoor</div>
+          <div class="flex justify-center">${renderPartnerAvatar('Nagoor', 'w-7 h-7', 'rounded-lg')}</div>
+          <div class="text-[10px] text-slate-400 mt-0.5 font-bold">Nagoor</div>
           <div class="text-xs font-bold ${shareColor}">${shareText}</div>
         </div>
         <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
-          <div class="text-sm">🛵</div>
-          <div class="text-[10px] text-slate-400 mt-0.5">JP</div>
+          <div class="flex justify-center">${renderPartnerAvatar('JP', 'w-7 h-7', 'rounded-lg')}</div>
+          <div class="text-[10px] text-slate-400 mt-0.5 font-bold">JP</div>
           <div class="text-xs font-bold ${shareColor}">${shareText}</div>
         </div>
       `;
@@ -2336,11 +2589,13 @@
           <div class="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between">
             <div>
               <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
-                <span>👨‍💻 Balaji</span>
-                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
-                <span>🦐 Nagoor-ku Anupa Vendiyadhu</span>
+                ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                <span>Balaji</span>
+                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500 mx-0.5"></i>
+                ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
+                <span>Nagoor-ku Anupa Vendiyadhu</span>
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">
+              <div class="text-[10px] text-slate-400 mt-1 pl-6">
                 Fish refund ${formatINR(weeklyPartnerExp.Nagoor)} + Profit share ${formatINR(equalShare)}
               </div>
             </div>
@@ -2355,11 +2610,13 @@
           <div class="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between">
             <div>
               <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
-                <span>👨‍💻 Balaji</span>
-                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
-                <span>🛵 JP-ku Anupa Vendiyadhu</span>
+                ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                <span>Balaji</span>
+                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500 mx-0.5"></i>
+                ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
+                <span>JP-ku Anupa Vendiyadhu</span>
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">
+              <div class="text-[10px] text-slate-400 mt-1 pl-6">
                 Petrol refund ${formatINR(weeklyPartnerExp.JP)} + Profit share ${formatINR(equalShare)}
               </div>
             </div>
@@ -2372,9 +2629,12 @@
 
         balajiHtml = `
           <div class="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-between text-xs">
-            <div>
-              <span class="font-bold text-emerald-900 dark:text-emerald-200">👨‍💻 Balaji Kaila Meedham Irukka Vendiyadhu:</span>
-              <div class="text-[10px] text-emerald-700 dark:text-emerald-400">Selavu refund ${formatINR(weeklyPartnerExp.Balaji)} + Profit share ${formatINR(equalShare)}</div>
+            <div class="flex items-center gap-2">
+              ${renderPartnerAvatar('Balaji', 'w-6 h-6', 'rounded-lg')}
+              <div>
+                <span class="font-bold text-emerald-900 dark:text-emerald-200">Balaji Kaila Meedham Irukka Vendiyadhu:</span>
+                <div class="text-[10px] text-emerald-700 dark:text-emerald-400">Selavu refund ${formatINR(weeklyPartnerExp.Balaji)} + Profit share ${formatINR(equalShare)}</div>
+              </div>
             </div>
             <span class="font-black text-emerald-600 dark:text-emerald-400">${formatINR(balajiTotal)}</span>
           </div>
@@ -2389,11 +2649,13 @@
             <div class="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between">
               <div>
                 <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
-                  <span>👨‍💻 Balaji</span>
-                  <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
-                  <span>🦐 Nagoor-ku Anupa Vendiyadhu</span>
+                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                  <span>Balaji</span>
+                  <i class="fa-solid fa-arrow-right text-[10px] text-teal-500 mx-0.5"></i>
+                  ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
+                  <span>Nagoor-ku Anupa Vendiyadhu</span>
                 </div>
-                <div class="text-[10px] text-slate-400 mt-0.5">
+                <div class="text-[10px] text-slate-400 mt-1 pl-6">
                   Fish refund ${formatINR(weeklyPartnerExp.Nagoor)} - Loss share ${formatINR(lossShare)}
                 </div>
               </div>
@@ -2409,11 +2671,13 @@
             <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/30 flex items-center justify-between">
               <div>
                 <div class="text-xs font-bold text-rose-800 dark:text-rose-200 flex items-center space-x-1.5">
-                  <span>🦐 Nagoor</span>
-                  <i class="fa-solid fa-arrow-right text-[10px] text-rose-500"></i>
-                  <span>👨‍💻 Balaji-ku Thara Vendiyadhu</span>
+                  ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
+                  <span>Nagoor</span>
+                  <i class="fa-solid fa-arrow-right text-[10px] text-rose-500 mx-0.5"></i>
+                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                  <span>Balaji-ku Thara Vendiyadhu</span>
                 </div>
-                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 pl-6">
                   Loss share ${formatINR(lossShare)} - Fish refund ${formatINR(weeklyPartnerExp.Nagoor)}
                 </div>
               </div>
@@ -2430,11 +2694,13 @@
             <div class="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between">
               <div>
                 <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
-                  <span>👨‍💻 Balaji</span>
-                  <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
-                  <span>🛵 JP-ku Anupa Vendiyadhu</span>
+                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                  <span>Balaji</span>
+                  <i class="fa-solid fa-arrow-right text-[10px] text-teal-500 mx-0.5"></i>
+                  ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
+                  <span>JP-ku Anupa Vendiyadhu</span>
                 </div>
-                <div class="text-[10px] text-slate-400 mt-0.5">
+                <div class="text-[10px] text-slate-400 mt-1 pl-6">
                   Petrol refund ${formatINR(weeklyPartnerExp.JP)} - Loss share ${formatINR(lossShare)}
                 </div>
               </div>
@@ -2450,11 +2716,13 @@
             <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/30 flex items-center justify-between">
               <div>
                 <div class="text-xs font-bold text-rose-800 dark:text-rose-200 flex items-center space-x-1.5">
-                  <span>🛵 JP</span>
-                  <i class="fa-solid fa-arrow-right text-[10px] text-rose-500"></i>
-                  <span>👨‍💻 Balaji-ku Thara Vendiyadhu</span>
+                  ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
+                  <span>JP</span>
+                  <i class="fa-solid fa-arrow-right text-[10px] text-rose-500 mx-0.5"></i>
+                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                  <span>Balaji-ku Thara Vendiyadhu</span>
                 </div>
-                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 pl-6">
                   Loss share ${formatINR(lossShare)} - Petrol refund ${formatINR(weeklyPartnerExp.JP)}
                 </div>
               </div>
@@ -2468,9 +2736,12 @@
 
         balajiHtml = `
           <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/30 flex items-center justify-between text-xs">
-            <div>
-              <span class="font-bold text-rose-900 dark:text-rose-200">👨‍💻 Balaji Loss Share:</span>
-              <div class="text-[10px] text-rose-700 dark:text-rose-400">Balaji Pocket Loss: -${formatINR(lossShare)} | Spends: ${formatINR(weeklyPartnerExp.Balaji)}</div>
+            <div class="flex items-center gap-2">
+              ${renderPartnerAvatar('Balaji', 'w-6 h-6', 'rounded-lg')}
+              <div>
+                <span class="font-bold text-rose-900 dark:text-rose-200">Balaji Loss Share:</span>
+                <div class="text-[10px] text-rose-700 dark:text-rose-400">Balaji Pocket Loss: -${formatINR(lossShare)} | Spends: ${formatINR(weeklyPartnerExp.Balaji)}</div>
+              </div>
             </div>
             <span class="font-black text-rose-600 dark:text-rose-400">-${formatINR(lossShare)}</span>
           </div>
@@ -2694,11 +2965,11 @@ ${transferSection}
         if (p === active) {
           btn.disabled = false;
           btn.className = "py-2.5 px-1 rounded-2xl border-2 border-teal-500 bg-teal-50 dark:bg-teal-500/25 text-center font-extrabold text-xs text-slate-900 dark:text-white shadow-sm ring-2 ring-teal-500/20";
-          btn.innerHTML = `${PARTNERS[p].avatar} ${PARTNERS[p].name} <span class="block text-[9px] text-teal-600 dark:text-teal-400 font-bold mt-0.5"><i class="fa-solid fa-lock text-[8px]"></i> Neenga</span>`;
+          btn.innerHTML = `<div class="flex items-center justify-center gap-1.5">${renderPartnerAvatar(p, "w-5 h-5", "rounded-md")} <span>${PARTNERS[p].name}</span></div> <span class="block text-[9px] text-teal-600 dark:text-teal-400 font-bold mt-0.5"><i class="fa-solid fa-lock text-[8px]"></i> Neenga</span>`;
         } else {
           btn.disabled = true;
           btn.className = "py-2.5 px-1 rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-slate-100/60 dark:bg-slate-900/40 text-center font-medium text-xs text-slate-400 dark:text-slate-500 opacity-40 cursor-not-allowed pointer-events-none";
-          btn.innerHTML = `${PARTNERS[p].avatar} ${PARTNERS[p].name} <span class="block text-[8px] text-slate-400 mt-0.5">🔒 Lock</span>`;
+          btn.innerHTML = `<div class="flex items-center justify-center gap-1.5 opacity-60">${renderPartnerAvatar(p, "w-5 h-5", "rounded-md")} <span>${PARTNERS[p].name}</span></div> <span class="block text-[8px] text-slate-400 mt-0.5">🔒 Lock</span>`;
         }
       });
     }
