@@ -2230,7 +2230,7 @@
           sMap[docSnap.id] = docSnap.data();
         });
         state.settlements = sMap;
-        if (state.currentTab === 'accounts') renderAccounts();
+        updateUI();
       }, (err) => {
         console.warn("Settlements listen error:", err);
       });
@@ -2447,48 +2447,126 @@
       // Update Partner Summary Card Avatars
       updatePartnerCardAvatars();
 
-      // Render Cash in Hand Status (The Startup Reality) with real photos and smart colors
-      const balajiNetCash = cashflowHold.Balaji.collected - cashflowHold.Balaji.spent;
-      const nagoorSpentNet = cashflowHold.Nagoor.spent - cashflowHold.Nagoor.collected;
-      const jpSpentNet = cashflowHold.JP.spent - cashflowHold.JP.collected;
+      // -------------------------------------------------------------
+      // 💵 REAL-TIME CASH IN HAND & EXPENSE REIMBURSEMENT CALCULATIONS
+      // -------------------------------------------------------------
+      // 1. Calculate all payouts paid to partners from settlements
+      let totalPayoutsToNagoor = 0;
+      let totalPayoutsToJp = 0;
 
-      const balajiColorClass = balajiNetCash > 0 
+      Object.values(state.settlements || {}).forEach(s => {
+        if (s.transfers) {
+          if (s.transfers.Nagoor && typeof s.transfers.Nagoor.paidAmount === 'number') {
+            totalPayoutsToNagoor += Number(s.transfers.Nagoor.paidAmount) || 0;
+          }
+          if (s.transfers.JP && typeof s.transfers.JP.paidAmount === 'number') {
+            totalPayoutsToJp += Number(s.transfers.JP.paidAmount) || 0;
+          }
+        }
+      });
+
+      const totalPayoutsPaidByBalaji = totalPayoutsToNagoor + totalPayoutsToJp;
+
+      // 2. Balaji Live Cash in Hand:
+      // Balaji collects all sales revenue from customer payments (cash & gateway).
+      // Balaji holds capital investments.
+      // Balaji pays his own pocket expenses (cleaning, ice, packaging, ads).
+      // CRITICAL: When he transfers payouts/refunds to Nagoor or JP, that money LEAVES his hand/account!
+      let allSalesCollected = 0;
+      let allCapitalInvested = 0;
+      state.transactions.forEach(tx => {
+        const amt = Number(tx.amount) || 0;
+        if (tx.type === 'sales') allSalesCollected += amt;
+        else if (tx.type === 'investment') allCapitalInvested += amt;
+      });
+
+      const balajiSpends = cashflowHold.Balaji.spent;
+      const balajiNetLiveCash = allSalesCollected + allCapitalInvested - balajiSpends - totalPayoutsPaidByBalaji;
+
+      // 3. Nagoor Expense Reimbursement Due:
+      // Nagoor spent out-of-pocket on fish at the harbor.
+      // Balaji pays him reimbursements/settlements.
+      const nagoorSpent = cashflowHold.Nagoor.spent - cashflowHold.Nagoor.collected;
+      const nagoorPendingRefund = Math.max(0, nagoorSpent - totalPayoutsToNagoor);
+
+      // 4. JP Expense Reimbursement Due:
+      // JP spent out-of-pocket on petrol/delivery.
+      // Balaji pays him reimbursements/settlements.
+      const jpSpent = cashflowHold.JP.spent - cashflowHold.JP.collected;
+      const jpPendingRefund = Math.max(0, jpSpent - totalPayoutsToJp);
+
+      const balajiColorClass = balajiNetLiveCash > 0 
         ? 'text-emerald-600 dark:text-emerald-400' 
-        : (balajiNetCash < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400');
+        : (balajiNetLiveCash < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400');
 
       const cashContainer = document.getElementById('cashInHandContainer');
       cashContainer.innerHTML = `
-        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
+        <!-- Balaji Live Cash in Hand -->
+        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs shadow-sm">
           <div class="flex items-center space-x-2.5">
-            ${renderPartnerAvatar('Balaji', 'w-7 h-7', 'rounded-lg')}
+            ${renderPartnerAvatar('Balaji', 'w-8 h-8', 'rounded-xl')}
             <div>
-              <span class="font-bold text-slate-800 dark:text-slate-200">Balaji (Sales Cash in Hand):</span>
-              <div class="text-[10px] text-slate-400">Sales ${formatINR(cashflowHold.Balaji.collected)} - Expenses ${formatINR(cashflowHold.Balaji.spent)}</div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-extrabold text-slate-900 dark:text-white">Balaji</span>
+                <span class="text-[9px] px-1.5 py-0.2 rounded font-bold bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300">Live Cash in Hand</span>
+              </div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                Sales ${formatINR(allSalesCollected)} - Spends ${formatINR(balajiSpends)} - Paid to Partners ${formatINR(totalPayoutsPaidByBalaji)}
+              </div>
             </div>
           </div>
-          <span class="font-extrabold ${balajiColorClass} text-sm">${formatINR(balajiNetCash)}</span>
+          <div class="text-right flex-shrink-0">
+            <span class="font-black ${balajiColorClass} text-sm block">${formatINR(balajiNetLiveCash)}</span>
+            <span class="text-[9px] text-slate-400 font-medium">Bank + Cash</span>
+          </div>
         </div>
 
-        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
+        <!-- Nagoor Fish Purchase Refund Status -->
+        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs shadow-sm">
           <div class="flex items-center space-x-2.5">
-            ${renderPartnerAvatar('Nagoor', 'w-7 h-7', 'rounded-lg')}
+            ${renderPartnerAvatar('Nagoor', 'w-8 h-8', 'rounded-xl')}
             <div>
-              <span class="font-bold text-slate-800 dark:text-slate-200">Nagoor (Expense Refund Due):</span>
-              <div class="text-[10px] text-slate-400">Fish purchase expenses ${formatINR(cashflowHold.Nagoor.spent)}</div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-extrabold text-slate-900 dark:text-white">Nagoor</span>
+                <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${nagoorPendingRefund > 0 ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'}">
+                  ${nagoorPendingRefund > 0 ? 'Refund Pending ⏳' : 'Fully Reimbursed ✅'}
+                </span>
+              </div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                Fish Spends ${formatINR(nagoorSpent)} - Reimbursed ${formatINR(totalPayoutsToNagoor)}
+              </div>
             </div>
           </div>
-          <span class="font-extrabold ${nagoorSpentNet > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400'} text-sm">${formatINR(nagoorSpentNet)}</span>
+          <div class="text-right flex-shrink-0">
+            <span class="font-black ${nagoorPendingRefund > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'} text-sm block">
+              ${nagoorPendingRefund > 0 ? formatINR(nagoorPendingRefund) : 'Nil (Settled)'}
+            </span>
+            <span class="text-[9px] text-slate-400 font-medium">${nagoorPendingRefund > 0 ? 'Pending Due' : 'All Cleared'}</span>
+          </div>
         </div>
 
-        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
+        <!-- JP Petrol & Delivery Refund Status -->
+        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs shadow-sm">
           <div class="flex items-center space-x-2.5">
-            ${renderPartnerAvatar('JP', 'w-7 h-7', 'rounded-lg')}
+            ${renderPartnerAvatar('JP', 'w-8 h-8', 'rounded-xl')}
             <div>
-              <span class="font-bold text-slate-800 dark:text-slate-200">JP (Expense Refund Due):</span>
-              <div class="text-[10px] text-slate-400">Petrol & delivery expenses ${formatINR(cashflowHold.JP.spent)}</div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-extrabold text-slate-900 dark:text-white">JP</span>
+                <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${jpPendingRefund > 0 ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'}">
+                  ${jpPendingRefund > 0 ? 'Refund Pending ⏳' : 'Fully Reimbursed ✅'}
+                </span>
+              </div>
+              <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                Petrol Spends ${formatINR(jpSpent)} - Reimbursed ${formatINR(totalPayoutsToJp)}
+              </div>
             </div>
           </div>
-          <span class="font-extrabold ${jpSpentNet > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400'} text-sm">${formatINR(jpSpentNet)}</span>
+          <div class="text-right flex-shrink-0">
+            <span class="font-black ${jpPendingRefund > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'} text-sm block">
+              ${jpPendingRefund > 0 ? formatINR(jpPendingRefund) : 'Nil (Settled)'}
+            </span>
+            <span class="text-[9px] text-slate-400 font-medium">${jpPendingRefund > 0 ? 'Pending Due' : 'All Cleared'}</span>
+          </div>
         </div>
       `;
 
@@ -3996,7 +4074,12 @@
 
         await setDoc(doc(db, "settlements", weekId), payload, { merge: true });
 
+        // Update local state immediately for instant UI reaction
+        if (!state.settlements[weekId]) state.settlements[weekId] = {};
+        state.settlements[weekId] = { ...state.settlements[weekId], ...payload };
+
         closeRecordPaymentModal();
+        updateUI();
         showToast(`Payment of ${formatINR(paidVal)} to ${p.partner} saved! ✅`);
       } catch (err) {
         alert("Payment Save Error: " + err.message);
