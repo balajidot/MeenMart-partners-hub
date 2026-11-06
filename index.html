@@ -365,7 +365,7 @@
           <div class="grid grid-cols-3 gap-2" id="partnerSummaryCards">
             <!-- Balaji -->
             <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-blue-500">
-              <div class="flex justify-center">${renderPartnerAvatar('Balaji', 'w-8 h-8', 'rounded-xl')}</div>
+              <div class="flex justify-center" id="cardAvatar-Balaji">👨‍💻</div>
               <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">Balaji</div>
               <div class="text-[9px] text-slate-400">Clean, Cover, Ads</div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
@@ -376,7 +376,7 @@
 
             <!-- Nagoor -->
             <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-emerald-500">
-              <div class="flex justify-center">${renderPartnerAvatar('Nagoor', 'w-8 h-8', 'rounded-xl')}</div>
+              <div class="flex justify-center" id="cardAvatar-Nagoor">🦐</div>
               <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">Nagoor</div>
               <div class="text-[9px] text-slate-400">Fish Purchase</div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
@@ -387,7 +387,7 @@
 
             <!-- JP -->
             <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-amber-500">
-              <div class="flex justify-center">${renderPartnerAvatar('JP', 'w-8 h-8', 'rounded-xl')}</div>
+              <div class="flex justify-center" id="cardAvatar-JP">🛵</div>
               <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">JP</div>
               <div class="text-[9px] text-slate-400">Delivery & Petrol</div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
@@ -632,15 +632,15 @@
             </button>
           </div>
 
-          <!-- Category Customizer Button -->
-          <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-2">
-            <button onclick="openCategoryManagerModal()" class="text-xs font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-500/30 active:scale-95 transition">
+          <!-- Category & Partner Settings Action Row -->
+          <div class="pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2">
+            <button onclick="openCategoryManagerModal()" class="py-2.5 px-3 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-500/30 text-teal-700 dark:text-teal-300 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition">
               <i class="fa-solid fa-sliders"></i>
-              <span>Category Settings</span>
+              <span>Categories</span>
             </button>
-            <button onclick="handlePartnerPillClick()" class="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/30 active:scale-95 transition">
-              <i class="fa-solid fa-crown"></i>
-              <span>Partner Photos 👑</span>
+            <button onclick="handlePartnerPillClick()" class="py-2.5 px-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition">
+              <i class="fa-solid fa-camera"></i>
+              <span>Partner Photos</span>
             </button>
           </div>
 
@@ -1382,6 +1382,15 @@
       });
     }
 
+    function updatePartnerCardAvatars() {
+      ['Balaji', 'Nagoor', 'JP'].forEach(p => {
+        const el = document.getElementById(`cardAvatar-${p}`);
+        if (el) {
+          el.innerHTML = renderPartnerAvatar(p, 'w-8 h-8', 'rounded-xl');
+        }
+      });
+    }
+
     // High-performance Client-Side Image Compressor (Square center-crop, WebP/JPEG, ~10KB)
     function compressImageFile(file, targetSize = 180, quality = 0.8) {
       return new Promise((resolve, reject) => {
@@ -1518,6 +1527,7 @@
           } catch (e) {}
 
           updateLoginAvatars();
+          updatePartnerCardAvatars();
 
           // Refresh UI components with updated photos/avatars
           updateUI();
@@ -1720,9 +1730,12 @@
       if (state.currentTab === 'accounts') renderAccounts();
     }
 
-    // Currency Formatter
+    // Currency Formatter (Safe negative number formatting)
     function formatINR(val) {
       const num = Number(val) || 0;
+      if (num < 0) {
+        return "-₹" + Math.abs(num).toLocaleString('en-IN');
+      }
       return "₹" + num.toLocaleString('en-IN');
     }
 
@@ -1917,44 +1930,51 @@
       document.getElementById('cardJpExp').innerText = formatINR(pScoped.JP.exp);
       document.getElementById('cardJpSales').innerText = formatINR(pScoped.JP.sales);
 
-      // Render Cash in Hand Status (The Startup Reality)
+      // Update Partner Summary Card Avatars
+      updatePartnerCardAvatars();
+
+      // Render Cash in Hand Status (The Startup Reality) with real photos and smart colors
       const balajiNetCash = cashflowHold.Balaji.collected - cashflowHold.Balaji.spent;
       const nagoorSpentNet = cashflowHold.Nagoor.spent - cashflowHold.Nagoor.collected;
       const jpSpentNet = cashflowHold.JP.spent - cashflowHold.JP.collected;
 
+      const balajiColorClass = balajiNetCash > 0 
+        ? 'text-emerald-600 dark:text-emerald-400' 
+        : (balajiNetCash < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400');
+
       const cashContainer = document.getElementById('cashInHandContainer');
       cashContainer.innerHTML = `
         <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
-          <div class="flex items-center space-x-2">
-            <span class="text-base">👨‍💻</span>
+          <div class="flex items-center space-x-2.5">
+            ${renderPartnerAvatar('Balaji', 'w-7 h-7', 'rounded-lg')}
             <div>
               <span class="font-bold text-slate-800 dark:text-slate-200">Balaji kitta irukura Sales cash:</span>
               <div class="text-[10px] text-slate-400">Vasool ${formatINR(cashflowHold.Balaji.collected)} - Selavu ${formatINR(cashflowHold.Balaji.spent)}</div>
             </div>
           </div>
-          <span class="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">${formatINR(balajiNetCash)}</span>
+          <span class="font-extrabold ${balajiColorClass} text-sm">${formatINR(balajiNetCash)}</span>
         </div>
 
         <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
-          <div class="flex items-center space-x-2">
-            <span class="text-base">🦐</span>
+          <div class="flex items-center space-x-2.5">
+            ${renderPartnerAvatar('Nagoor', 'w-7 h-7', 'rounded-lg')}
             <div>
               <span class="font-bold text-slate-800 dark:text-slate-200">Nagoor-ku thiruppi thara vendiya Selavu:</span>
               <div class="text-[10px] text-slate-400">Fish purchase selavu ${formatINR(cashflowHold.Nagoor.spent)}</div>
             </div>
           </div>
-          <span class="font-extrabold text-rose-600 dark:text-rose-400 text-sm">${formatINR(nagoorSpentNet)}</span>
+          <span class="font-extrabold ${nagoorSpentNet > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400'} text-sm">${formatINR(nagoorSpentNet)}</span>
         </div>
 
         <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
-          <div class="flex items-center space-x-2">
-            <span class="text-base">🛵</span>
+          <div class="flex items-center space-x-2.5">
+            ${renderPartnerAvatar('JP', 'w-7 h-7', 'rounded-lg')}
             <div>
               <span class="font-bold text-slate-800 dark:text-slate-200">JP-ku thiruppi thara vendiya Selavu:</span>
               <div class="text-[10px] text-slate-400">Petrol & delivery selavu ${formatINR(cashflowHold.JP.spent)}</div>
             </div>
           </div>
-          <span class="font-extrabold text-rose-600 dark:text-rose-400 text-sm">${formatINR(jpSpentNet)}</span>
+          <span class="font-extrabold ${jpSpentNet > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400'} text-sm">${formatINR(jpSpentNet)}</span>
         </div>
       `;
 
@@ -2127,11 +2147,11 @@
       if (isExp) {
         typeBadge = '<span class="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold">Selavu</span>';
         amountColor = 'text-rose-600 dark:text-rose-400';
-        sign = '- ';
+        sign = '-';
       } else if (isSales) {
         typeBadge = '<span class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold">Varavu</span>';
         amountColor = 'text-emerald-600 dark:text-emerald-400';
-        sign = '+ ';
+        sign = '+';
       } else {
         typeBadge = '<span class="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-300 text-[10px] font-bold">Mudhaleedu</span>';
         amountColor = 'text-teal-600 dark:text-teal-400';
@@ -2141,13 +2161,15 @@
       const catLabel = getCategoryLabel(tx.type, tx.category);
       const isOwner = canUserModify(tx);
 
-      // NOTES-FIRST TITLE HIERARCHY:
-      // If user typed Notes (Description), Notes is the big bold title!
-      // Category is displayed underneath as sub-label.
-      // If Notes is empty, Category becomes the title.
+      // NOTES-FIRST TITLE HIERARCHY (SMART DEDUPLICATION):
       const hasNotes = tx.description && tx.description.trim().length > 0;
       const primaryTitle = hasNotes ? escapeHtml(tx.description.trim()) : catLabel;
-      const secondaryLabel = hasNotes ? catLabel : (isExp ? 'Selavu' : (isSales ? 'Varavu' : 'Mudhaleedu'));
+      
+      // Only display secondary category if it adds real distinct meaning
+      const isRedundant = !hasNotes || 
+        primaryTitle.toLowerCase() === catLabel.toLowerCase() || 
+        ['selavu', 'varavu', 'expense', 'sales', 'mudhaleedu', 'investment', 'entry', 'general'].includes(catLabel.toLowerCase());
+      const secondaryLabel = isRedundant ? '' : catLabel;
 
       // Time formatting if available
       let timeText = '';
@@ -2172,10 +2194,8 @@
                 <h4 class="font-extrabold text-sm text-slate-900 dark:text-white leading-tight break-words line-clamp-2">
                   ${primaryTitle}
                 </h4>
-                <!-- Category Tag (Below Notes) -->
-                <div class="flex items-center space-x-1.5 mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                  <span class="font-medium truncate">${secondaryLabel}</span>
-                </div>
+                <!-- Category Tag (Below Notes, only if distinct) -->
+                ${secondaryLabel ? `<div class="flex items-center space-x-1.5 mt-1 text-[11px] text-slate-500 dark:text-slate-400"><span class="font-medium truncate">${secondaryLabel}</span></div>` : ''}
               </div>
             </div>
 
@@ -2586,57 +2606,67 @@
         const balajiTotal = weeklyPartnerExp.Balaji + equalShare;
 
         nagoorHtml = `
-          <div class="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between">
-            <div>
-              <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
-                ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
-                <span>Balaji</span>
-                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500 mx-0.5"></i>
-                ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
-                <span>Nagoor-ku Anupa Vendiyadhu</span>
+          <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 shadow-sm space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                  <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Balaji</span>
+                </div>
+                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
+                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                  ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
+                  <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Nagoor</span>
+                </div>
               </div>
-              <div class="text-[10px] text-slate-400 mt-1 pl-6">
-                Fish refund ${formatINR(weeklyPartnerExp.Nagoor)} + Profit share ${formatINR(equalShare)}
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                <span class="text-sm font-black text-teal-600 dark:text-teal-400">${formatINR(nagoorTotal)}</span>
+                <button onclick="copyToClipboard('${nagoorTotal}', 'Nagoor Amount')" class="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-500/30 active:scale-95 transition">Copy</button>
               </div>
             </div>
-            <div class="text-right flex items-center space-x-2">
-              <span class="text-xs font-black text-teal-600 dark:text-teal-400">${formatINR(nagoorTotal)}</span>
-              <button onclick="copyToClipboard('${nagoorTotal}', 'Nagoor Amount')" class="px-2 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-500/30">Copy</button>
+            <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+              <span>Fish refund ${formatINR(weeklyPartnerExp.Nagoor)} + Profit share ${formatINR(equalShare)}</span>
+              <span class="text-teal-600 dark:text-teal-400 font-bold">Nagoor-ku Anupa Vendiyadhu</span>
             </div>
           </div>
         `;
 
         jpHtml = `
-          <div class="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between">
-            <div>
-              <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
-                ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
-                <span>Balaji</span>
-                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500 mx-0.5"></i>
-                ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
-                <span>JP-ku Anupa Vendiyadhu</span>
+          <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 shadow-sm space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                  <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Balaji</span>
+                </div>
+                <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
+                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                  ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
+                  <span class="text-xs font-bold text-slate-800 dark:text-slate-200">JP</span>
+                </div>
               </div>
-              <div class="text-[10px] text-slate-400 mt-1 pl-6">
-                Petrol refund ${formatINR(weeklyPartnerExp.JP)} + Profit share ${formatINR(equalShare)}
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                <span class="text-sm font-black text-teal-600 dark:text-teal-400">${formatINR(jpTotal)}</span>
+                <button onclick="copyToClipboard('${jpTotal}', 'JP Amount')" class="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-500/30 active:scale-95 transition">Copy</button>
               </div>
             </div>
-            <div class="text-right flex items-center space-x-2">
-              <span class="text-xs font-black text-teal-600 dark:text-teal-400">${formatINR(jpTotal)}</span>
-              <button onclick="copyToClipboard('${jpTotal}', 'JP Amount')" class="px-2 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-500/30">Copy</button>
+            <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+              <span>Petrol refund ${formatINR(weeklyPartnerExp.JP)} + Profit share ${formatINR(equalShare)}</span>
+              <span class="text-teal-600 dark:text-teal-400 font-bold">JP-ku Anupa Vendiyadhu</span>
             </div>
           </div>
         `;
 
         balajiHtml = `
-          <div class="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-between text-xs">
-            <div class="flex items-center gap-2">
-              ${renderPartnerAvatar('Balaji', 'w-6 h-6', 'rounded-lg')}
+          <div class="p-3.5 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between text-xs shadow-sm">
+            <div class="flex items-center gap-2.5">
+              ${renderPartnerAvatar('Balaji', 'w-8 h-8', 'rounded-xl')}
               <div>
-                <span class="font-bold text-emerald-900 dark:text-emerald-200">Balaji Kaila Meedham Irukka Vendiyadhu:</span>
-                <div class="text-[10px] text-emerald-700 dark:text-emerald-400">Selavu refund ${formatINR(weeklyPartnerExp.Balaji)} + Profit share ${formatINR(equalShare)}</div>
+                <span class="font-bold text-teal-950 dark:text-teal-200">Balaji Kaila Meedham Irukka Vendiyadhu</span>
+                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Selavu refund ${formatINR(weeklyPartnerExp.Balaji)} + Profit share ${formatINR(equalShare)}</div>
               </div>
             </div>
-            <span class="font-black text-emerald-600 dark:text-emerald-400">${formatINR(balajiTotal)}</span>
+            <span class="font-black text-teal-600 dark:text-teal-400 text-sm">${formatINR(balajiTotal)}</span>
           </div>
         `;
       } else {
@@ -2646,44 +2676,54 @@
 
         if (netNagoor >= 0) {
           nagoorHtml = `
-            <div class="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between">
-              <div>
-                <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
-                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
-                  <span>Balaji</span>
-                  <i class="fa-solid fa-arrow-right text-[10px] text-teal-500 mx-0.5"></i>
-                  ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
-                  <span>Nagoor-ku Anupa Vendiyadhu</span>
+            <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 shadow-sm space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                    ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Balaji</span>
+                  </div>
+                  <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
+                  <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                    ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Nagoor</span>
+                  </div>
                 </div>
-                <div class="text-[10px] text-slate-400 mt-1 pl-6">
-                  Fish refund ${formatINR(weeklyPartnerExp.Nagoor)} - Loss share ${formatINR(lossShare)}
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <span class="text-sm font-black text-teal-600 dark:text-teal-400">${formatINR(netNagoor)}</span>
+                  <button onclick="copyToClipboard('${netNagoor}', 'Nagoor Amount')" class="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-500/30 active:scale-95 transition">Copy</button>
                 </div>
               </div>
-              <div class="text-right flex items-center space-x-2">
-                <span class="text-xs font-black text-teal-600 dark:text-teal-400">${formatINR(netNagoor)}</span>
-                <button onclick="copyToClipboard('${netNagoor}', 'Nagoor Amount')" class="px-2 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-500/30">Copy</button>
+              <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                <span>Fish refund ${formatINR(weeklyPartnerExp.Nagoor)} - Loss share ${formatINR(lossShare)}</span>
+                <span class="text-teal-600 dark:text-teal-400 font-bold">Nagoor-ku Anupa Vendiyadhu</span>
               </div>
             </div>
           `;
         } else {
           const owes = Math.abs(netNagoor);
           nagoorHtml = `
-            <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/30 flex items-center justify-between">
-              <div>
-                <div class="text-xs font-bold text-rose-800 dark:text-rose-200 flex items-center space-x-1.5">
-                  ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
-                  <span>Nagoor</span>
-                  <i class="fa-solid fa-arrow-right text-[10px] text-rose-500 mx-0.5"></i>
-                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
-                  <span>Balaji-ku Thara Vendiyadhu</span>
+            <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 shadow-sm space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                    ${renderPartnerAvatar('Nagoor', 'w-5 h-5', 'rounded-md')}
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Nagoor</span>
+                  </div>
+                  <i class="fa-solid fa-arrow-right text-[10px] text-rose-500"></i>
+                  <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                    ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Balaji</span>
+                  </div>
                 </div>
-                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 pl-6">
-                  Loss share ${formatINR(lossShare)} - Fish refund ${formatINR(weeklyPartnerExp.Nagoor)}
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <span class="text-sm font-black text-rose-600 dark:text-rose-400">${formatINR(owes)}</span>
+                  <button onclick="copyToClipboard('${owes}', 'Nagoor Owes')" class="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[10px] font-bold border border-rose-200 dark:border-rose-500/30 active:scale-95 transition">Copy</button>
                 </div>
               </div>
-              <div class="text-right flex items-center space-x-2">
-                <span class="text-xs font-black text-rose-600 dark:text-rose-400">${formatINR(owes)}</span>
-                <button onclick="copyToClipboard('${owes}', 'Nagoor Owes')" class="px-2 py-1 rounded-lg bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 text-[10px] font-bold">Copy</button>
+              <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                <span>Loss share ${formatINR(lossShare)} - Fish refund ${formatINR(weeklyPartnerExp.Nagoor)}</span>
+                <span class="text-rose-600 dark:text-rose-400 font-bold">Balaji-ku Thara Vendiyadhu</span>
               </div>
             </div>
           `;
@@ -2691,59 +2731,69 @@
 
         if (netJp >= 0) {
           jpHtml = `
-            <div class="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 flex items-center justify-between">
-              <div>
-                <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center space-x-1.5">
-                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
-                  <span>Balaji</span>
-                  <i class="fa-solid fa-arrow-right text-[10px] text-teal-500 mx-0.5"></i>
-                  ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
-                  <span>JP-ku Anupa Vendiyadhu</span>
+            <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-500/30 shadow-sm space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                    ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Balaji</span>
+                  </div>
+                  <i class="fa-solid fa-arrow-right text-[10px] text-teal-500"></i>
+                  <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                    ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200">JP</span>
+                  </div>
                 </div>
-                <div class="text-[10px] text-slate-400 mt-1 pl-6">
-                  Petrol refund ${formatINR(weeklyPartnerExp.JP)} - Loss share ${formatINR(lossShare)}
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <span class="text-sm font-black text-teal-600 dark:text-teal-400">${formatINR(netJp)}</span>
+                  <button onclick="copyToClipboard('${netJp}', 'JP Amount')" class="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-500/30 active:scale-95 transition">Copy</button>
                 </div>
               </div>
-              <div class="text-right flex items-center space-x-2">
-                <span class="text-xs font-black text-teal-600 dark:text-teal-400">${formatINR(netJp)}</span>
-                <button onclick="copyToClipboard('${netJp}', 'JP Amount')" class="px-2 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold border border-teal-200 dark:border-teal-500/30">Copy</button>
+              <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                <span>Petrol refund ${formatINR(weeklyPartnerExp.JP)} - Loss share ${formatINR(lossShare)}</span>
+                <span class="text-teal-600 dark:text-teal-400 font-bold">JP-ku Anupa Vendiyadhu</span>
               </div>
             </div>
           `;
         } else {
           const owes = Math.abs(netJp);
           jpHtml = `
-            <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/30 flex items-center justify-between">
-              <div>
-                <div class="text-xs font-bold text-rose-800 dark:text-rose-200 flex items-center space-x-1.5">
-                  ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
-                  <span>JP</span>
-                  <i class="fa-solid fa-arrow-right text-[10px] text-rose-500 mx-0.5"></i>
-                  ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
-                  <span>Balaji-ku Thara Vendiyadhu</span>
+            <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-900/50 shadow-sm space-y-2.5">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                    ${renderPartnerAvatar('JP', 'w-5 h-5', 'rounded-md')}
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200">JP</span>
+                  </div>
+                  <i class="fa-solid fa-arrow-right text-[10px] text-rose-500"></i>
+                  <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-xl">
+                    ${renderPartnerAvatar('Balaji', 'w-5 h-5', 'rounded-md')}
+                    <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Balaji</span>
+                  </div>
                 </div>
-                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 pl-6">
-                  Loss share ${formatINR(lossShare)} - Petrol refund ${formatINR(weeklyPartnerExp.JP)}
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <span class="text-sm font-black text-rose-600 dark:text-rose-400">${formatINR(owes)}</span>
+                  <button onclick="copyToClipboard('${owes}', 'JP Owes')" class="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-[10px] font-bold border border-rose-200 dark:border-rose-500/30 active:scale-95 transition">Copy</button>
                 </div>
               </div>
-              <div class="text-right flex items-center space-x-2">
-                <span class="text-xs font-black text-rose-600 dark:text-rose-400">${formatINR(owes)}</span>
-                <button onclick="copyToClipboard('${owes}', 'JP Owes')" class="px-2 py-1 rounded-lg bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 text-[10px] font-bold">Copy</button>
+              <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                <span>Loss share ${formatINR(lossShare)} - Petrol refund ${formatINR(weeklyPartnerExp.JP)}</span>
+                <span class="text-rose-600 dark:text-rose-400 font-bold">Balaji-ku Thara Vendiyadhu</span>
               </div>
             </div>
           `;
         }
 
         balajiHtml = `
-          <div class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/30 flex items-center justify-between text-xs">
-            <div class="flex items-center gap-2">
-              ${renderPartnerAvatar('Balaji', 'w-6 h-6', 'rounded-lg')}
+          <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2.5">
+              ${renderPartnerAvatar('Balaji', 'w-8 h-8', 'rounded-xl')}
               <div>
-                <span class="font-bold text-rose-900 dark:text-rose-200">Balaji Loss Share:</span>
-                <div class="text-[10px] text-rose-700 dark:text-rose-400">Balaji Pocket Loss: -${formatINR(lossShare)} | Spends: ${formatINR(weeklyPartnerExp.Balaji)}</div>
+                <span class="font-bold text-slate-900 dark:text-white">Balaji Loss Share</span>
+                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Spends: ${formatINR(weeklyPartnerExp.Balaji)} | Loss: ${formatINR(lossShare)}</div>
               </div>
             </div>
-            <span class="font-black text-rose-600 dark:text-rose-400">-${formatINR(lossShare)}</span>
+            <span class="font-black text-rose-600 dark:text-rose-400 text-sm">-${formatINR(lossShare)}</span>
           </div>
         `;
       }
