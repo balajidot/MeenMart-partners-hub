@@ -2345,23 +2345,30 @@
       return false;
     }
 
-    // Date Helper Utilities
+    // Date Helper Utilities (100% Local Timezone Safe - No UTC Date Shifts!)
+    function formatLocalDate(dateObj) {
+      if (!dateObj) return '';
+      const d = (dateObj instanceof Date) ? dateObj : new Date(dateObj);
+      if (isNaN(d.getTime())) return '';
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     function getTodayString() {
-      return new Date().toISOString().split('T')[0];
+      return formatLocalDate(new Date());
     }
 
     function getYesterdayString() {
       const d = new Date();
       d.setDate(d.getDate() - 1);
-      return d.toISOString().split('T')[0];
+      return formatLocalDate(d);
     }
 
     function getThisWeekStart() {
-      const d = new Date();
-      const day = d.getDay();
-      const diffToMon = d.getDate() - day + (day === 0 ? -6 : 1);
-      const mon = new Date(d.setDate(diffToMon));
-      return mon.toISOString().split('T')[0];
+      const range = getWeekRange(0);
+      return range.startStr;
     }
 
     function getThisMonthStart() {
@@ -2434,7 +2441,7 @@
       for (let i = 0; i < 7; i++) {
         const d = new Date(monday);
         d.setDate(monday.getDate() + i);
-        const dateStr = d.toISOString().split('T')[0];
+        const dateStr = formatLocalDate(d);
         const dayNum = d.getDate();
         const dayName = dayNames[i];
 
@@ -2604,40 +2611,23 @@
       updatePartnerCardAvatars();
 
       // -------------------------------------------------------------
-      // 💵 REAL-TIME CASH & PARTNER SETTLEMENT BALANCES (100% CRYSTAL CLEAR)
+      // 💵 REAL-TIME CASH & PARTNER SETTLEMENT BALANCES (100% DYNAMIC & ACCURATE)
       // -------------------------------------------------------------
-      // 1. Get current week settlement context
-      const { monday: curMon, sunday: curSun } = getWeekRange(0);
-      const curMonStr = curMon.toISOString().split('T')[0];
-      const curSunStr = curSun.toISOString().split('T')[0];
-      const curWeekId = `week_${curMonStr}_${curSunStr}`;
-      const curSettlement = state.settlements[curWeekId];
-      const curTransfers = curSettlement?.transfers || {};
+      const curWeekSummary = getWeekFinancialSummary(0);
+      const curMonStr = curWeekSummary.startStr;
+      const curSunStr = curWeekSummary.endStr;
+      const curWeekId = curWeekSummary.weekId;
+      const curTransfers = curWeekSummary.transfersData;
 
-      // Previous week carry-forward dues if any
-      const { monday: pMon, sunday: pSun } = getWeekRange(1);
-      const prevWeekId = `week_${pMon.toISOString().split('T')[0]}_${pSun.toISOString().split('T')[0]}`;
-      const prevSettlement = state.settlements[prevWeekId];
-      const prevNagoorCarried = (prevSettlement?.transfers?.Nagoor?.remainingDue > 0) ? Number(prevSettlement.transfers.Nagoor.remainingDue) : 0;
-      const prevJpCarried = (prevSettlement?.transfers?.JP?.remainingDue > 0) ? Number(prevSettlement.transfers.JP.remainingDue) : 0;
+      // Previous week carry-forward dues dynamically computed from live prior transactions
+      const prevNagoorCarried = getPartnerPreviousPendingDue('Nagoor', 0);
+      const prevJpCarried = getPartnerPreviousPendingDue('JP', 0);
 
-      // Current week transactions aggregation
-      let currWeekSales = 0;
-      let currWeekExp = 0;
-      const currWeekPExp = { Balaji: 0, Nagoor: 0, JP: 0 };
-      state.transactions.forEach(tx => {
-        if (tx.date >= curMonStr && tx.date <= curSunStr) {
-          const amt = Number(tx.amount) || 0;
-          if (tx.type === 'sales') currWeekSales += amt;
-          else if (tx.type === 'expense') {
-            currWeekExp += amt;
-            if (currWeekPExp[tx.partner] !== undefined) currWeekPExp[tx.partner] += amt;
-          }
-        }
-      });
-
-      const currWeekProfit = currWeekSales - currWeekExp;
-      const currWeekEqualShare = Math.round(currWeekProfit / 3);
+      const currWeekSales = curWeekSummary.sales;
+      const currWeekExp = curWeekSummary.expenses;
+      const currWeekPExp = curWeekSummary.partnerExp;
+      const currWeekProfit = curWeekSummary.netProfit;
+      const currWeekEqualShare = curWeekSummary.equalShare;
 
       // --- NAGOOR REAL SETTLEMENT ENTITLEMENT ---
       const nagoorBaseDue = currWeekPExp.Nagoor + (currWeekProfit >= 0 ? currWeekEqualShare : -Math.abs(currWeekEqualShare));
@@ -2738,7 +2728,7 @@
             <!-- Row 2: Inset Full-Width Math Pill -->
             <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
               ${nagoorTotalDue > 0 
-                ? `<span class="truncate">Spent ${formatINR(currWeekPExp.Nagoor)} (Fish) + ${formatINR(currWeekEqualShare)} Profit</span>
+                ? `<span class="truncate">Spent ${formatINR(currWeekPExp.Nagoor)} (Fish) + ${formatINR(currWeekEqualShare)} Profit${prevNagoorCarried > 0 ? ' + ' + formatINR(prevNagoorCarried) + ' Last Week' : ''}</span>
                    <span class="text-[10px] font-bold ${isNagoorAllPaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'} ml-2 whitespace-nowrap flex-shrink-0">${isNagoorAllPaid ? 'Paid in Full' : formatINR(nagoorBalanceToPay) + ' Due'}</span>`
                 : `<span class="text-slate-400">No fish purchases recorded this week</span>
                    <span class="text-[10px] text-slate-400">₹0</span>`}
@@ -2771,7 +2761,7 @@
             <!-- Row 2: Inset Full-Width Math Pill -->
             <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
               ${jpTotalDue > 0 
-                ? `<span class="truncate">Spent ${formatINR(currWeekPExp.JP)} (Petrol) + ${formatINR(currWeekEqualShare)} Profit</span>
+                ? `<span class="truncate">Spent ${formatINR(currWeekPExp.JP)} (Petrol) + ${formatINR(currWeekEqualShare)} Profit${prevJpCarried > 0 ? ' + ' + formatINR(prevJpCarried) + ' Last Week' : ''}</span>
                    <span class="text-[10px] font-bold ${isJpAllPaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'} ml-2 whitespace-nowrap flex-shrink-0">${isJpAllPaid ? 'Paid in Full' : formatINR(jpBalanceToPay) + ' Due'}</span>`
                 : `<span class="text-slate-400">No petrol or delivery recorded this week</span>
                    <span class="text-[10px] text-slate-400">₹0</span>`}
@@ -3294,10 +3284,8 @@
     // 📄 WEEKLY SETTLEMENT PDF STATEMENT
     // ==========================================
     window.exportWeeklySettlementPDF = function() {
-      const { monday, sunday } = getWeekRange(state.settlementOffsetWeeks || 0);
-      const startStr = monday.toISOString().split('T')[0];
-      const endStr = sunday.toISOString().split('T')[0];
-      const weekId = `week_${startStr}_${endStr}`;
+      const weekRange = getWeekRange(state.settlementOffsetWeeks || 0);
+      const { monday, sunday, startStr, endStr, weekId } = weekRange;
 
       const weekTx = state.transactions.filter(t => t.date >= startStr && t.date <= endStr);
       let weeklySales = 0;
@@ -3498,7 +3486,7 @@
         // From first day of this month
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
         limitDays = Math.ceil((now - firstDay) / (1000 * 60 * 60 * 24)) + 1;
-        filterStartDate = firstDay.toISOString().split('T')[0];
+        filterStartDate = formatLocalDate(firstDay);
       } else if (range === 'all') {
         limitDays = 9999;
       }
@@ -3507,14 +3495,14 @@
       let periodSales = 0;
       let periodExp = 0;
       let periodCapital = 0;
-      const todayStr = now.toISOString().split('T')[0];
+      const todayStr = formatLocalDate(now);
 
       // Calculate cutoff date string for non-month, non-all ranges
       let cutoffDateStr = '';
       if (range === '7' || range === '30') {
         const dCutoff = new Date();
         dCutoff.setDate(now.getDate() - (limitDays - 1));
-        cutoffDateStr = dCutoff.toISOString().split('T')[0];
+        cutoffDateStr = formatLocalDate(dCutoff);
       } else if (range === 'month') {
         cutoffDateStr = filterStartDate;
       }
@@ -3738,7 +3726,7 @@
         for (let i = daysToDisplay - 1; i >= 0; i--) {
           const d = new Date();
           d.setDate(now.getDate() - i);
-          const key = d.toISOString().split('T')[0];
+          const key = formatLocalDate(d);
           daysMap[key] = { sales: 0, expense: 0 };
         }
 
@@ -3973,21 +3961,100 @@
     };
 
 
-    // 4. Accounts & Monday Settlement Calculations
+    // ==============================================================================
+    // 4. BULLETPROOF ACCOUNTS & SETTLEMENT ENGINE (DYNAMIC & 100% REACTIVE)
+    // ==============================================================================
     function getWeekRange(offsetWeeks = 0) {
-      const d = new Date();
-      d.setDate(d.getDate() - (offsetWeeks * 7));
+      const now = new Date();
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (offsetWeeks * 7));
       const day = d.getDay();
-      const diffToMon = d.getDate() - day + (day === 0 ? -6 : 1);
+      // Monday diff: in JS 0 is Sunday, 1 is Monday ... 6 is Saturday
+      const diffToMon = d.getDate() - (day === 0 ? 6 : day - 1);
 
-      const mon = new Date(d.setDate(diffToMon));
-      mon.setHours(0, 0, 0, 0);
+      const mon = new Date(d.getFullYear(), d.getMonth(), diffToMon, 0, 0, 0, 0);
+      const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6, 23, 59, 59, 999);
 
-      const sun = new Date(mon);
-      sun.setDate(mon.getDate() + 6);
-      sun.setHours(23, 59, 59, 999);
+      const startStr = formatLocalDate(mon);
+      const endStr = formatLocalDate(sun);
+      const weekId = `week_${startStr}_${endStr}`;
 
-      return { monday: mon, sunday: sun };
+      return { monday: mon, sunday: sun, startStr, endStr, weekId };
+    }
+
+    // Dynamic Financial Summary for Any Week (Always reflects live edited transactions!)
+    function getWeekFinancialSummary(offsetWeeks = 0) {
+      const range = getWeekRange(offsetWeeks);
+      const { startStr, endStr, weekId } = range;
+
+      let sales = 0;
+      let expenses = 0;
+      let capital = 0;
+      const partnerExp = { Balaji: 0, Nagoor: 0, JP: 0 };
+      const partnerSales = { Balaji: 0, Nagoor: 0, JP: 0 };
+
+      (state.transactions || []).forEach(tx => {
+        if (tx.date >= startStr && tx.date <= endStr) {
+          const amt = Number(tx.amount) || 0;
+          if (tx.type === 'sales') {
+            sales += amt;
+            if (partnerSales[tx.partner] !== undefined) partnerSales[tx.partner] += amt;
+          } else if (tx.type === 'expense') {
+            expenses += amt;
+            if (partnerExp[tx.partner] !== undefined) partnerExp[tx.partner] += amt;
+          } else if (tx.type === 'investment') {
+            capital += amt;
+          }
+        }
+      });
+
+      const netProfit = sales - expenses;
+      const isProfit = netProfit >= 0;
+      const equalShare = Math.round(netProfit / 3);
+      const lossShare = Math.abs(equalShare);
+
+      const settlementDoc = state.settlements?.[weekId] || {};
+      const transfersData = settlementDoc.transfers || {};
+
+      const baseDue = {
+        Nagoor: partnerExp.Nagoor + (isProfit ? equalShare : -lossShare),
+        JP: partnerExp.JP + (isProfit ? equalShare : -lossShare),
+        Balaji: partnerExp.Balaji + (isProfit ? equalShare : -lossShare)
+      };
+
+      return {
+        ...range,
+        sales,
+        expenses,
+        capital,
+        partnerExp,
+        partnerSales,
+        netProfit,
+        isProfit,
+        equalShare,
+        lossShare,
+        baseDue,
+        transfersData,
+        settlementDoc
+      };
+    }
+
+    // Dynamic Carry-Forward Calculator: Chains prior unpaid balances dynamically from live transactions & payments!
+    function getPartnerPreviousPendingDue(partner, currentOffsetWeeks) {
+      const prevSummary = getWeekFinancialSummary(currentOffsetWeeks + 1);
+      const prevBase = prevSummary.baseDue[partner] || 0;
+
+      // Recursive carry-forward for prior weeks if any (up to 12 weeks back)
+      let prevPriorCarried = 0;
+      if (currentOffsetWeeks + 1 < 12) {
+        prevPriorCarried = getPartnerPreviousPendingDue(partner, currentOffsetWeeks + 1);
+      }
+
+      const prevTotalDue = Math.max(0, prevBase + prevPriorCarried);
+      const prevRecord = prevSummary.transfersData[partner];
+      const prevPaid = prevRecord ? (Number(prevRecord.paidAmount) || 0) : 0;
+      const prevRemaining = Math.max(0, prevTotalDue - prevPaid);
+
+      return prevRemaining;
     }
 
     window.changeSettlementWeek = function(delta) {
@@ -4089,47 +4156,22 @@
       const printArea = document.getElementById('partnerInvoicePrintArea');
       if (!modal || !printArea) return;
 
-      const { monday, sunday } = getWeekRange(state.settlementOffsetWeeks || 0);
-      const startStr = monday.toISOString().split('T')[0];
-      const endStr = sunday.toISOString().split('T')[0];
+      const weekSummary = getWeekFinancialSummary(state.settlementOffsetWeeks || 0);
+      const { monday, sunday, startStr, endStr, weekId: targetWeekId, equalShare, partnerExp } = weekSummary;
       const formattedRange = `${monday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${sunday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
-      // Aggregate transactions for the week
-      let weeklySales = 0;
-      let weeklyExp = 0;
-      const pExp = { Balaji: 0, Nagoor: 0, JP: 0 };
-      state.transactions.forEach(t => {
-        if (t.date >= startStr && t.date <= endStr) {
-          const amt = Number(t.amount) || 0;
-          if (t.type === 'sales') weeklySales += amt;
-          else if (t.type === 'expense') {
-            weeklyExp += amt;
-            if (pExp[t.partner] !== undefined) pExp[t.partner] += amt;
-          }
-        }
-      });
-
-      const netProfit = weeklySales - weeklyExp;
-      const isProfit = netProfit >= 0;
-      const equalShare = Math.round(netProfit / 3);
-
-      // Carry forward dues
-      const prevWeek = getWeekRange((state.settlementOffsetWeeks || 0) + 1);
-      const prevWeekId = `week_${prevWeek.monday.toISOString().split('T')[0]}_${prevWeek.sunday.toISOString().split('T')[0]}`;
-      const prevSettlement = state.settlements[prevWeekId];
-      const carriedDue = (prevSettlement?.transfers?.[partner]?.remainingDue > 0)
-        ? Number(prevSettlement.transfers[partner].remainingDue) : 0;
-
-      const partnerSpends = pExp[partner] || 0;
-      const baseDue = partnerSpends + (isProfit ? equalShare : -Math.abs(equalShare));
+      // Live dynamic carry-forward
+      const carriedDue = getPartnerPreviousPendingDue(partner, state.settlementOffsetWeeks || 0);
+      const partnerSpends = partnerExp[partner] || 0;
+      const baseDue = weekSummary.baseDue[partner] || 0;
       const totalDue = Math.max(0, baseDue + carriedDue);
 
-      const curSettlement = state.settlements[weekId];
+      const curSettlement = state.settlements[targetWeekId || weekId];
       const record = curSettlement?.transfers?.[partner];
       const paidAmount = record ? (Number(record.paidAmount) || 0) : 0;
-      const remainingDue = record ? (Number(record.remainingDue) || 0) : totalDue;
+      const remainingDue = Math.max(0, totalDue - paidAmount);
 
-      const isPaid = (totalDue > 0 && remainingDue === 0 && paidAmount > 0);
+      const isPaid = (totalDue === 0 || (remainingDue === 0 && paidAmount > 0));
       const isPartial = (paidAmount > 0 && remainingDue > 0);
 
       const billNo = `MM-INV-${startStr.replace(/-/g, '').slice(2)}-${partner.toUpperCase().slice(0, 3)}`;
@@ -4427,9 +4469,9 @@ _Verified official voucher by MeenMart Hub_`;
           overallStatus = 'settled';
         }
 
-        const { monday, sunday } = getWeekRange(state.settlementOffsetWeeks);
-        const monStr = monday.toISOString().split('T')[0];
-        const sunStr = sunday.toISOString().split('T')[0];
+        const range = getWeekRange(state.settlementOffsetWeeks || 0);
+        const monStr = range.startStr;
+        const sunStr = range.endStr;
 
         const payload = {
           weekStart: currentDoc.weekStart || monStr,
@@ -4466,56 +4508,22 @@ _Verified official voucher by MeenMart Hub_`;
         renderAllTimeLedger();
       }
 
-      const { monday, sunday } = getWeekRange(state.settlementOffsetWeeks);
-      const monStr = monday.toISOString().split('T')[0];
-      const sunStr = sunday.toISOString().split('T')[0];
-      const weekId = `week_${monStr}_${sunStr}`;
+      const weekSummary = getWeekFinancialSummary(state.settlementOffsetWeeks || 0);
+      const { monday, sunday, startStr: monStr, endStr: sunStr, weekId, sales: weeklySales, expenses: weeklyExp, partnerExp: weeklyPartnerExp, partnerSales: weeklyPartnerSales, netProfit, isProfit, equalShare, lossShare } = weekSummary;
 
       // Update Header Text
       const weekLabelEl = document.getElementById('settleWeekLabel');
       if (weekLabelEl) {
-        weekLabelEl.innerText = state.settlementOffsetWeeks === 0 ? "This Week" : `${state.settlementOffsetWeeks} Weeks Ago`;
+        weekLabelEl.innerText = (state.settlementOffsetWeeks || 0) === 0 ? "This Week" : `${state.settlementOffsetWeeks} Weeks Ago`;
       }
       const weekRangeEl = document.getElementById('settleWeekRangeText');
       if (weekRangeEl) {
         weekRangeEl.innerText = `${monday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${sunday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
       }
 
-      // Check Previous Week Carry-Forward Pending Dues
-      const prevWeek = getWeekRange(state.settlementOffsetWeeks + 1);
-      const prevMonStr = prevWeek.monday.toISOString().split('T')[0];
-      const prevSunStr = prevWeek.sunday.toISOString().split('T')[0];
-      const prevWeekId = `week_${prevMonStr}_${prevSunStr}`;
-      const prevSettlement = state.settlements[prevWeekId];
-
-      const prevNagoorRemaining = (prevSettlement && prevSettlement.transfers && prevSettlement.transfers.Nagoor && Number(prevSettlement.transfers.Nagoor.remainingDue) > 0)
-        ? Number(prevSettlement.transfers.Nagoor.remainingDue) : 0;
-      const prevJpRemaining = (prevSettlement && prevSettlement.transfers && prevSettlement.transfers.JP && Number(prevSettlement.transfers.JP.remainingDue) > 0)
-        ? Number(prevSettlement.transfers.JP.remainingDue) : 0;
-
-      // Current week transactions aggregation
-      let weeklySales = 0;
-      let weeklyExp = 0;
-      const weeklyPartnerExp = { Balaji: 0, Nagoor: 0, JP: 0 };
-      const weeklyPartnerSales = { Balaji: 0, Nagoor: 0, JP: 0 };
-
-      state.transactions.forEach(tx => {
-        if (tx.date >= monStr && tx.date <= sunStr) {
-          const amt = Number(tx.amount) || 0;
-          if (tx.type === 'sales') {
-            weeklySales += amt;
-            if (weeklyPartnerSales[tx.partner] !== undefined) weeklyPartnerSales[tx.partner] += amt;
-          } else if (tx.type === 'expense') {
-            weeklyExp += amt;
-            if (weeklyPartnerExp[tx.partner] !== undefined) weeklyPartnerExp[tx.partner] += amt;
-          }
-        }
-      });
-
-      const netProfit = weeklySales - weeklyExp;
-      const isProfit = netProfit >= 0;
-      const equalShare = Math.round(netProfit / 3);
-      const lossShare = Math.abs(equalShare);
+      // Check Previous Week Carry-Forward Pending Dues (LIVE DYNAMIC CALCULATION)
+      const prevNagoorRemaining = getPartnerPreviousPendingDue('Nagoor', state.settlementOffsetWeeks || 0);
+      const prevJpRemaining = getPartnerPreviousPendingDue('JP', state.settlementOffsetWeeks || 0);
 
       // 1. Weekly Overview Card
       const titleEl = document.getElementById('settleStatusTitle');
@@ -4625,12 +4633,11 @@ _Verified official voucher by MeenMart Hub_`;
         const totalDue = Math.max(0, baseDue + carriedDue);
         const record = transfersData[partner];
         const paidAmount = record ? (Number(record.paidAmount) || 0) : 0;
-        const remainingDue = record ? (Number(record.remainingDue) || 0) : totalDue;
+        // Always calculate remainingDue dynamically from live totalDue - paidAmount!
+        const remainingDue = Math.max(0, totalDue - paidAmount);
 
         let status = 'pending';
-        if (totalDue === 0) {
-          status = 'paid';
-        } else if (record && remainingDue === 0 && paidAmount > 0) {
+        if (totalDue === 0 || (remainingDue === 0 && paidAmount > 0)) {
           status = 'paid';
         } else if (paidAmount > 0 && remainingDue > 0) {
           status = 'partial';
@@ -5102,10 +5109,8 @@ Day 1 to Today
     
 
     window.toggleWeekSettlementStatus = async function() {
-      const { monday, sunday } = getWeekRange(state.settlementOffsetWeeks);
-      const monStr = monday.toISOString().split('T')[0];
-      const sunStr = sunday.toISOString().split('T')[0];
-      const weekId = `week_${monStr}_${sunStr}`;
+      const range = getWeekRange(state.settlementOffsetWeeks || 0);
+      const { monday, sunday, startStr: monStr, endStr: sunStr, weekId } = range;
 
       const isSettled = state.settlements[weekId] && state.settlements[weekId].status === 'settled';
       const newStatus = isSettled ? 'pending' : 'settled';
@@ -5140,11 +5145,10 @@ Day 1 to Today
 
     // Copy Weekly Report for WhatsApp
     window.copyWeeklyReportWhatsApp = function() {
-      const { monday, sunday } = getWeekRange(state.settlementOffsetWeeks);
+      const range = getWeekRange(state.settlementOffsetWeeks || 0);
+      const { monday, sunday, startStr: monStr, endStr: sunStr, weekId } = range;
       const mStr = `${monday.getDate()}/${monday.getMonth()+1}`;
       const sStr = `${sunday.getDate()}/${sunday.getMonth()+1}/${sunday.getFullYear()}`;
-      const monStr = monday.toISOString().split('T')[0];
-      const sunStr = sunday.toISOString().split('T')[0];
 
       let sales = 0, exp = 0;
       const pExp = { Balaji: 0, Nagoor: 0, JP: 0 };
