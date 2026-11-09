@@ -189,26 +189,16 @@ export function renderTransactionItem(tx, showActions = true, showDate = false) 
     amountColor = 'text-emerald-600 dark:text-emerald-400';
     sign = '+';
   } else if (isTransfer) {
-    const toText = tx.toPartner ? ` ➔ ${tx.toPartner}` : '';
-    typeBadge = `<span class="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 text-[10px] font-extrabold border border-indigo-200/60 dark:border-indigo-900/40 inline-flex items-center gap-1"><i class="fa-solid fa-arrow-right-arrow-left text-[8px]"></i> Transfer${toText}</span>`;
+    typeBadge = '<span class="px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-extrabold border border-indigo-200/60 dark:border-indigo-900/40">Transfer</span>';
     amountColor = 'text-indigo-600 dark:text-indigo-400';
     sign = '⇄ ';
   } else {
-    typeBadge = '<span class="px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-300 text-[10px] font-extrabold border border-teal-200/60 dark:border-teal-900/40">Capital</span>';
+    typeBadge = '<span class="px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-300 text-[10px] font-extrabold border border-teal-200/60 dark:border-teal-900/40">Capital</span>';
     amountColor = 'text-teal-600 dark:text-teal-400';
     sign = '';
   }
 
   const catLabel = getCategoryLabel(tx.type, tx.category);
-
-  // Notes-First Hierarchy with deduplication
-  const hasNotes = tx.description && tx.description.trim().length > 0;
-  const primaryTitle = hasNotes ? escapeHtml(tx.description.trim()) : catLabel;
-  
-  const isRedundant = !hasNotes || 
-    primaryTitle.toLowerCase() === catLabel.toLowerCase() || 
-    ['selavu', 'varavu', 'expense', 'sales', 'mudhaleedu', 'investment', 'entry', 'general'].includes(catLabel.toLowerCase());
-  const secondaryLabel = isRedundant ? '' : catLabel;
 
   // Time formatting
   let timeText = '';
@@ -219,41 +209,84 @@ export function renderTransactionItem(tx, showActions = true, showDate = false) 
     }
   }
 
+  // Smart Title & Subtitle based on Transaction Type (Zero Truncation & Perfect Alignment)
+  let titleHtml = '';
+  let sublineHtml = '';
+
+  if (isTransfer) {
+    // Clean Transfer Route Title: "Balaji ➔ Nagoor"
+    const fromP = tx.partner || 'Balaji';
+    const toP = tx.toPartner || 'Partner';
+    titleHtml = `
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <span class="font-black text-sm text-slate-900 dark:text-white">${fromP}</span>
+        <i class="fa-solid fa-arrow-right text-[10px] text-indigo-500"></i>
+        <span class="font-black text-sm text-indigo-600 dark:text-indigo-400">${toP}</span>
+      </div>
+    `;
+
+    // Clean Subtitle: "10:08 AM • Weekly Settlement Payout" (never repeats name or truncates)
+    const rawNote = tx.description ? tx.description.replace(/\(20\d\d-\d\d-\d\d\s*-\s*20\d\d-\d\d-\d\d\)/g, '').trim() : '';
+    const cleanNote = rawNote || 'Weekly Settlement Payout';
+    sublineHtml = `
+      <div class="flex items-center flex-wrap gap-1 text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+        ${timeText ? `<span>${timeText}</span><span>•</span>` : ''}
+        ${showDate ? `<span>${tx.date}</span><span>•</span>` : ''}
+        <span class="text-indigo-600 dark:text-indigo-400 font-semibold">${escapeHtml(cleanNote)}</span>
+      </div>
+    `;
+  } else {
+    // Standard Expense / Sales / Capital
+    const hasNotes = tx.description && tx.description.trim().length > 0;
+    const primaryTitle = hasNotes ? escapeHtml(tx.description.trim()) : catLabel;
+    
+    const isRedundant = !hasNotes || 
+      primaryTitle.toLowerCase() === catLabel.toLowerCase() || 
+      ['selavu', 'varavu', 'expense', 'sales', 'mudhaleedu', 'investment', 'entry', 'general'].includes(catLabel.toLowerCase());
+    const secondaryLabel = isRedundant ? '' : catLabel;
+
+    titleHtml = `
+      <h4 class="font-extrabold text-sm text-slate-900 dark:text-white leading-snug break-words line-clamp-2">
+        ${primaryTitle}
+      </h4>
+    `;
+
+    sublineHtml = `
+      <div class="flex items-center flex-wrap gap-1 text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+        <span class="font-bold text-slate-600 dark:text-slate-300">${p.name}</span>
+        ${timeText ? `<span>•</span><span>${timeText}</span>` : ''}
+        ${showDate ? `<span>•</span><span>${tx.date}</span>` : ''}
+        ${secondaryLabel ? `<span>•</span><span class="text-teal-600 dark:text-teal-400 font-semibold">${secondaryLabel}</span>` : ''}
+      </div>
+    `;
+  }
+
   const isOnline = isPartnerOnline(tx.partner);
 
   return `
-    <div onclick="handleTransactionCardClick('${tx.id}')" role="button" tabindex="0" class="app-card rounded-2xl px-3.5 py-2.5 transition active:scale-[0.98] border border-slate-100 dark:border-slate-800 shadow-xs cursor-pointer hover:border-teal-500/30">
+    <div onclick="handleTransactionCardClick('${tx.id}')" role="button" tabindex="0" class="app-card rounded-2xl p-3 transition active:scale-[0.98] border border-slate-100 dark:border-slate-800 shadow-xs cursor-pointer hover:border-teal-500/30">
       
-      <div class="flex items-center justify-between gap-2.5">
+      <div class="flex items-center justify-between gap-3">
         
-        <!-- Left: Partner Photo Avatar + Notes & Metadata -->
-        <div class="flex items-center space-x-2.5 min-w-0 flex-1">
+        <!-- Left: Partner Photo Avatar + Title & Subtitle -->
+        <div class="flex items-center space-x-3 min-w-0 flex-1">
           <div class="relative flex-shrink-0">
-            ${renderPartnerAvatar(tx.partner, 'w-10 h-10', 'rounded-xl')}
+            ${renderPartnerAvatar(tx.partner, 'w-10 h-10', 'rounded-2xl')}
             ${isOnline ? '<span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" title="Online"></span>' : ''}
           </div>
           <div class="min-w-0 flex-1">
-            <!-- Notes / Description: wraps cleanly up to 2 lines without truncation -->
-            <h4 class="font-extrabold text-sm text-slate-900 dark:text-white leading-snug break-words line-clamp-2">
-              ${primaryTitle}
-            </h4>
-            <!-- Metadata sub-line: Partner • Time • Category -->
-            <div class="flex items-center flex-wrap gap-1 text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-              <span class="font-bold text-slate-600 dark:text-slate-300">${p.name}</span>
-              ${timeText ? `<span>•</span><span>${timeText}</span>` : ''}
-              ${showDate ? `<span>•</span><span>${tx.date}</span>` : ''}
-              ${secondaryLabel ? `<span>•</span><span class="text-teal-600 dark:text-teal-400 font-semibold">${secondaryLabel}</span>` : ''}
-            </div>
+            ${titleHtml}
+            ${sublineHtml}
           </div>
         </div>
 
         <!-- Right: Amount + Type Badge & Chevron -->
-        <div class="flex items-center gap-1.5 flex-shrink-0">
+        <div class="flex items-center gap-2 flex-shrink-0">
           <div class="text-right">
             <div class="text-sm font-black ${amountColor}">${sign}${formatINR(tx.amount)}</div>
             <div class="mt-0.5">${typeBadge}</div>
           </div>
-          <div class="text-slate-300 dark:text-slate-600 text-xs pl-0.5">
+          <div class="text-slate-300 dark:text-slate-600 text-xs">
             <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </div>
         </div>
