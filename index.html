@@ -47,6 +47,8 @@
 
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- html2pdf.js CDN (Client-side Direct PDF Generation) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- FontAwesome 6 Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -1584,9 +1586,9 @@
             <i class="fa-brands fa-whatsapp text-sm"></i>
             <span>Share Bill</span>
           </button>
-          <button onclick="window.print()" class="w-full py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
-            <i class="fa-solid fa-print text-xs"></i>
-            <span>Print Bill</span>
+          <button onclick="saveOrSharePartnerInvoicePDF()" id="btnPartnerInvoiceDrive" class="w-full py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
+            <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+            <span id="btnPartnerInvoiceDriveText">Save to Drive / PDF</span>
           </button>
         </div>
       </div>
@@ -1617,9 +1619,9 @@
             <i class="fa-brands fa-whatsapp text-sm"></i>
             <span>WhatsApp</span>
           </button>
-          <button onclick="window.print()" class="w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
-            <i class="fa-solid fa-print text-xs"></i>
-            <span>Print PDF</span>
+          <button onclick="saveOrShareWeeklyReportPDF()" id="btnWeeklyReportDrive" class="w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
+            <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+            <span id="btnWeeklyReportDriveText">Save to Drive / PDF</span>
           </button>
         </div>
       </div>
@@ -4281,6 +4283,137 @@
       const modal = document.getElementById('partnerInvoiceModal');
       if (modal) modal.classList.add('hidden');
       popModalState('partnerInvoiceModal', fromPopState);
+    };
+
+    // ==============================================================================
+    // 📂 DIRECT GOOGLE DRIVE / PDF EXPORTER (NO PRINTER SPOOLER DIALOG)
+    // ==============================================================================
+    window.saveOrSharePartnerInvoicePDF = async function() {
+      const area = document.getElementById('partnerInvoicePrintArea');
+      const btn = document.getElementById('btnPartnerInvoiceDrive');
+      const textEl = document.getElementById('btnPartnerInvoiceDriveText');
+      if (!area) return;
+
+      const partner = currentInvoiceState ? currentInvoiceState.partner : 'Partner';
+      const billNo = currentInvoiceState ? currentInvoiceState.billNo : 'Voucher';
+      const fileName = `MeenMart_Bill_${billNo}_${partner}.pdf`;
+
+      if (btn) btn.disabled = true;
+      if (textEl) textEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Creating PDF...';
+
+      try {
+        if (typeof html2pdf === 'undefined') {
+          // Fallback if library didn't load
+          window.print();
+          return;
+        }
+
+        const opt = {
+          margin: [8, 8, 8, 8],
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        const pdfBlob = await html2pdf().set(opt).from(area).outputPdf('blob');
+        const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+        // On mobile / Android, navigator.share with PDF triggers Google Drive / Drive PDF Viewer directly!
+        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+          try {
+            await navigator.share({
+              files: [pdfFile],
+              title: fileName,
+              text: `MeenMart Settlement Bill for ${partner}`
+            });
+            showToast("Saved / Shared to Drive successfully! 📂");
+            return;
+          } catch (shareErr) {
+            if (shareErr.name === 'AbortError') return; // User closed sheet
+            console.warn("Share sheet dismissed or unsupported, triggering direct download:", shareErr);
+          }
+        }
+
+        // Direct Download & Open in Browser / Drive PDF Viewer
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.open(blobUrl, '_blank');
+        showToast("PDF downloaded! Open in Google Drive 📂");
+      } catch (err) {
+        console.error("PDF generation error:", err);
+        showToast("PDF generation failed: " + err.message);
+      } finally {
+        if (btn) btn.disabled = false;
+        if (textEl) textEl.innerHTML = 'Save to Drive / PDF';
+      }
+    };
+
+    window.saveOrShareWeeklyReportPDF = async function() {
+      const area = document.getElementById('weeklyReportPrintArea');
+      const btn = document.getElementById('btnWeeklyReportDrive');
+      const textEl = document.getElementById('btnWeeklyReportDriveText');
+      if (!area) return;
+
+      const range = getWeekRange(state.settlementOffsetWeeks || 0);
+      const fileName = `MeenMart_Weekly_Settlement_${range.startStr}_to_${range.endStr}.pdf`;
+
+      if (btn) btn.disabled = true;
+      if (textEl) textEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Creating PDF...';
+
+      try {
+        if (typeof html2pdf === 'undefined') {
+          window.print();
+          return;
+        }
+
+        const opt = {
+          margin: [8, 8, 8, 8],
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        const pdfBlob = await html2pdf().set(opt).from(area).outputPdf('blob');
+        const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+          try {
+            await navigator.share({
+              files: [pdfFile],
+              title: fileName,
+              text: 'MeenMart Hub - Weekly Settlement Statement'
+            });
+            showToast("Saved / Shared to Drive successfully! 📂");
+            return;
+          } catch (shareErr) {
+            if (shareErr.name === 'AbortError') return;
+            console.warn("Share sheet dismissed, triggering direct download:", shareErr);
+          }
+        }
+
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.open(blobUrl, '_blank');
+        showToast("PDF downloaded! Open in Google Drive 📂");
+      } catch (err) {
+        console.error("Weekly PDF generation error:", err);
+        showToast("PDF generation failed: " + err.message);
+      } finally {
+        if (btn) btn.disabled = false;
+        if (textEl) textEl.innerHTML = 'Save to Drive / PDF';
+      }
     };
 
     window.sharePartnerInvoiceWhatsApp = function() {
