@@ -271,13 +271,9 @@
 
       </div>
 
-      <!-- LIVE CO-FOUNDERS PRESENCE STRIP -->
-      <div id="partnerPresenceBar" onclick="openPresenceDetailModal()" class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs cursor-pointer hover:opacity-95 transition" title="Click to view co-founders real-time online status and last seen">
-        <div class="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-extrabold text-[10px] tracking-wider uppercase">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Online Status:</span>
-        </div>
-        <div id="partnerPresenceList" class="flex items-center gap-1.5">
+      <!-- LIVE CO-FOUNDERS PRESENCE STRIP (CLEAN 3-COLUMN SEGMENTED BAR) -->
+      <div id="partnerPresenceBar" onclick="openPresenceDetailModal()" class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 cursor-pointer" title="Co-founders Live Status • Tap to view full details">
+        <div id="partnerPresenceList" class="grid grid-cols-3 gap-1.5">
           <!-- Dynamically populated by renderPartnerPresence() -->
         </div>
       </div>
@@ -1960,7 +1956,8 @@
         return `<img src="${p.photoUrl}" alt="${p.name}" class="${sizeClass} ${roundedClass} object-cover border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex-shrink-0 inline-block align-middle" />`;
       }
       let fontSize = 'text-base';
-      if (sizeClass.includes('w-5') || sizeClass.includes('h-5')) fontSize = 'text-[11px]';
+      if (sizeClass.includes('w-4') || sizeClass.includes('h-4')) fontSize = 'text-[10px]';
+      else if (sizeClass.includes('w-5') || sizeClass.includes('h-5')) fontSize = 'text-[11px]';
       else if (sizeClass.includes('w-6') || sizeClass.includes('w-7')) fontSize = 'text-xs';
       else if (sizeClass.includes('w-12') || sizeClass.includes('w-14')) fontSize = 'text-2xl';
 
@@ -2773,13 +2770,20 @@
       }
 
       // Recent 3 Transactions
-      
-      if (state.transactions.length === 0) {
+      renderRecentTransactions();
+    }
+
+    // Recent Transactions Dedicated Renderer (Safe & Reusable)
+    window.renderRecentTransactions = function() {
+      const recentContainer = document.getElementById('dashRecentTransactions');
+      if (!recentContainer) return;
+
+      if (!state.transactions || state.transactions.length === 0) {
         recentContainer.innerHTML = `
           <div class="app-card rounded-2xl p-6 text-center space-y-2">
             <div class="text-3xl">📭</div>
             <div class="text-xs font-bold text-slate-700 dark:text-slate-300">No transactions recorded yet</div>
-            <p class="text-[11px] text-slate-400">Tap the '+' button below to add your first expense or sale.</p>
+            <p class="text-[11px] text-slate-400">Tap the '+' button below to add your first expense or income.</p>
             <button onclick="openEntryBottomSheet()" class="mt-2 px-3 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold shadow-md">
               + Add Transaction
             </button>
@@ -2789,7 +2793,7 @@
         const top3 = state.transactions.slice(0, 3);
         recentContainer.innerHTML = top3.map(tx => renderTransactionItem(tx, false, true)).join('');
       }
-    }
+    };
 
     // 2. History List Rendering (Date-wise Grouping & Summary)
     window.renderHistoryList = function() {
@@ -5876,18 +5880,20 @@ ${transferSection}
         const fullLastSeen = isOnline ? 'Active Now' : formatPartnerLastSeen(effectiveLastSeen);
 
         const isMe = state.currentPartner === p;
-        const dotColor = isOnline ? 'bg-emerald-500 ring-2 ring-emerald-200 dark:ring-emerald-950 animate-pulse' : 'bg-slate-300 dark:bg-slate-600';
+        const dotColor = isOnline ? 'bg-emerald-500 animate-pulse ring-1 ring-white dark:ring-slate-900' : 'bg-slate-300 dark:bg-slate-600 ring-1 ring-white dark:ring-slate-900';
         const statusClass = isOnline ? 'text-emerald-600 dark:text-emerald-400 font-extrabold' : 'text-slate-500 dark:text-slate-400 font-medium';
-        const bgClass = isOnline ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200/50 dark:border-emerald-800/40' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/40';
+        const bgClass = isOnline ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/50' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/50';
 
         return `
-          <button type="button" onclick="openPresenceDetailModal()" class="flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${bgClass} text-[10px] shadow-2xs hover:scale-105 active:scale-95 transition cursor-pointer" title="${p}: ${fullLastSeen} (Click for co-founder live status)">
-            <div class="relative flex items-center">
-              ${renderPartnerAvatar(p, 'w-4 h-4', 'rounded-full')}
-              <span class="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotColor}"></span>
+          <button type="button" onclick="openPresenceDetailModal()" class="flex items-center justify-between px-2 py-1 rounded-xl border ${bgClass} text-[10px] min-w-0 transition active:scale-95 cursor-pointer shadow-2xs hover:shadow-xs" title="${p}: ${fullLastSeen} (Click for co-founder live status)">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <div class="relative flex-shrink-0 flex items-center justify-center">
+                ${renderPartnerAvatar(p, 'w-4 h-4', 'rounded-full')}
+                <span class="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotColor}"></span>
+              </div>
+              <span class="font-extrabold text-slate-800 dark:text-slate-200 truncate text-[11px]">${p}</span>
             </div>
-            <span class="font-bold text-slate-700 dark:text-slate-200">${p}</span>
-            <span class="${statusClass} text-[9px]">${isOnline ? '🟢 Online' : shortLastSeen}</span>
+            <span class="${statusClass} text-[9px] flex-shrink-0 ml-1 whitespace-nowrap">${isOnline ? 'Online' : shortLastSeen}</span>
           </button>
         `;
       }).join('');
