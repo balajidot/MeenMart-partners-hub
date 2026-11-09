@@ -480,6 +480,7 @@ import {
     }
 
     window.selectEntryToPartner = function(p) {
+      if (navigator.vibrate) navigator.vibrate(8);
       state.entryToPartner = p;
       ['Nagoor', 'JP', 'Balaji'].forEach(partner => {
         const btn = document.getElementById(`sheetToPartner-${partner}`);
@@ -493,6 +494,7 @@ import {
     };
 
     window.selectEntryPaymentMethod = function(method) {
+      if (navigator.vibrate) navigator.vibrate(8);
       state.entryPaymentMethod = method;
       const map = { 'GPay / UPI': 'pmBtn-gpay', 'Cash': 'pmBtn-cash', 'Bank': 'pmBtn-bank' };
       Object.keys(map).forEach(m => {
@@ -507,6 +509,7 @@ import {
     };
 
     window.selectEntryType = function(type) {
+      if (navigator.vibrate) navigator.vibrate(8);
       state.entryType = type;
       ['expense', 'sales', 'transfer', 'investment'].forEach(t => {
         const btn = document.getElementById(`typeBtn-${t}`);
@@ -557,12 +560,15 @@ import {
         showToast("Unga login-la neenga mattum dhaan add panna mudiyum! 🔒", "⚠️");
         return;
       }
+      if (navigator.vibrate) navigator.vibrate(8);
       state.entryPartner = state.currentPartner;
       updateSheetPartnerLockUI();
     };
 
     window.addAmountValue = function(val) {
+      if (navigator.vibrate) navigator.vibrate(8);
       const input = document.getElementById('entryAmount');
+      if (!input) return;
       const cur = Number(input.value) || 0;
       input.value = cur + val;
     };

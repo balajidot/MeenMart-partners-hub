@@ -14,6 +14,7 @@ import { renderTransactionItem } from './history.js';
 export const DASH_SCOPE_KEYS = ['today', 'week', 'month', 'all'];
 
 export function setDashboardDateScope(scope) {
+  if (navigator.vibrate) navigator.vibrate(8);
   state.dashboardScope = scope;
   state.selectedDashboardDay = null; // Clear single-day calendar filter
 
@@ -40,6 +41,7 @@ export function setDashboardDateScope(scope) {
 }
 
 export function selectWeeklyCalendarDay(dateStr) {
+  if (navigator.vibrate) navigator.vibrate(8);
   state.dashboardScope = 'day';
   state.selectedDashboardDay = dateStr;
 
@@ -206,17 +208,23 @@ export function renderDashboard() {
   const netBalance = totalSales - totalExp;
 
   // Update Hero Card
+  const heroCardEl = document.getElementById('dashHeroCardContainer');
   const heroNet = document.getElementById('dashHeroNetBalance');
   if (heroNet) {
     heroNet.innerText = formatINR(netBalance);
+    const dtEl = document.getElementById('dashNetTitle');
     if (netBalance >= 0) {
-      heroNet.className = "text-3xl font-extrabold tracking-tight mt-1 text-white";
-      const dtEl = document.getElementById('dashNetTitle');
+      heroNet.className = "text-3xl font-black tracking-tight mt-1 text-white";
       if (dtEl) dtEl.innerText = "Profit";
+      if (heroCardEl) {
+        heroCardEl.className = "rounded-3xl p-5 bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-950 text-white shadow-xl space-y-4 relative overflow-hidden transition-all duration-300";
+      }
     } else {
-      heroNet.className = "text-3xl font-extrabold tracking-tight mt-1 text-rose-300";
-      const dtEl = document.getElementById('dashNetTitle');
+      heroNet.className = "text-3xl font-black tracking-tight mt-1 text-rose-200";
       if (dtEl) dtEl.innerText = "Loss";
+      if (heroCardEl) {
+        heroCardEl.className = "rounded-3xl p-5 bg-gradient-to-br from-rose-700 via-rose-800 to-slate-950 text-white shadow-xl space-y-4 relative overflow-hidden transition-all duration-300";
+      }
     }
   }
 

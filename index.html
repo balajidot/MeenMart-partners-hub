@@ -112,27 +112,35 @@
       background: #ffffff;
       border: 1px solid #e2e8f0;
       box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.05);
+      border-radius: 1.5rem;
     }
     .dark .app-card {
       background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+      border-radius: 1.5rem;
+    }
+
+    /* Tactile Tap & Active States */
+    button:active:not(:disabled), .tap-active:active {
+      transform: scale(0.96);
+      transition: transform 0.08s ease;
     }
 
     /* Bottom Dock Bar */
     .app-dock {
-      background: rgba(255, 255, 255, 0.98);
-      border-top: 1px solid #e2e8f0;
+      background: rgba(255, 255, 255, 0.94);
+      border-top: 1px solid rgba(226, 232, 240, 0.8);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      padding-bottom: max(var(--sab), 0.5rem);
+      padding-bottom: max(var(--sab), 0.75rem);
     }
     .dark .app-dock {
-      background: rgba(7, 13, 30, 0.96);
+      background: rgba(7, 13, 30, 0.94);
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      padding-bottom: max(var(--sab), 0.5rem);
+      padding-bottom: max(var(--sab), 0.75rem);
     }
 
     /* Floating Center Button Glow */
@@ -143,8 +151,8 @@
     /* Native Modal Bottom Sheet (No black gap) */
     .modal-backdrop {
       background-color: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
     }
 
     /* Strip native search styling so search inputs look like clean text inputs */
@@ -289,7 +297,7 @@
     </header>
 
     <!-- MAIN BODY TABS -->
-    <main class="px-3.5 pt-3.5 space-y-4">
+    <main class="px-3.5 pt-3.5 pb-32 space-y-4">
 
       <!-- ======================================== -->
       <!-- TAB 1: DASHBOARD                           -->
@@ -341,31 +349,32 @@
           </div>
         </div>
 
-        <!-- HERO CARD: FINANCIAL SUMMARY -->
-        <div class="rounded-3xl p-5 bg-gradient-to-br from-teal-600 via-teal-700 to-slate-900 text-white shadow-xl space-y-4 relative overflow-hidden">
-          <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
+        <!-- HERO CARD: FINANCIAL SUMMARY (DYNAMIC FINTECH GRADIENT) -->
+        <div id="dashHeroCardContainer" class="rounded-3xl p-5 bg-gradient-to-br from-teal-600 via-teal-700 to-emerald-950 text-white shadow-xl space-y-4 relative overflow-hidden transition-all duration-300">
+          <div class="absolute -right-6 -bottom-6 w-36 h-36 rounded-full bg-white/5 pointer-events-none blur-xl"></div>
+          <div class="absolute -left-6 -top-6 w-24 h-24 rounded-full bg-emerald-400/10 pointer-events-none blur-lg"></div>
 
           <div>
             <div class="flex items-center justify-between text-teal-100 text-xs font-semibold">
               <span id="dashNetTitle">Profit</span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-white/15 backdrop-blur-sm" id="dashHeroDateBadge">Today</span>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md font-bold" id="dashHeroDateBadge">Today</span>
             </div>
             <div class="text-3xl font-black tracking-tight mt-1" id="dashHeroNetBalance">₹0</div>
           </div>
 
           <!-- 3 Mini Metric Cards -->
           <div class="grid grid-cols-3 gap-2 pt-1 border-t border-white/10 text-center">
-            <div class="bg-white/10 rounded-xl p-2">
-              <span class="block text-[9px] text-teal-100 font-medium">Income</span>
-              <span class="text-xs font-extrabold text-emerald-300" id="dashHeroSales">₹0</span>
+            <div class="bg-white/10 dark:bg-black/25 backdrop-blur-md rounded-2xl p-2.5 border border-white/15 shadow-sm">
+              <span class="block text-[9px] text-teal-100 font-bold uppercase tracking-wider">Income</span>
+              <span class="text-xs font-black text-emerald-300 mt-0.5 block" id="dashHeroSales">₹0</span>
             </div>
-            <div class="bg-white/10 rounded-xl p-2">
-              <span class="block text-[9px] text-teal-100 font-medium">Expenses</span>
-              <span class="text-xs font-extrabold text-rose-300" id="dashHeroExpenses">₹0</span>
+            <div class="bg-white/10 dark:bg-black/25 backdrop-blur-md rounded-2xl p-2.5 border border-white/15 shadow-sm">
+              <span class="block text-[9px] text-teal-100 font-bold uppercase tracking-wider">Expenses</span>
+              <span class="text-xs font-black text-rose-300 mt-0.5 block" id="dashHeroExpenses">₹0</span>
             </div>
-            <div class="bg-white/10 rounded-xl p-2">
-              <span class="block text-[9px] text-teal-100 font-medium">Investments</span>
-              <span class="text-xs font-extrabold text-teal-200" id="dashHeroCapital">₹0</span>
+            <div class="bg-white/10 dark:bg-black/25 backdrop-blur-md rounded-2xl p-2.5 border border-white/15 shadow-sm">
+              <span class="block text-[9px] text-teal-100 font-bold uppercase tracking-wider">Capital</span>
+              <span class="text-xs font-black text-teal-200 mt-0.5 block" id="dashHeroCapital">₹0</span>
             </div>
           </div>
         </div>
@@ -1070,19 +1079,20 @@
             </div>
           </div>
 
-          <!-- 4. Amount -->
+          <!-- 4. Amount (Fintech-Grade Centered Input & Quick Chips) -->
           <div>
-            <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center justify-between mb-1.5">
               <label class="text-[11px] font-bold text-slate-700 dark:text-slate-300">Amount (₹)</label>
-              <div class="flex space-x-1">
-                <button type="button" onclick="addAmountValue(500)" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300">+500</button>
-                <button type="button" onclick="addAmountValue(1000)" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300">+1k</button>
-                <button type="button" onclick="addAmountValue(2000)" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300">+2k</button>
-                <button type="button" onclick="addAmountValue(5000)" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300">+5k</button>
+              <div class="flex items-center space-x-1">
+                <button type="button" onclick="addAmountValue(100)" class="text-[10px] bg-slate-100 hover:bg-teal-50 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300 active:scale-95 transition">+100</button>
+                <button type="button" onclick="addAmountValue(500)" class="text-[10px] bg-slate-100 hover:bg-teal-50 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300 active:scale-95 transition">+500</button>
+                <button type="button" onclick="addAmountValue(1000)" class="text-[10px] bg-slate-100 hover:bg-teal-50 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300 active:scale-95 transition">+1k</button>
+                <button type="button" onclick="addAmountValue(2000)" class="text-[10px] bg-slate-100 hover:bg-teal-50 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300 active:scale-95 transition">+2k</button>
+                <button type="button" onclick="addAmountValue(5000)" class="text-[10px] bg-slate-100 hover:bg-teal-50 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-0.5 rounded-lg font-bold text-teal-700 dark:text-teal-300 active:scale-95 transition">+5k</button>
               </div>
             </div>
-            <div class="relative">
-              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">₹</span>
+            <div class="relative bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-3 flex items-center justify-center focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20 transition-all">
+              <span class="text-2xl font-black text-slate-400 dark:text-slate-500 mr-1 select-none">₹</span>
               <input 
                 type="search" 
                 inputmode="numeric" 
@@ -1099,7 +1109,7 @@
                 data-1p-ignore="true" 
                 data-bwignore="true" 
                 onkeydown="if(event.key==='Enter') handleFormSubmit(event)"
-                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-lg font-extrabold text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" 
+                class="w-full bg-transparent text-center text-3xl font-black tracking-tight text-teal-600 dark:text-teal-400 focus:outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600" 
               />
             </div>
           </div>
@@ -1842,11 +1852,11 @@
       </div>
     </div>
 
-    <!-- TOAST NOTIFICATION POPUP -->
-    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px] max-w-sm w-11/12">
-      <div class="app-card rounded-2xl px-4 py-3 shadow-2xl flex items-center space-x-2.5 border-teal-500/40 text-xs bg-white dark:bg-slate-900">
-        <span id="toastIcon" class="text-base text-teal-500">✅</span>
-        <span id="toastMessage" class="text-slate-900 dark:text-slate-100 font-bold">Entry saved successfully! ✅</span>
+    <!-- DYNAMIC ISLAND TOAST NOTIFICATION -->
+    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px] max-w-sm w-11/12 flex justify-center">
+      <div class="rounded-full px-5 py-2.5 shadow-2xl flex items-center space-x-2.5 text-xs bg-slate-900/95 dark:bg-slate-800/95 text-white border border-white/10 backdrop-blur-xl">
+        <span id="toastIcon" class="text-base text-teal-400">✅</span>
+        <span id="toastMessage" class="font-bold tracking-tight">Entry saved successfully!</span>
       </div>
     </div>
 

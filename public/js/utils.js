@@ -262,6 +262,7 @@ export function showToast(msg, icon = "✅") {
   const iconEl = document.getElementById('toastIcon');
   if (msgEl) msgEl.innerText = msg;
   if (iconEl) iconEl.innerText = icon;
+  if (navigator.vibrate) navigator.vibrate(10);
   toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
   toast.classList.add('opacity-100', 'translate-y-0');
   setTimeout(() => {

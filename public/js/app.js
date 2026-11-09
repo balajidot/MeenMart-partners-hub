@@ -146,8 +146,10 @@ export function updateUI() {
 }
 window.updateUI = updateUI;
 
-// Navigation Switcher (Multi-Tab Safe with Smooth Section Scroll)
+// Navigation Switcher (Multi-Tab Safe with Smooth Section Scroll & Haptics)
 window.switchTab = function(tabName, scrollTargetId = null) {
+  if (navigator.vibrate) navigator.vibrate(8);
+
   // Alias mapping to safeguard against blank screens
   if (tabName === 'settlement') tabName = 'accounts';
   if (tabName === 'home') tabName = 'dashboard';
@@ -159,10 +161,10 @@ window.switchTab = function(tabName, scrollTargetId = null) {
     if (sec && nav) {
       if (t === tabName) {
         sec.classList.remove('hidden');
-        nav.className = "flex flex-col items-center justify-center py-1 text-teal-600 dark:text-teal-400";
+        nav.className = "flex flex-col items-center justify-center py-1 text-teal-600 dark:text-teal-400 font-extrabold scale-105 transition-all";
       } else {
         sec.classList.add('hidden');
-        nav.className = "flex flex-col items-center justify-center py-1 text-slate-500 dark:text-slate-400";
+        nav.className = "flex flex-col items-center justify-center py-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium transition-all";
       }
     }
   });

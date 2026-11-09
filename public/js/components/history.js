@@ -73,10 +73,22 @@ export function renderHistoryList() {
 
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div class="app-card rounded-2xl p-8 text-center space-y-2">
-        <div class="text-3xl">🔍</div>
-        <div class="text-xs font-bold text-slate-700 dark:text-slate-300">Endha entry-yum kedaikala</div>
-        <p class="text-[11px] text-slate-400">Filter-ku thagundhamari entries illa.</p>
+      <div class="app-card rounded-3xl p-8 text-center space-y-3 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 flex items-center justify-center text-xl mx-auto shadow-inner">
+          <i class="fa-solid fa-receipt"></i>
+        </div>
+        <div>
+          <h4 class="text-xs font-black text-slate-800 dark:text-slate-200">No Transactions Found</h4>
+          <p class="text-[11px] text-slate-400 mt-0.5">No entries match your selected date or search filter.</p>
+        </div>
+        <div class="flex items-center justify-center gap-2 pt-1">
+          <button type="button" onclick="setHistoryDateFilter('all')" class="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition">
+            Show All
+          </button>
+          <button type="button" onclick="openEntryBottomSheet()" class="px-3.5 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold hover:bg-teal-500 shadow-md shadow-teal-600/20 active:scale-95 transition">
+            + Add Entry
+          </button>
+        </div>
       </div>
     `;
     return;
