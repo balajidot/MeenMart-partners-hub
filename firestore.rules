@@ -12,7 +12,7 @@ rules_version = '2';
 //
 // Collection: transactions
 // Document ID: {transactionId}
-// Purpose: Stores all financial transactions (capital investments, daily expenses, sales revenue)
+// Purpose: Stores all financial transactions (capital investments, daily expenses, sales revenue, partner transfers)
 // Ownership: Owned by the partner who created it. Update & delete are ownership-locked.
 // Strict Partner Identity Lock:
 //   - Balaji can ONLY create transactions with partner == 'Balaji'
@@ -26,8 +26,11 @@ rules_version = '2';
 // Fields:
 //   - id: string (optional, max 100 chars, immutable on update)
 //   - date: string (required, date string e.g. YYYY-MM-DD or ISO 8601, 8-40 chars)
-//   - type: string (required, enum: 'investment', 'expense', 'sales')
+//   - type: string (required, enum: 'investment', 'expense', 'sales', 'transfer')
 //   - partner: string (required, enum: 'Balaji', 'Nagoor', 'JP', strictly locked on create, immutable on update)
+//   - toPartner: string (optional, enum: 'Balaji', 'Nagoor', 'JP', 'Personal')
+//   - paymentMethod: string (optional, non-empty, max 50 chars)
+//   - weekId: string (optional, non-empty, max 100 chars)
 //   - category: string (required, non-empty, max 100 chars)
 //   - amount: number (required, positive number: amount > 0, max 1,000,000,000)
 //   - description: string (optional, max 1000 chars)
@@ -59,13 +62,14 @@ rules_version = '2';
 //   - createdAt: timestamp or number or string (optional, immutable on update)
 //   - updatedAt: timestamp or number or string (optional)
 //
-// Collection: settings
+// Collection: settings / metadata
 // Document ID: categories
 // Purpose: Stores customizable transaction categories across transaction types
 // Fields:
 //   - expense: list or map (optional, max 100 items)
 //   - sales: list or map (optional, max 100 items)
 //   - investment: list or map (optional, max 100 items)
+//   - transfer: list or map (optional, max 100 items)
 //   - updatedAt: timestamp or number or string (optional)
 //   - updatedBy: string (optional, max 100 chars)
 //
@@ -306,7 +310,7 @@ service cloud.firestore {
 
     // Check if string matches allowed transaction types
     function isValidTransactionType(type) {
-      return type in ['investment', 'expense', 'sales'];
+      return type in ['investment', 'expense', 'sales', 'transfer'];
     }
 
     // Check if string matches allowed settlement statuses
@@ -340,7 +344,8 @@ service cloud.firestore {
         hasOnlyAllowedFields(data, [
           'id', 'date', 'type', 'partner', 'category', 'amount',
           'description', 'autoCapitalCredit', 'createdAt', 'updatedAt',
-          'createdBy', 'createdByPartner', 'proof', 'proofAddedAt'
+          'createdBy', 'createdByPartner', 'proof', 'proofAddedAt',
+          'toPartner', 'paymentMethod', 'weekId'
         ]) &&
         // Required date string validation (enforces length & DoS limit)
         data.date is string &&
@@ -370,6 +375,12 @@ service cloud.firestore {
         // Optional proof photo/URL and timestamp
         (!('proof' in data) || (data.proof is string && data.proof.size() <= 200000)) &&
         (!('proofAddedAt' in data) || (data.proofAddedAt is number || data.proofAddedAt is timestamp)) &&
+        // Optional toPartner: if present, must be string and in ['Balaji', 'Nagoor', 'JP', 'Personal']
+        (!('toPartner' in data) || (data.toPartner is string && data.toPartner in ['Balaji', 'Nagoor', 'JP', 'Personal'])) &&
+        // Optional paymentMethod: if present, must be non-empty string max 50 chars
+        (!('paymentMethod' in data) || (data.paymentMethod is string && data.paymentMethod.size() > 0 && data.paymentMethod.size() <= 50)) &&
+        // Optional weekId: if present, must be non-empty string max 100 chars
+        (!('weekId' in data) || (data.weekId is string && data.weekId.size() > 0 && data.weekId.size() <= 100)) &&
         // Optional timestamps
         (!('createdAt' in data) || (data.createdAt is number || data.createdAt is timestamp || data.createdAt is string)) &&
         (!('updatedAt' in data) || (data.updatedAt is number || data.updatedAt is timestamp || data.updatedAt is string));
@@ -429,13 +440,14 @@ service cloud.firestore {
         (!('updatedAt' in data) || (data.updatedAt is number || data.updatedAt is timestamp || data.updatedAt is string));
     }
 
-    // Validates custom category settings document (settings/categories)
+    // Validates custom category settings document (settings/categories & metadata/categories)
     function isValidCategorySettings(data) {
       return data.size() <= 10 &&
-        hasOnlyAllowedFields(data, ['expense', 'sales', 'investment', 'updatedAt', 'updatedBy']) &&
+        hasOnlyAllowedFields(data, ['expense', 'sales', 'investment', 'transfer', 'updatedAt', 'updatedBy']) &&
         (!('expense' in data) || ((data.expense is list || data.expense is map) && data.expense.size() <= 100)) &&
         (!('sales' in data) || ((data.sales is list || data.sales is map) && data.sales.size() <= 100)) &&
         (!('investment' in data) || ((data.investment is list || data.investment is map) && data.investment.size() <= 100)) &&
+        (!('transfer' in data) || ((data.transfer is list || data.transfer is map) && data.transfer.size() <= 100)) &&
         (!('updatedAt' in data) || (data.updatedAt is number || data.updatedAt is timestamp || data.updatedAt is string)) &&
         (!('updatedBy' in data) || (data.updatedBy is string && data.updatedBy.size() <= 100));
     }
@@ -520,10 +532,21 @@ service cloud.firestore {
     // 3. Metadata & App Settings Collections
     // Stores app configurations, system flags, and metadata
     // ---------------------------------------------------------------
+    // Specific category configuration document (metadata/categories)
+    match /metadata/categories {
+      allow read: if isPartner();
+      allow create, update: if isPartner() && isValidCategorySettings(request.resource.data);
+      allow delete: if false;
+    }
+
+    // General app metadata
     match /metadata/{metadataId} {
       allow read: if isPartner();
-      allow create, update: if isPartner() && isValidMetadataDoc(request.resource.data);
-      allow delete: if isPartner();
+      allow create, update: if isPartner() &&
+        metadataId != 'categories' &&
+        isValidMetadataDoc(request.resource.data);
+      allow delete: if isPartner() &&
+        metadataId != 'categories';
     }
 
     // Specific category configuration document (settings/categories)

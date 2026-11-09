@@ -503,6 +503,7 @@
                 <option value="all">All Types</option>
                 <option value="expense">💸 Expenses</option>
                 <option value="sales">📈 Income</option>
+                <option value="transfer">🔄 Transfers</option>
                 <option value="investment">💰 Investments</option>
               </select>
             </div>
@@ -978,23 +979,26 @@
         </div>
 
         <div id="entryForm" class="space-y-3.5">
-          <!-- 1. Entry Type -->
+          <!-- 1. Entry Type (4 Types: Expense, Income, Transfer, Investment) -->
           <div>
             <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">Type:</label>
-            <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
-              <button type="button" onclick="selectEntryType('expense')" id="typeBtn-expense" class="py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center space-x-1 bg-white dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-300 dark:border-rose-500/40 shadow-sm">
+            <div class="grid grid-cols-4 gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+              <button type="button" onclick="selectEntryType('expense')" id="typeBtn-expense" class="py-2 rounded-xl text-[11px] font-extrabold flex items-center justify-center space-x-1 bg-white dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-300 dark:border-rose-500/40 shadow-sm">
                 <span>💸</span><span>Expense</span>
               </button>
-              <button type="button" onclick="selectEntryType('sales')" id="typeBtn-sales" class="py-2.5 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
+              <button type="button" onclick="selectEntryType('sales')" id="typeBtn-sales" class="py-2 rounded-xl text-[11px] font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
                 <span>📈</span><span>Income</span>
               </button>
-              <button type="button" onclick="selectEntryType('investment')" id="typeBtn-investment" class="py-2.5 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
-                <span>💰</span><span>Investment</span>
+              <button type="button" onclick="selectEntryType('transfer')" id="typeBtn-transfer" class="py-2 rounded-xl text-[11px] font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
+                <span>🔄</span><span>Transfer</span>
+              </button>
+              <button type="button" onclick="selectEntryType('investment')" id="typeBtn-investment" class="py-2 rounded-xl text-[11px] font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
+                <span>💰</span><span>Invest</span>
               </button>
             </div>
           </div>
 
-          <!-- 2. Partner (Locked to logged-in user) -->
+          <!-- 2. Partner (Sender / Creator) -->
           <div>
             <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5" id="entryPartnerLabel">Partner (Locked):</label>
             <div class="grid grid-cols-3 gap-2" id="sheetPartnerSelector">
@@ -1006,6 +1010,38 @@
               </button>
               <button type="button" onclick="selectEntryPartner('JP')" id="sheetPartner-JP" class="py-2.5 px-1 rounded-2xl border border-slate-200 dark:border-slate-800 text-center font-bold text-xs text-slate-600 dark:text-slate-400">
                 🛵 JP
+              </button>
+            </div>
+          </div>
+
+          <!-- Transfer Recipient Partner Row (Shown ONLY for Transfer type) -->
+          <div id="entryToPartnerRow" class="hidden space-y-1.5">
+            <label class="block text-[11px] font-bold text-indigo-600 dark:text-indigo-400">To Partner (Recipient):</label>
+            <div class="grid grid-cols-3 gap-2" id="sheetToPartnerSelector">
+              <button type="button" onclick="selectEntryToPartner('Nagoor')" id="sheetToPartner-Nagoor" class="py-2 px-1 rounded-2xl border border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 text-center font-bold text-xs text-indigo-900 dark:text-indigo-200">
+                🦐 Nagoor
+              </button>
+              <button type="button" onclick="selectEntryToPartner('JP')" id="sheetToPartner-JP" class="py-2 px-1 rounded-2xl border border-slate-200 dark:border-slate-800 text-center font-bold text-xs text-slate-600 dark:text-slate-400">
+                🛵 JP
+              </button>
+              <button type="button" onclick="selectEntryToPartner('Balaji')" id="sheetToPartner-Balaji" class="py-2 px-1 rounded-2xl border border-slate-200 dark:border-slate-800 text-center font-bold text-xs text-slate-600 dark:text-slate-400">
+                👨‍💻 Balaji
+              </button>
+            </div>
+          </div>
+
+          <!-- Transfer Payment Method Row (Shown ONLY for Transfer type) -->
+          <div id="entryPaymentMethodRow" class="hidden space-y-1">
+            <label class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">Payment Method:</label>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button type="button" onclick="selectEntryPaymentMethod('GPay / UPI')" id="pmBtn-gpay" class="py-1.5 rounded-xl border border-teal-500 bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-200 text-[11px] font-bold text-center">
+                GPay / UPI
+              </button>
+              <button type="button" onclick="selectEntryPaymentMethod('Cash')" id="pmBtn-cash" class="py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-medium text-center">
+                Cash
+              </button>
+              <button type="button" onclick="selectEntryPaymentMethod('Bank')" id="pmBtn-bank" class="py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-medium text-center">
+                Bank
               </button>
             </div>
           </div>
@@ -1109,15 +1145,18 @@
         </div>
 
         <!-- Category Type Switcher -->
-        <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
-          <button type="button" onclick="switchCatManagerType('expense')" id="catTab-expense" class="py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">
+        <div class="grid grid-cols-4 gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+          <button type="button" onclick="switchCatManagerType('expense')" id="catTab-expense" class="py-2 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm">
             💸 Selavu
           </button>
-          <button type="button" onclick="switchCatManagerType('sales')" id="catTab-sales" class="py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">
-            📈 Varavu
+          <button type="button" onclick="switchCatManagerType('sales')" id="catTab-sales" class="py-2 rounded-lg text-[11px] font-medium text-slate-600 dark:text-slate-400">
+            📈 Income
           </button>
-          <button type="button" onclick="switchCatManagerType('investment')" id="catTab-investment" class="py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400">
-            💰 Mudhaleedu
+          <button type="button" onclick="switchCatManagerType('transfer')" id="catTab-transfer" class="py-2 rounded-lg text-[11px] font-medium text-slate-600 dark:text-slate-400">
+            🔄 Transfer
+          </button>
+          <button type="button" onclick="switchCatManagerType('investment')" id="catTab-investment" class="py-2 rounded-lg text-[11px] font-medium text-slate-600 dark:text-slate-400">
+            💰 Invest
           </button>
         </div>
 
@@ -1349,9 +1388,21 @@
               <select id="editTxType" onchange="updateEditCategoryOptions()" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-2 text-xs text-slate-900 dark:text-white">
                 <option value="expense">💸 Expense</option>
                 <option value="sales">📈 Income</option>
+                <option value="transfer">🔄 Transfer</option>
                 <option value="investment">💰 Mudhaleedu</option>
               </select>
             </div>
+          </div>
+
+          <!-- Transfer Recipient Partner (Shown ONLY when edit type is Transfer) -->
+          <div id="editToPartnerContainer" class="hidden">
+            <label class="block text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mb-1">To Partner (Recipient):</label>
+            <select id="editTxToPartner" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-2 text-xs text-slate-900 dark:text-white">
+              <option value="Nagoor">🦐 Nagoor</option>
+              <option value="JP">🛵 JP</option>
+              <option value="Balaji">👨‍💻 Balaji</option>
+              <option value="Personal">💼 Personal Pocket</option>
+            </select>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
@@ -1814,6 +1865,13 @@
         { id: "weighing_scale", label: "⚖️ Weighing Scale" },
         { id: "initial_capital", label: "💵 Initial Capital" },
         { id: "tech_branding", label: "💻 App & Branding" }
+      ],
+      transfer: [
+        { id: "settlement_payout", label: "🤝 Weekly Settlement Payout" },
+        { id: "harbor_advance", label: "⚓ Harbor / Fish Advance" },
+        { id: "fuel_advance", label: "⛽ Fuel / Delivery Advance" },
+        { id: "cash_handover", label: "💵 Cash Handover (Hand to Hand)" },
+        { id: "profit_withdrawal", label: "💼 Partner Profit Withdrawal" }
       ]
     };
 
@@ -2269,7 +2327,8 @@
             state.categories = {
               expense: data.expense,
               sales: data.sales,
-              investment: data.investment
+              investment: data.investment,
+              transfer: data.transfer || DEFAULT_CATEGORIES.transfer
             };
             updateCategorySelect();
             if (!document.getElementById('categoryManagerModal').classList.contains('hidden')) {
@@ -2666,8 +2725,17 @@
           }
         }
       });
+      // Also account for recorded profit withdrawals
+      state.transactions.forEach(tx => {
+        if (tx.type === 'transfer' && tx.category === 'profit_withdrawal') {
+          totalAllPayoutsPaid += Number(tx.amount) || 0;
+        }
+      });
 
       const balajiLiveCash = totalAllSales + totalAllCapital - totalBalajiSpends - totalAllPayoutsPaid;
+      const pendingToPartners = nagoorBalanceToPay + jpBalanceToPay;
+      const balajiRetainedProfit = Math.max(0, balajiLiveCash - pendingToPartners);
+
       const balajiColorClass = balajiLiveCash > 0 
         ? 'text-emerald-600 dark:text-emerald-400' 
         : (balajiLiveCash < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400');
@@ -2699,6 +2767,27 @@
               <span class="truncate">Income ${formatINR(totalAllSales)} - Spends ${formatINR(totalBalajiSpends)} - Paid ${formatINR(totalAllPayoutsPaid)}</span>
               <span class="text-[10px] font-bold text-teal-600 dark:text-teal-400 ml-2 whitespace-nowrap flex-shrink-0">${formatINR(balajiLiveCash)} Left</span>
             </div>
+            <!-- Row 3: Transparent Breakdown (JP Due vs Balaji Profit) -->
+            <div class="p-2 rounded-xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/40 text-[10px] space-y-1">
+              <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                <span class="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
+                  <i class="fa-solid fa-hourglass-half text-[9px]"></i> Owed to Partners (JP Due):
+                </span>
+                <strong class="font-extrabold text-amber-600 dark:text-amber-400">${formatINR(pendingToPartners)}</strong>
+              </div>
+              <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                <span class="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
+                  <i class="fa-solid fa-circle-check text-[9px]"></i> Balaji's Earned Profit:
+                </span>
+                <strong class="font-extrabold text-emerald-600 dark:text-emerald-400">${formatINR(balajiRetainedProfit)}</strong>
+              </div>
+            </div>
+            ${balajiRetainedProfit > 0 ? `
+              <button type="button" onclick="quickPocketBalajiProfit(${balajiRetainedProfit})" class="w-full py-1.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-[10px] font-bold flex items-center justify-center gap-1.5 active:scale-98 transition shadow-xs">
+                <i class="fa-solid fa-wallet text-xs"></i>
+                <span>Withdraw / Pocket My Profit (${formatINR(balajiRetainedProfit)})</span>
+              </button>
+            ` : ''}
           </div>
 
           <!-- 2. Nagoor: Settlement Entitlement & Payment Status -->
@@ -2795,6 +2884,31 @@
       }
     };
 
+    // Quick Action: Balaji Pocket / Withdraw Profit
+    window.quickPocketBalajiProfit = async function(amt) {
+      if (!amt || amt <= 0) return;
+      if (!confirm(`Take ${formatINR(amt)} as personal profit withdrawal? This will record a transfer and leave only other partners' pending dues in shop cash.`)) return;
+      try {
+        const tx = {
+          type: 'transfer',
+          partner: 'Balaji',
+          toPartner: 'Personal',
+          category: 'profit_withdrawal',
+          amount: amt,
+          date: getTodayString(),
+          paymentMethod: 'Bank Transfer',
+          description: 'Balaji Profit Share Withdrawal',
+          createdAt: Date.now(),
+          createdBy: state.currentUser ? state.currentUser.email : '',
+          createdByPartner: 'Balaji'
+        };
+        await addDoc(collection(db, "transactions"), tx);
+        showToast(`Profit of ${formatINR(amt)} withdrawn! Shop cash now reflects partners' dues. ✅`);
+      } catch (err) {
+        alert("Withdrawal error: " + err.message);
+      }
+    };
+
     // 2. History List Rendering (Date-wise Grouping & Summary)
     window.renderHistoryList = function() {
       const container = document.getElementById('historyListContainer');
@@ -2819,13 +2933,19 @@
         if (filterType !== 'all' && tx.type !== filterType) return false;
 
         // Partner filter
-        if (filterPartner !== 'all' && tx.partner !== filterPartner) return false;
+        if (filterPartner !== 'all') {
+          if (tx.type === 'transfer') {
+            if (tx.partner !== filterPartner && tx.toPartner !== filterPartner) return false;
+          } else if (tx.partner !== filterPartner) {
+            return false;
+          }
+        }
 
         // Search text
         if (search) {
           const matchDesc = (tx.description || '').toLowerCase().includes(search);
           const matchCat = (tx.category || '').toLowerCase().includes(search);
-          const matchPartner = (tx.partner || '').toLowerCase().includes(search);
+          const matchPartner = (tx.partner || '').toLowerCase().includes(search) || (tx.toPartner || '').toLowerCase().includes(search);
           const matchAmount = String(tx.amount || '').includes(search);
           if (!matchDesc && !matchCat && !matchPartner && !matchAmount) return false;
         }
@@ -2937,6 +3057,7 @@
       const p = PARTNERS[tx.partner] || { avatar: '👤', name: tx.partner };
       const isExp = tx.type === 'expense';
       const isSales = tx.type === 'sales';
+      const isTransfer = tx.type === 'transfer';
 
       let typeBadge = '';
       let amountColor = '';
@@ -2950,6 +3071,11 @@
         typeBadge = '<span class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold">Income</span>';
         amountColor = 'text-emerald-600 dark:text-emerald-400';
         sign = '+';
+      } else if (isTransfer) {
+        const toText = tx.toPartner ? ` ➔ ${tx.toPartner}` : '';
+        typeBadge = `<span class="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold">🔄 Transfer${toText}</span>`;
+        amountColor = 'text-indigo-600 dark:text-indigo-400';
+        sign = '⇄ ';
       } else {
         typeBadge = '<span class="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-300 text-[10px] font-bold">Investment</span>';
         amountColor = 'text-teal-600 dark:text-teal-400';
@@ -4749,6 +4875,30 @@ _Verified official digital record from MeenMart Hub_`;
 
         await setDoc(doc(db, "settlements", weekId), payload, { merge: true });
 
+        // Auto-create a Transfer Transaction in ledger if paidVal > 0
+        if (paidVal > 0) {
+          const sender = state.currentUser ? (PARTNER_EMAILS[state.currentUser.email] || 'Balaji') : 'Balaji';
+          const transferTx = {
+            type: 'transfer',
+            partner: sender,
+            toPartner: p.partner,
+            category: 'settlement_payout',
+            amount: paidVal,
+            date: getTodayString(),
+            paymentMethod: method,
+            description: notes ? `Settlement Payout: ${notes}` : `Weekly Settlement Payout (${monStr} - ${sunStr})`,
+            weekId: weekId,
+            createdAt: Date.now(),
+            createdBy: state.currentUser ? state.currentUser.email : '',
+            createdByPartner: sender
+          };
+          try {
+            await addDoc(collection(db, "transactions"), transferTx);
+          } catch (txErr) {
+            console.warn("Transfer transaction auto-log warning:", txErr);
+          }
+        }
+
         // Update local state immediately for instant UI reaction
         if (!state.settlements[weekId]) state.settlements[weekId] = {};
         state.settlements[weekId] = { ...state.settlements[weekId], ...payload };
@@ -5485,7 +5635,7 @@ ${transferSection}
 
     window.switchCatManagerType = function(type) {
       state.catManagerTab = type;
-      ['expense', 'sales', 'investment'].forEach(t => {
+      ['expense', 'sales', 'transfer', 'investment'].forEach(t => {
         const btn = document.getElementById(`catTab-${t}`);
         if (t === type) {
           btn.className = "py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm";
@@ -5598,25 +5748,75 @@ ${transferSection}
       });
     }
 
+    window.selectEntryToPartner = function(p) {
+      state.entryToPartner = p;
+      ['Nagoor', 'JP', 'Balaji'].forEach(partner => {
+        const btn = document.getElementById(`sheetToPartner-${partner}`);
+        if (!btn) return;
+        if (partner === p) {
+          btn.className = "py-2 px-1 rounded-2xl border-2 border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 text-center font-bold text-xs text-indigo-900 dark:text-indigo-200 shadow-sm";
+        } else {
+          btn.className = "py-2 px-1 rounded-2xl border border-slate-200 dark:border-slate-800 text-center font-medium text-xs text-slate-600 dark:text-slate-400";
+        }
+      });
+    };
+
+    window.selectEntryPaymentMethod = function(method) {
+      state.entryPaymentMethod = method;
+      const map = { 'GPay / UPI': 'pmBtn-gpay', 'Cash': 'pmBtn-cash', 'Bank': 'pmBtn-bank' };
+      Object.keys(map).forEach(m => {
+        const btn = document.getElementById(map[m]);
+        if (!btn) return;
+        if (m === method) {
+          btn.className = "py-1.5 rounded-xl border border-teal-500 bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-200 text-[11px] font-bold text-center";
+        } else {
+          btn.className = "py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[11px] font-medium text-center";
+        }
+      });
+    };
+
     window.selectEntryType = function(type) {
       state.entryType = type;
-      ['expense', 'sales', 'investment'].forEach(t => {
+      ['expense', 'sales', 'transfer', 'investment'].forEach(t => {
         const btn = document.getElementById(`typeBtn-${t}`);
+        if (!btn) return;
         if (t === type) {
-          btn.className = "py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center space-x-1 bg-white dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-300 dark:border-rose-500/40 shadow-sm";
+          const colors = {
+            expense: 'bg-white dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border-rose-300 dark:border-rose-500/40',
+            sales: 'bg-white dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40',
+            transfer: 'bg-white dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/40',
+            investment: 'bg-white dark:bg-teal-500/20 text-teal-600 dark:text-teal-300 border-teal-300 dark:border-teal-500/40'
+          };
+          btn.className = `py-2.5 rounded-xl text-[11px] font-extrabold flex items-center justify-center space-x-1 ${colors[t]} border shadow-sm`;
         } else {
-          btn.className = "py-2.5 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400";
+          btn.className = "py-2.5 rounded-xl text-[11px] font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400";
         }
       });
       updateCategorySelect();
 
+      const toRow = document.getElementById('entryToPartnerRow');
+      const pmRow = document.getElementById('entryPaymentMethodRow');
       const label = document.getElementById('entryPartnerLabel');
-      if (type === 'sales') {
-        label.innerText = "Yaaru income vasool pannadhu?";
-      } else if (type === 'expense') {
-        label.innerText = "Paid From Which Partner's Pocket?";
+
+      if (type === 'transfer') {
+        if (toRow) toRow.classList.remove('hidden');
+        if (pmRow) pmRow.classList.remove('hidden');
+        if (label) label.innerText = "From Partner (Sender):";
+        if (!state.entryToPartner || state.entryToPartner === state.currentPartner) {
+          state.entryToPartner = state.currentPartner === 'Balaji' ? 'Nagoor' : 'Balaji';
+        }
+        selectEntryToPartner(state.entryToPartner);
+        selectEntryPaymentMethod(state.entryPaymentMethod || 'GPay / UPI');
       } else {
-        label.innerText = "Yaaru mudhaleedu pannadhu?";
+        if (toRow) toRow.classList.add('hidden');
+        if (pmRow) pmRow.classList.add('hidden');
+        if (type === 'sales') {
+          if (label) label.innerText = "Yaaru income vasool pannadhu?";
+        } else if (type === 'expense') {
+          if (label) label.innerText = "Paid From Which Partner's Pocket?";
+        } else {
+          if (label) label.innerText = "Yaaru mudhaleedu pannadhu?";
+        }
       }
     };
 
@@ -5681,6 +5881,11 @@ ${transferSection}
         createdBy: state.currentUser ? state.currentUser.email : '',
         createdByPartner: activePartner
       };
+
+      if (state.entryType === 'transfer') {
+        newTx.toPartner = state.entryToPartner || 'Nagoor';
+        newTx.paymentMethod = state.entryPaymentMethod || 'GPay / UPI';
+      }
 
       try {
         await addDoc(collection(db, "transactions"), newTx);
@@ -6045,8 +6250,9 @@ ${transferSection}
 
       const isExp = tx.type === 'expense';
       const isSales = tx.type === 'sales';
-      const sign = isExp ? '-' : (isSales ? '+' : '');
-      const amountColor = isExp ? 'text-rose-600 dark:text-rose-400' : (isSales ? 'text-emerald-600 dark:text-emerald-400' : 'text-teal-600 dark:text-teal-400');
+      const isTransfer = tx.type === 'transfer';
+      const sign = isExp ? '-' : (isSales ? '+' : (isTransfer ? '⇄ ' : ''));
+      const amountColor = isExp ? 'text-rose-600 dark:text-rose-400' : (isSales ? 'text-emerald-600 dark:text-emerald-400' : (isTransfer ? 'text-indigo-600 dark:text-indigo-400' : 'text-teal-600 dark:text-teal-400'));
 
       const amtEl = document.getElementById('viewTxAmount');
       amtEl.className = `text-2xl font-black mt-0.5 ${amountColor}`;
@@ -6057,6 +6263,9 @@ ${transferSection}
         typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-300 text-xs font-bold">💸 Expense</span>';
       } else if (isSales) {
         typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-300 text-xs font-bold">📈 Income</span>';
+      } else if (isTransfer) {
+        const toText = tx.toPartner ? ` ➔ ${tx.toPartner}` : '';
+        typeBadgeHtml = `<span class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-300 text-xs font-bold">🔄 Transfer${toText}</span>`;
       } else {
         typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-300 text-xs font-bold">💰 Mudhaleedu</span>';
       }
@@ -6135,6 +6344,14 @@ ${transferSection}
       document.getElementById('editTxDescription').value = tx.description || '';
       document.getElementById('editOwnershipBadge').innerText = `${PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner}-oda Entry 🔒`;
 
+      const toPartnerEl = document.getElementById('editTxToPartner');
+      if (toPartnerEl) toPartnerEl.value = tx.toPartner || 'Nagoor';
+      const toPartnerContainer = document.getElementById('editToPartnerContainer');
+      if (toPartnerContainer) {
+        if (tx.type === 'transfer') toPartnerContainer.classList.remove('hidden');
+        else toPartnerContainer.classList.add('hidden');
+      }
+
       updateEditCategoryOptions(tx.category);
       document.getElementById('editTransactionModal').classList.remove('hidden');
       pushModalState('editTransactionModal');
@@ -6147,6 +6364,12 @@ ${transferSection}
 
     window.updateEditCategoryOptions = function(selectedCat) {
       const type = document.getElementById('editTxType').value;
+      const toPartnerContainer = document.getElementById('editToPartnerContainer');
+      if (toPartnerContainer) {
+        if (type === 'transfer') toPartnerContainer.classList.remove('hidden');
+        else toPartnerContainer.classList.add('hidden');
+      }
+
       const select = document.getElementById('editTxCategory');
       select.innerHTML = '';
       const list = (state.categories && state.categories[type]) || DEFAULT_CATEGORIES[type] || [];
@@ -6178,6 +6401,11 @@ ${transferSection}
         description: document.getElementById('editTxDescription').value.trim(),
         updatedAt: Date.now()
       };
+
+      if (updated.type === 'transfer') {
+        const toEl = document.getElementById('editTxToPartner');
+        if (toEl) updated.toPartner = toEl.value || 'Nagoor';
+      }
 
       try {
         await updateDoc(doc(db, "transactions", id), updated);
