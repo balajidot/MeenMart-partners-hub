@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meenmart-partners-pwa-v39';
+const CACHE_NAME = 'meenmart-partners-pwa-v40';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -7,6 +7,18 @@ const STATIC_ASSETS = [
   '/pwa-192x192.png',
   '/pwa-512x512.png',
   '/apple-touch-icon.png',
+  '/js/app.js',
+  '/js/config.js',
+  '/js/state.js',
+  '/js/utils.js',
+  '/js/firebase.js',
+  '/js/sync.js',
+  '/js/services/pdf.js',
+  '/js/components/dashboard.js',
+  '/js/components/history.js',
+  '/js/components/settlement.js',
+  '/js/components/analytics.js',
+  '/js/components/modals.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -33,73 +45,69 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-http schemes
-  if (!url.protocol.startsWith('http')) {
-    return;
-  }
-
-  // Skip Firebase RTDB / Google auth / external API requests entirely
+  // Network-first for Firestore and API endpoints
   if (
-    url.hostname.includes('firebasedatabase.app') ||
-    url.hostname.includes('firebaseio.com') ||
-    url.hostname.includes('googleapis.com') ||
-    url.hostname.includes('identitytoolkit') ||
-    url.hostname.includes('firebase.google.com') ||
-    url.pathname.includes('/.lp') ||
-    url.pathname.includes('/.ws') ||
-    request.method !== 'GET'
+    url.hostname.includes('firestore.googleapis.com') ||
+    url.hostname.includes('identitytoolkit.googleapis.com') ||
+    url.hostname.includes('securetoken.googleapis.com') ||
+    url.hostname.includes('firebaseinstallations.googleapis.com')
   ) {
     return;
   }
 
-  // Bypass hashed Vite assets from SW caching to prevent cross-world modulepreload mismatches
-  // Hashed assets (/assets/**) are already cached permanently via HTTP headers
-  if (url.pathname.startsWith('/assets/')) {
-    return;
-  }
-
-  // Network-First for HTML navigations: always get latest index.html when online!
+  // Network-first with cache fallback for navigation / HTML
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache);
+              cache.put(request, clone);
             });
           }
-          return networkResponse;
+          return response;
         })
-        .catch(async () => {
-          // caches.match() resolves to undefined on a miss, and a Promise is
-          // always truthy, so these must be awaited rather than chained with ||.
-          return (
-            (await caches.match('/index.html')) ||
-            (await caches.match('/')) ||
-            Response.error()
-          );
+        .catch(() => {
+          return caches.match('/index.html');
         })
     );
     return;
   }
 
-  // Stale-While-Revalidate for static icons/manifest
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request)
-        .then((networkResponse) => {
+  // Stale-while-revalidate for local static assets and JS modules
+  if (url.origin === location.origin) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        const fetchPromise = fetch(request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
+            const clone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache);
+              cache.put(request, clone);
             });
           }
           return networkResponse;
-        })
-        .catch(() => cachedResponse);
+        }).catch(() => cached);
 
-      return cachedResponse || fetchPromise;
+        return cached || fetchPromise;
+      })
+    );
+    return;
+  }
+
+  // Default: Cache first with network fallback for external CDN scripts/styles
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).then((response) => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, clone);
+          });
+        }
+        return response;
+      });
     })
   );
 });
