@@ -255,6 +255,9 @@ export function initPresenceSync() {
   window.addEventListener('beforeunload', () => {
     sendPresenceHeartbeat(false);
   });
+  window.addEventListener('pagehide', () => {
+    sendPresenceHeartbeat(false);
+  });
 }
 
 // Update partner presence on cards
@@ -360,3 +363,4 @@ if (typeof window !== 'undefined') {
   window.renderPartnerPresence = renderPartnerPresence;
   window.renderPresenceDetailModal = renderPresenceDetailModal;
 }
+

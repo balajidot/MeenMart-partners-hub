@@ -46,3 +46,4 @@ export const state = {
 if (typeof window !== 'undefined') {
   window.state = state;
 }
+

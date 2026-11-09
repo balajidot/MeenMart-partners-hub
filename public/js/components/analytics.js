@@ -5,6 +5,21 @@
 import { state } from '../state.js';
 import { formatINR, formatLocalDate, getCategoryLabel, renderPartnerAvatar } from '../utils.js';
 
+// Lazy load Chart.js only when Analytics tab is opened (saves 250KB on initial load)
+export async function ensureChartJsLoaded() {
+  if (typeof Chart !== 'undefined') return true;
+  return new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    s.onload = () => resolve(true);
+    s.onerror = () => {
+      console.warn("Failed to load Chart.js dynamically");
+      resolve(false);
+    };
+    document.head.appendChild(s);
+  });
+}
+
 export function setAnalyticsRange(r) {
   state.analyticsRange = r;
   ['7', '30', 'month', 'all'].forEach(k => {
@@ -18,7 +33,10 @@ export function setAnalyticsRange(r) {
   renderAnalytics();
 }
 
-export function renderAnalytics() {
+export async function renderAnalytics() {
+  await ensureChartJsLoaded();
+  if (typeof Chart === 'undefined') return;
+
   const isDark = state.theme === 'dark';
   const textColor = isDark ? '#94a3b8' : '#475569';
   const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
@@ -524,3 +542,4 @@ if (typeof window !== 'undefined') {
   window.renderAnalytics = renderAnalytics;
   window.setAnalyticsRange = setAnalyticsRange;
 }
+

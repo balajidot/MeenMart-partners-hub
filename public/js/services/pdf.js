@@ -2,6 +2,7 @@
 // 📄 PDF & INVOICE SERVICES (Client-side HTML2PDF & Direct Download Engine)
 // ==============================================================================
 import { state } from '../state.js';
+import { PARTNERS } from '../config.js';
 import { 
   formatINR, 
   getTodayString, 
@@ -11,6 +12,7 @@ import {
   getWeekRange, 
   getWeekFinancialSummary, 
   getPartnerPreviousPendingDue, 
+  getCategoryLabel,
   showToast 
 } from '../utils.js';
 
@@ -833,11 +835,42 @@ _Verified official digital record from MeenMart Hub_`;
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 
+    // CSV Export for Excel
+    export function exportToCSV() {
+      if (!state.transactions || state.transactions.length === 0) {
+        alert("Export panna entries edhum illa!");
+        return;
+      }
 
+      // UTF-8 BOM so Excel opens Tamil characters perfectly
+      let csvContent = "\uFEFF";
+      csvContent += "Date,Type,Category,Partner,Amount,Notes,CreatedBy\r\n";
+
+      state.transactions.forEach(tx => {
+        const typeTamil = tx.type === 'expense' ? 'Selavu' : (tx.type === 'sales' ? 'Varavu' : (tx.type === 'transfer' ? 'Transfer' : 'Mudhaleedu'));
+        const cat = (getCategoryLabel(tx.type, tx.category) || tx.category || '').replace(/,/g, ' ');
+        const partnerName = PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner;
+        const desc = (tx.description || '').replace(/"/g, '""').replace(/,/g, ' ');
+        const creator = tx.createdBy || tx.createdByPartner || '';
+
+        csvContent += `"${tx.date}","${typeTamil}","${cat}","${partnerName}","${tx.amount}","${desc}","${creator}"\r\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `meenmart_accounts_${getTodayString()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("CSV statement downloaded! 📥");
+    }
 
 // Attach to window for inline onclick handlers in HTML
 window.ensureHtml2PdfLoaded = ensureHtml2PdfLoaded;
 window.exportToPDF = exportToPDF;
+window.exportToCSV = exportToCSV;
 window.exportWeeklySettlementPDF = exportWeeklySettlementPDF;
 window.closeWeeklySettlementPdfModal = closeWeeklySettlementPdfModal;
 window.printWeeklyReport = printWeeklyReport;

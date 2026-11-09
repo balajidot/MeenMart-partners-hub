@@ -198,18 +198,28 @@ function initApp() {
     window.updateCategorySelect();
   }
 
-  // 3. Register PWA Service Worker with Automatic Update Detection
+  // 3. Register PWA Service Worker with Instant Auto-Activation
   if ('serviceWorker' in navigator) {
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        console.log('ServiceWorker controller updated. Reloading for fresh cache...');
+        window.location.reload();
+      }
+    });
+
     navigator.serviceWorker.register('/sw.js')
       .then(reg => {
-        console.log('MeenMart ServiceWorker registered. Scope:', reg.scope);
         // Check for SW updates
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('New version of MeenMart available. Updating...');
+                console.log('New version of MeenMart available. Activating immediately...');
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                showToast("Updating MeenMart to latest version... 🚀");
               }
             });
           }
@@ -239,3 +249,4 @@ if (document.readyState === 'loading') {
 }
 
 console.log("MeenMart Partners Hub initialized in modular React-like ES6 architecture 🚀");
+

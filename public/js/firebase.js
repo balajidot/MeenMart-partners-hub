@@ -4,7 +4,8 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { 
-  getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, onSnapshot, query, orderBy 
+  getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, onSnapshot, query, orderBy 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { 
   getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut 
@@ -14,9 +15,20 @@ import { firebaseConfig, PARTNERS, PARTNER_EMAILS } from './config.js';
 import { state } from './state.js';
 import { renderPartnerAvatar } from './utils.js';
 
-// Init Firebase Services
+// Init Firebase Services with Multi-Tab IndexedDB Offline Persistence
 export const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+
+let firestoreInstance;
+try {
+  firestoreInstance = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  });
+} catch (e) {
+  firestoreInstance = getFirestore(app);
+}
+export const db = firestoreInstance;
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
@@ -145,3 +157,4 @@ if (typeof window !== 'undefined') {
   window.updateLoginAvatars = updateLoginAvatars;
   window.updatePartnerCardAvatars = updatePartnerCardAvatars;
 }
+

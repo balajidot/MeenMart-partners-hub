@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meenmart-partners-pwa-v40';
+const CACHE_NAME = 'meenmart-partners-pwa-v41';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -41,11 +41,17 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Network-first for Firestore and API endpoints
+  // Network-first for Firestore, Auth and Google API endpoints
   if (
     url.hostname.includes('firestore.googleapis.com') ||
     url.hostname.includes('identitytoolkit.googleapis.com') ||
@@ -95,7 +101,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Default: Cache first with network fallback for external CDN scripts/styles
+  // Default: Cache first with network fallback for external CDN scripts/styles (FontAwesome, Chart.js, Tailwind)
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;

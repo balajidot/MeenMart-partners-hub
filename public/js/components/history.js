@@ -275,10 +275,21 @@ export function setHistoryDateFilter(p) {
   renderHistoryList();
 }
 
+// Ultra-smooth 120ms search input debouncer to eliminate input stutter
+let searchDebounceTimer = null;
+export function handleHistorySearchInput() {
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    renderHistoryList();
+  }, 120);
+}
+
 // Expose handlers on window for HTML onclick
 if (typeof window !== 'undefined') {
   window.renderHistoryList = renderHistoryList;
+  window.handleHistorySearchInput = handleHistorySearchInput;
   window.renderTransactionItem = renderTransactionItem;
   window.handleTransactionCardClick = handleTransactionCardClick;
   window.setHistoryDateFilter = setHistoryDateFilter;
 }
+

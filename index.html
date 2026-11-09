@@ -6,6 +6,7 @@
   <meta name="theme-color" id="metaThemeColor" content="#070d1e" />
   <meta name="description" content="MeenMart Hub - Partners Finance & Settlement" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="MeenMart" />
   
@@ -15,6 +16,19 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
+
+  <!-- CDN Preconnect Optimizations -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+
+  <!-- Silence dev warning in production console -->
+  <script>
+    const _origConsoleWarn = console.warn;
+    console.warn = function(...args) {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+      _origConsoleWarn.apply(console, args);
+    };
+  </script>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -44,11 +58,6 @@
       }
     };
   </script>
-
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- html2pdf.js CDN (Client-side Direct PDF Generation) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- FontAwesome 6 Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -466,7 +475,7 @@
                 spellcheck="false"
                 data-lpignore="true"
                 data-form-type="other"
-                oninput="renderHistoryList()" 
+                oninput="handleHistorySearchInput()" 
                 placeholder="Search notes, category, amount..." 
                 class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" 
               />

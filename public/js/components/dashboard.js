@@ -491,3 +491,4 @@ if (typeof window !== 'undefined') {
   window.renderRecentTransactions = renderRecentTransactions;
   window.quickPocketBalajiProfit = quickPocketBalajiProfit;
 }
+

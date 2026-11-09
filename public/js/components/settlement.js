@@ -880,3 +880,4 @@ if (typeof window !== 'undefined') {
   window.renderAllTimeLedger = renderAllTimeLedger;
   window.copyWeeklyReportWhatsApp = copyWeeklyReportWhatsApp;
 }
+

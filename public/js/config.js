@@ -69,3 +69,4 @@ if (typeof window !== 'undefined') {
   window.PARTNER_EMAILS = PARTNER_EMAILS;
   window.DEFAULT_CATEGORIES = DEFAULT_CATEGORIES;
 }
+
