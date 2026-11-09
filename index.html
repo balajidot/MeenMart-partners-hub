@@ -1560,7 +1560,7 @@
     <!-- ========================================== -->
     <div id="partnerInvoiceModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
       <div onclick="closePartnerInvoiceModal()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
-      <div class="relative w-full max-w-sm mx-auto bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar">
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar">
         
         <!-- Modal Top Bar -->
         <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
@@ -3029,9 +3029,23 @@
     }
 
     // ==========================================
-    // 📄 OFFICIAL MEENMART PDF REPORT GENERATOR
+    // 📄 OFFICIAL MEENMART PDF REPORT GENERATOR & DRIVE EXPORTER
     // ==========================================
-    window.exportToPDF = function() {
+    async function ensureHtml2PdfLoaded() {
+      if (typeof html2pdf !== 'undefined') return true;
+      return new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        s.onload = () => resolve(true);
+        s.onerror = () => {
+          console.warn("Failed to load html2pdf.js dynamically");
+          resolve(false);
+        };
+        document.head.appendChild(s);
+      });
+    }
+
+    window.exportToPDF = async function() {
       if (state.transactions.length === 0) {
         alert("PDF export panna entries edhum illa!");
         return;
@@ -3268,17 +3282,64 @@
 </body>
 </html>`;
 
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.open();
-        printWindow.document.write(pdfHtml);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => { try { printWindow.print(); } catch(e){} }, 400);
-      } else {
+      const ready = await ensureHtml2PdfLoaded();
+      if (!ready || typeof html2pdf === 'undefined') {
         const blob = new Blob([pdfHtml], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         window.open(url, '_blank');
+        showToast("Accounts statement opened 📂");
+        return;
+      }
+
+      const tempContainer = document.createElement('div');
+      tempContainer.innerHTML = pdfHtml;
+      const bodyContent = tempContainer.querySelector('.print-container') || tempContainer;
+      bodyContent.style.background = '#ffffff';
+      bodyContent.style.color = '#0f172a';
+      bodyContent.style.padding = '16px';
+      document.body.appendChild(bodyContent);
+
+      const fileName = `MeenMart_Accounts_${getTodayString()}.pdf`;
+      const opt = {
+        margin: [6, 6, 6, 6],
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      try {
+        const pdfBlob = await html2pdf().set(opt).from(bodyContent).outputPdf('blob');
+        if (bodyContent.parentNode) document.body.removeChild(bodyContent);
+        const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+          try {
+            await navigator.share({
+              files: [pdfFile],
+              title: fileName,
+              text: 'MeenMart Accounts Statement'
+            });
+            showToast("Saved / Shared to Drive successfully! 📂");
+            return;
+          } catch (shareErr) {
+            if (shareErr.name === 'AbortError') return;
+          }
+        }
+
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.open(blobUrl, '_blank');
+        showToast("PDF downloaded! Open in Google Drive 📂");
+      } catch (err) {
+        if (bodyContent.parentNode) document.body.removeChild(bodyContent);
+        console.error("PDF generation failed:", err);
+        showToast("PDF generation failed: " + err.message);
       }
     };
 
@@ -3286,29 +3347,8 @@
     // 📄 WEEKLY SETTLEMENT PDF STATEMENT
     // ==========================================
     window.exportWeeklySettlementPDF = function() {
-      const weekRange = getWeekRange(state.settlementOffsetWeeks || 0);
-      const { monday, sunday, startStr, endStr, weekId } = weekRange;
-
-      const weekTx = state.transactions.filter(t => t.date >= startStr && t.date <= endStr);
-      let weeklySales = 0;
-      let weeklyExp = 0;
-      const pExp = { Balaji: 0, Nagoor: 0, JP: 0 };
-      const pSales = { Balaji: 0, Nagoor: 0, JP: 0 };
-
-      weekTx.forEach(t => {
-        const amt = Number(t.amount) || 0;
-        if (t.type === 'sales') {
-          weeklySales += amt;
-          if (pSales[t.partner] !== undefined) pSales[t.partner] += amt;
-        } else if (t.type === 'expense') {
-          weeklyExp += amt;
-          if (pExp[t.partner] !== undefined) pExp[t.partner] += amt;
-        }
-      });
-
-      const netProfit = weeklySales - weeklyExp;
-      const isProfit = netProfit >= 0;
-      const equalShare = Math.round(Math.abs(netProfit) / 3);
+      const summary = getWeekFinancialSummary(state.settlementOffsetWeeks || 0);
+      const { weeklySales, weeklyExp, netProfit, isProfit, equalShare, partnerExp: pExp, startStr, endStr, monday, sunday, weekId } = summary;
 
       const modal = document.getElementById('weeklySettlementPdfModal');
       const contentEl = document.getElementById('wspmContent');
@@ -3324,8 +3364,18 @@
       const nagPaid = tData.Nagoor ? (Number(tData.Nagoor.paidAmount) || 0) : 0;
       const jpPaid = tData.JP ? (Number(tData.JP.paidAmount) || 0) : 0;
 
-      const nagDue = pExp.Nagoor + (isProfit ? equalShare : -equalShare);
-      const jpDue = pExp.JP + (isProfit ? equalShare : -equalShare);
+      // Real dynamic previous week carry-forward dues
+      const prevNagDue = getPartnerPreviousPendingDue('Nagoor', state.settlementOffsetWeeks || 0);
+      const prevJpDue = getPartnerPreviousPendingDue('JP', state.settlementOffsetWeeks || 0);
+
+      const nagBase = pExp.Nagoor + (isProfit ? equalShare : -equalShare);
+      const jpBase = pExp.JP + (isProfit ? equalShare : -equalShare);
+
+      const nagTotalDue = Math.max(0, nagBase + prevNagDue);
+      const jpTotalDue = Math.max(0, jpBase + prevJpDue);
+
+      const nagRemaining = Math.max(0, nagTotalDue - nagPaid);
+      const jpRemaining = Math.max(0, jpTotalDue - jpPaid);
 
       contentEl.innerHTML = `
         <!-- Printable Statement Card -->
@@ -3395,22 +3445,30 @@
             <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
               <div>
                 <strong class="text-slate-900 dark:text-white">Balaji ➔ Nagoor</strong>
-                <div class="text-[10px] text-slate-400 mt-0.5">Fish Spends ${formatINR(pExp.Nagoor)} + Profit ${formatINR(equalShare)}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">
+                  Fish Spends ${formatINR(pExp.Nagoor)} + Profit ${formatINR(equalShare)}${prevNagDue > 0 ? ` + Prior Due ${formatINR(prevNagDue)}` : ''}
+                </div>
               </div>
               <div class="text-right">
-                <span class="text-sm font-black text-slate-900 dark:text-white block">${formatINR(nagDue)}</span>
-                <span class="text-[9px] font-bold ${nagPaid >= nagDue && nagDue > 0 ? 'text-emerald-500' : 'text-amber-500'}">${nagPaid >= nagDue && nagDue > 0 ? 'Paid in Full ✅' : (nagPaid > 0 ? 'Paid ' + formatINR(nagPaid) : 'Pending ⏳')}</span>
+                <span class="text-sm font-black text-slate-900 dark:text-white block">${formatINR(nagTotalDue)}</span>
+                <span class="text-[9px] font-bold ${nagRemaining === 0 && nagPaid > 0 ? 'text-emerald-500' : (nagPaid > 0 ? 'text-amber-500' : 'text-slate-400')}">
+                  ${nagRemaining === 0 && nagPaid > 0 ? 'Paid in Full ✅' : (nagPaid > 0 ? `Paid ${formatINR(nagPaid)} • Due ${formatINR(nagRemaining)}` : 'Pending ⏳')}
+                </span>
               </div>
             </div>
 
             <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
               <div>
                 <strong class="text-slate-900 dark:text-white">Balaji ➔ JP</strong>
-                <div class="text-[10px] text-slate-400 mt-0.5">Petrol Spends ${formatINR(pExp.JP)} + Profit ${formatINR(equalShare)}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">
+                  Petrol Spends ${formatINR(pExp.JP)} + Profit ${formatINR(equalShare)}${prevJpDue > 0 ? ` + Prior Due ${formatINR(prevJpDue)}` : ''}
+                </div>
               </div>
               <div class="text-right">
-                <span class="text-sm font-black text-slate-900 dark:text-white block">${formatINR(jpDue)}</span>
-                <span class="text-[9px] font-bold ${jpPaid >= jpDue && jpDue > 0 ? 'text-emerald-500' : 'text-amber-500'}">${jpPaid >= jpDue && jpDue > 0 ? 'Paid in Full ✅' : (jpPaid > 0 ? 'Paid ' + formatINR(jpPaid) : 'Pending ⏳')}</span>
+                <span class="text-sm font-black text-slate-900 dark:text-white block">${formatINR(jpTotalDue)}</span>
+                <span class="text-[9px] font-bold ${jpRemaining === 0 && jpPaid > 0 ? 'text-emerald-500' : (jpPaid > 0 ? 'text-amber-500' : 'text-slate-400')}">
+                  ${jpRemaining === 0 && jpPaid > 0 ? 'Paid in Full ✅' : (jpPaid > 0 ? `Paid ${formatINR(jpPaid)} • Due ${formatINR(jpRemaining)}` : 'Pending ⏳')}
+                </span>
               </div>
             </div>
           </div>
@@ -3433,7 +3491,7 @@
     };
 
     window.printWeeklyReport = function() {
-      window.print();
+      saveOrShareWeeklyReportPDF();
     };
 
 
@@ -4159,13 +4217,13 @@
       if (!modal || !printArea) return;
 
       const weekSummary = getWeekFinancialSummary(state.settlementOffsetWeeks || 0);
-      const { monday, sunday, startStr, endStr, weekId: targetWeekId, equalShare, partnerExp } = weekSummary;
+      const { monday, sunday, startStr, endStr, weekId: targetWeekId, weeklySales, weeklyExp, netProfit, isProfit, equalShare, partnerExp } = weekSummary;
       const formattedRange = `${monday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${sunday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
-      // Live dynamic carry-forward
+      // Live dynamic carry-forward from past weeks
       const carriedDue = getPartnerPreviousPendingDue(partner, state.settlementOffsetWeeks || 0);
       const partnerSpends = partnerExp[partner] || 0;
-      const baseDue = weekSummary.baseDue[partner] || 0;
+      const baseDue = partnerSpends + (isProfit ? equalShare : -equalShare);
       const totalDue = Math.max(0, baseDue + carriedDue);
 
       const curSettlement = state.settlements[targetWeekId || weekId];
@@ -4176,15 +4234,21 @@
       const isPaid = (totalDue === 0 || (remainingDue === 0 && paidAmount > 0));
       const isPartial = (paidAmount > 0 && remainingDue > 0);
 
-      const billNo = `MM-INV-${startStr.replace(/-/g, '').slice(2)}-${partner.toUpperCase().slice(0, 3)}`;
+      const billNo = `MM-SETTLE-${startStr.replace(/-/g, '').slice(2)}-${partner.toUpperCase().slice(0, 3)}`;
       const issueDate = new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-      const roleText = partner === 'Nagoor' ? 'Fish Purchase & Supply' : 'Petrol & Delivery Operations';
+      const roleText = partner === 'Nagoor' ? 'Fish Procurement & Supply' : 'Delivery & Petrol Operations';
+      const roleExpenseLabel = partner === 'Nagoor' ? 'Fish Expense Reimbursement' : 'Petrol & Delivery Reimbursement';
 
       currentInvoiceState = {
         partner,
         roleText,
+        roleExpenseLabel,
         billNo,
         formattedRange,
+        weeklySales,
+        weeklyExp,
+        netProfit,
+        isProfit,
         partnerSpends,
         equalShare,
         carriedDue,
@@ -4199,79 +4263,172 @@
       };
 
       printArea.innerHTML = `
-        <!-- Styled Authentic Digital Voucher Card -->
-        <div class="rounded-2xl p-4 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-3.5">
+        <!-- Authentic Digital Voucher Card with Clean White Print Canvas -->
+        <div class="rounded-3xl p-5 bg-white text-slate-800 border-2 border-slate-200/90 shadow-xl space-y-3.5 print-voucher" style="background:#ffffff; color:#0f172a; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;">
           
           <!-- Voucher Header -->
-          <div class="flex items-start justify-between pb-2.5 border-b-2 border-dashed border-slate-200 dark:border-slate-700">
+          <div class="flex items-start justify-between pb-3 border-b-2 border-teal-600">
             <div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-lg">🐟</span>
-                <span class="font-black text-sm tracking-tight text-slate-900 dark:text-white">MEENMART HUB</span>
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">🐟</span>
+                <div>
+                  <h2 class="text-base font-black tracking-tight text-slate-900 leading-none">MEENMART HUB</h2>
+                  <span class="text-[9px] uppercase tracking-widest font-black text-teal-600 block mt-1">Official Partner Settlement Bill</span>
+                </div>
               </div>
-              <p class="text-[9px] text-teal-600 dark:text-teal-400 font-extrabold uppercase tracking-wider mt-0.5">Official Partner Settlement Bill</p>
             </div>
             <div class="text-right">
-              <span class="text-[9px] font-mono text-slate-400 block font-bold">${billNo}</span>
-              <span class="text-[9px] text-slate-500 dark:text-slate-400 font-medium block mt-0.5">${formattedRange}</span>
+              <span class="text-[9px] font-mono font-bold text-slate-400 block">${billNo}</span>
+              <span class="text-[10px] font-black text-slate-700 block mt-0.5">${formattedRange}</span>
+              <span class="text-[8px] text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full font-bold uppercase mt-1 inline-block border border-teal-200">Reconciled Voucher</span>
             </div>
           </div>
 
-          <!-- Parties Row -->
-          <div class="grid grid-cols-2 gap-2 text-[10px] p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700/60">
-            <div>
-              <span class="text-slate-400 block font-bold">Payer (Cashier):</span>
-              <strong class="text-slate-900 dark:text-white font-extrabold text-xs">Balaji</strong>
-              <span class="text-slate-500 block text-[9px]">MeenMart Collections</span>
+          <!-- Parties Row (Cashier Balaji & Payee Partner) -->
+          <div class="grid grid-cols-2 gap-2 text-[10px] p-2.5 rounded-2xl bg-slate-50 border border-slate-200">
+            <div class="border-r border-slate-200 pr-2">
+              <span class="text-slate-400 font-bold block uppercase text-[8px] tracking-wider">Payer (கடை காசாளர்):</span>
+              <strong class="text-slate-900 font-black text-xs block mt-0.5">Balaji</strong>
+              <span class="text-slate-500 text-[9px] block">MeenMart Revenue & Collections</span>
             </div>
-            <div>
-              <span class="text-slate-400 block font-bold">Payee (Partner):</span>
-              <strong class="text-teal-600 dark:text-teal-400 font-extrabold text-xs">${partner}</strong>
-              <span class="text-slate-500 block text-[9px]">${roleText}</span>
+            <div class="pl-1">
+              <span class="text-slate-400 font-bold block uppercase text-[8px] tracking-wider">Payee (பங்குதாரர்):</span>
+              <strong class="text-teal-700 font-black text-xs block mt-0.5">${partner}</strong>
+              <span class="text-slate-500 text-[9px] block">${roleText}</span>
             </div>
           </div>
 
-          <!-- Itemized Breakdown Table -->
-          <div class="space-y-1.5 text-xs">
-            <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
-              <span>${partner === 'Nagoor' ? 'Fish Purchase Spends' : 'Petrol & Delivery Spends'}:</span>
-              <strong class="font-bold text-slate-900 dark:text-white">${formatINR(partnerSpends)}</strong>
+          <!-- SECTION 1: Shop Business Financial Context (கடை மொத்தக் கணக்கு) -->
+          <div class="p-3 rounded-2xl bg-teal-50/70 border border-teal-200 space-y-2">
+            <div class="flex items-center justify-between pb-1.5 border-b border-teal-200/80">
+              <span class="text-[10px] font-black uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
+                <span>🏪</span> 1. Shop Financial Summary (கடை கணக்கு)
+              </span>
+              <span class="text-[8px] font-extrabold text-teal-700 bg-white px-2 py-0.5 rounded-full border border-teal-200">Weekly Audit</span>
             </div>
-            <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
-              <span>Equal 1/3 Business Profit Share:</span>
-              <strong class="font-bold text-teal-600 dark:text-teal-400">+${formatINR(equalShare)}</strong>
+
+            <div class="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+              <div class="bg-white p-2 rounded-xl border border-teal-100">
+                <span class="text-slate-400 block text-[8px] uppercase font-bold">Total Sales</span>
+                <strong class="text-slate-900 font-black text-xs text-emerald-700">+${formatINR(weeklySales)}</strong>
+              </div>
+              <div class="bg-white p-2 rounded-xl border border-teal-100">
+                <span class="text-slate-400 block text-[8px] uppercase font-bold">Total Expenses</span>
+                <strong class="text-slate-900 font-black text-xs text-rose-600">-${formatINR(weeklyExp)}</strong>
+              </div>
+              <div class="bg-white p-2 rounded-xl border border-teal-100">
+                <span class="text-slate-400 block text-[8px] uppercase font-bold">Net Profit</span>
+                <strong class="text-slate-900 font-black text-xs text-teal-700">+${formatINR(netProfit)}</strong>
+              </div>
             </div>
+
+            <div class="bg-white p-2 rounded-xl border border-teal-200/70 flex items-center justify-between text-[11px]">
+              <span class="font-bold text-slate-700 flex items-center gap-1">
+                <span>🤝</span> Equal 1/3 Profit Split:
+              </span>
+              <div class="text-right">
+                <strong class="text-teal-700 font-black text-xs">+${formatINR(equalShare)} Each</strong>
+                <span class="text-[8px] text-slate-400 block font-medium">(${formatINR(netProfit)} ÷ 3 Partners)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 2: Inch-by-Inch Step-by-Step Partner Settlement Math (உங்களுக்கான கணக்கு) -->
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+              <span class="text-[10px] font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                <span>🔍</span> 2. ${partner}'s Settlement Math (உங்களுக்கான கணக்கு)
+              </span>
+              <span class="text-[8px] text-slate-400 font-bold uppercase">Inch-by-Inch Breakdown</span>
+            </div>
+
+            <!-- 1. Pocket Reimbursement -->
+            <div class="flex items-start justify-between text-xs">
+              <div>
+                <strong class="text-slate-800 font-extrabold block">① ${roleExpenseLabel}</strong>
+                <span class="text-[9px] text-slate-500 block">Out-of-pocket spend to be refunded 100%</span>
+              </div>
+              <span class="font-black text-slate-900 text-xs">+${formatINR(partnerSpends)}</span>
+            </div>
+
+            <!-- 2. Profit Share -->
+            <div class="flex items-start justify-between text-xs">
+              <div>
+                <strong class="text-slate-800 font-extrabold block">② Equal 1/3 Net Profit Share</strong>
+                <span class="text-[9px] text-teal-700 block">Your equal 1/3 share of shop net profit</span>
+              </div>
+              <span class="font-black text-teal-700 text-xs">+${formatINR(equalShare)}</span>
+            </div>
+
+            <!-- 3. Carry Forward -->
             ${carriedDue > 0 ? `
-            <div class="flex items-center justify-between text-amber-600 dark:text-amber-400 font-bold">
-              <span>Previous Week Pending Due:</span>
-              <strong>+${formatINR(carriedDue)}</strong>
-            </div>` : ''}
-            
-            <div class="pt-2 border-t-2 border-slate-200 dark:border-slate-700 flex items-center justify-between text-sm font-black text-slate-900 dark:text-white">
-              <span>Net Settlement Total:</span>
-              <span class="text-teal-600 dark:text-teal-400 font-black text-base">${formatINR(totalDue)}</span>
+            <div class="flex items-start justify-between text-xs p-2 rounded-xl bg-amber-50 border border-amber-200">
+              <div>
+                <strong class="text-amber-900 font-extrabold block">③ Previous Week Pending Due</strong>
+                <span class="text-[9px] text-amber-700 block">Unpaid balance carried forward from last week</span>
+              </div>
+              <span class="font-black text-amber-800 text-xs">+${formatINR(carriedDue)}</span>
+            </div>
+            ` : `
+            <div class="flex items-start justify-between text-[11px] text-slate-400">
+              <div>
+                <span class="font-bold block">③ Previous Week Arrears</span>
+                <span class="text-[9px] text-slate-400 block">All previous weeks cleared (No pending dues)</span>
+              </div>
+              <span class="font-semibold text-slate-500">₹0</span>
+            </div>
+            `}
+
+            <!-- Total Calculation Bar -->
+            <div class="pt-2 border-t-2 border-slate-300 flex items-center justify-between">
+              <div>
+                <span class="text-xs font-black text-slate-900 uppercase tracking-tight block">Total Settlement Due</span>
+                <span class="text-[8px] text-slate-500 font-semibold">(Refund + Profit Share + Prior Balance)</span>
+              </div>
+              <span class="text-base font-black text-teal-700">${formatINR(totalDue)}</span>
             </div>
           </div>
 
-          <!-- Payment Status Stamp -->
-          <div class="p-2.5 rounded-xl text-center ${isPaid ? 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200' : (isPartial ? 'bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200' : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300')}">
-            <div class="text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5">
-              ${isPaid ? '<i class="fa-solid fa-circle-check text-emerald-500"></i> PAID IN FULL ✅' : (isPartial ? '<i class="fa-solid fa-circle-half-stroke text-amber-500"></i> PARTIALLY PAID 🟡' : '<i class="fa-solid fa-hourglass-half text-slate-400"></i> PAYMENT PENDING ⏳')}
+          <!-- SECTION 3: Payment Status & Reconciliation -->
+          <div class="p-3 rounded-2xl ${isPaid ? 'bg-emerald-50 border border-emerald-300' : (isPartial ? 'bg-amber-50 border border-amber-300' : 'bg-slate-100 border border-slate-300')} space-y-1.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5 font-black text-xs ${isPaid ? 'text-emerald-800' : (isPartial ? 'text-amber-800' : 'text-slate-800')}">
+                ${isPaid ? '<span>✅</span> PAID IN FULL' : (isPartial ? '<span>🟡</span> PARTIALLY PAID' : '<span>⏳</span> PAYMENT PENDING')}
+              </div>
+              <span class="text-[9px] font-bold text-slate-500">${currentInvoiceState.paidAt ? 'Paid: ' + currentInvoiceState.paidAt : 'Due from Balaji'}</span>
             </div>
-            <div class="text-[10px] font-semibold mt-1">
-              ${isPaid 
-                ? `${formatINR(paidAmount)} paid via ${currentInvoiceState.method} • Remaining: ₹0`
-                : (isPartial 
-                    ? `Paid: ${formatINR(paidAmount)} • Remaining Due: ${formatINR(remainingDue)}`
-                    : `Balance to be paid by Balaji: ${formatINR(totalDue)}`)}
+
+            <div class="grid grid-cols-2 gap-2 text-[10px] pt-1 border-t border-slate-200/80">
+              <div>
+                <span class="text-slate-500 block font-semibold">Amount Paid:</span>
+                <strong class="text-slate-900 font-black text-xs">${formatINR(paidAmount)}</strong>
+                ${currentInvoiceState.paidAt ? `<span class="text-[8px] text-slate-400 block">via ${currentInvoiceState.method}</span>` : ''}
+              </div>
+              <div class="text-right">
+                <span class="text-slate-500 block font-semibold">Remaining to Pay:</span>
+                <strong class="${remainingDue === 0 ? 'text-emerald-700' : 'text-rose-600'} font-black text-xs">${remainingDue === 0 ? '₹0 (All Cleared)' : formatINR(remainingDue)}</strong>
+              </div>
             </div>
           </div>
 
-          <!-- Footer Stamp -->
-          <div class="pt-2 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-[9px] text-slate-400">
-            <span>Verified Partnership Record</span>
-            <span>${issueDate}</span>
+          <!-- SECTION 4: Digital Verification & Signatures -->
+          <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-4 text-[9px] text-slate-500">
+            <div>
+              <span class="block text-slate-400">Payer & Cashier:</span>
+              <span class="font-bold text-slate-800 block mt-0.5">Balaji (MeenMart)</span>
+              <span class="text-[8px] text-emerald-600 block">Verified & Reconciled ✔</span>
+            </div>
+            <div class="text-right">
+              <span class="block text-slate-400">Payee Partner:</span>
+              <span class="font-bold text-slate-800 block mt-0.5">${partner}</span>
+              <span class="text-[8px] text-slate-400 block">Official Partnership Record</span>
+            </div>
           </div>
+
+          <div class="text-center text-[8px] text-slate-400 font-mono pt-1">
+            MeenMart Partners Hub • Automated Ledger • Generated: ${issueDate}
+          </div>
+
         </div>
       `;
 
@@ -4302,17 +4459,17 @@
       if (textEl) textEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Creating PDF...';
 
       try {
-        if (typeof html2pdf === 'undefined') {
-          // Fallback if library didn't load
-          window.print();
+        const ready = await ensureHtml2PdfLoaded();
+        if (!ready || typeof html2pdf === 'undefined') {
+          showToast("PDF engine unavailable offline. Please check connection.");
           return;
         }
 
         const opt = {
-          margin: [8, 8, 8, 8],
+          margin: [6, 6, 6, 6],
           filename: fileName,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, logging: false },
+          html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
@@ -4335,7 +4492,7 @@
           }
         }
 
-        // Direct Download & Open in Browser / Drive PDF Viewer
+        // Direct Download & Open in Browser / Drive PDF Viewer (Never open printer dialog)
         const blobUrl = URL.createObjectURL(pdfBlob);
         const a = document.createElement('a');
         a.href = blobUrl;
@@ -4367,16 +4524,17 @@
       if (textEl) textEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Creating PDF...';
 
       try {
-        if (typeof html2pdf === 'undefined') {
-          window.print();
+        const ready = await ensureHtml2PdfLoaded();
+        if (!ready || typeof html2pdf === 'undefined') {
+          showToast("PDF engine unavailable offline.");
           return;
         }
 
         const opt = {
-          margin: [8, 8, 8, 8],
+          margin: [6, 6, 6, 6],
           filename: fileName,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, logging: false },
+          html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
@@ -4419,18 +4577,30 @@
     window.sharePartnerInvoiceWhatsApp = function() {
       if (!currentInvoiceState) return;
       const s = currentInvoiceState;
-      const text = `🧾 *MEENMART HUB - PARTNER SETTLEMENT BILL*
+      const text = `🧾 *MEENMART HUB - PARTNER SETTLEMENT VOUCHER*
 🆔 *Bill No:* ${s.billNo}
-📅 *Week Period:* ${s.formattedRange}
+📅 *Period:* ${s.formattedRange}
 👤 *Partner:* ${s.partner} (${s.roleText})
-💰 *Spends Reimbursement:* ${formatINR(s.partnerSpends)}
-📈 *1/3 Net Profit Share:* +${formatINR(s.equalShare)}` +
-(s.carriedDue > 0 ? `\n⏳ *Carried Due:* +${formatINR(s.carriedDue)}` : '') +
-`\n💵 *Total Payable:* ${formatINR(s.totalDue)}
-📌 *Status:* ${s.isPaid ? 'PAID IN FULL ✅' : (s.isPartial ? 'PARTIALLY PAID 🟡' : 'PENDING TO PAY ⏳')}
-💳 *Payment Mode:* ${s.method}
----------------------------
-_Verified official voucher by MeenMart Hub_`;
+----------------------------------------
+🏪 *1. SHOP FINANCIAL SUMMARY (கடை கணக்கு):*
+• Total Shop Sales: ${formatINR(s.weeklySales)}
+• Total Shop Expenses: -${formatINR(s.weeklyExp)}
+• Shop Net Profit: +${formatINR(s.netProfit)}
+💡 *Equal 1/3 Partner Share:* ${formatINR(s.netProfit)} ÷ 3 = *+${formatINR(s.equalShare)} Each*
+----------------------------------------
+🔍 *2. ${s.partner.toUpperCase()} SETTLEMENT MATH (உங்களுக்கான கணக்கு):*
+1️⃣ ${s.roleExpenseLabel}: +${formatINR(s.partnerSpends)}
+2️⃣ 1/3 Business Profit Share: +${formatINR(s.equalShare)}` +
+(s.carriedDue > 0 ? `\n3️⃣ Prior Week Pending Due: +${formatINR(s.carriedDue)} (Unpaid carry-forward)` : '\n3️⃣ Prior Week Arrears: ₹0 (Cleared)') +
+`\n----------------------------------------
+💵 *TOTAL SETTLEMENT DUE: ${formatINR(s.totalDue)}*
+` +
+(s.paidAmount > 0 
+  ? `💳 *Already Paid:* -${formatINR(s.paidAmount)} (${s.method})\n📌 *Balance Remaining:* *${formatINR(s.remainingDue)}*` 
+  : `📌 *Balance to Pay:* *${formatINR(s.remainingDue)}*`) +
+`\n📌 *Status:* ${s.isPaid ? 'PAID IN FULL ✅' : (s.isPartial ? 'PARTIALLY PAID 🟡' : 'PAYMENT PENDING ⏳')}
+----------------------------------------
+_Verified official digital record from MeenMart Hub_`;
 
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
@@ -4868,7 +5038,10 @@ _Verified official voucher by MeenMart Hub_`;
                 <strong class="font-bold text-slate-900 dark:text-white">${formatINR(baseExp)}</strong>
               </div>
               <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                <span>Equal 1/3 Profit Share:</span>
+                <span class="flex items-center gap-1">
+                  <span>Equal 1/3 Profit Share</span>
+                  <span class="text-[9px] text-teal-600 dark:text-teal-400 font-semibold">(Shop: ${formatINR(weeklyNetProfit)} ÷ 3)</span>
+                </span>
                 <strong class="font-bold text-teal-600 dark:text-teal-400">+${formatINR(shareAmt)}</strong>
               </div>
               ${carryForwardHtml}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meenmart-partners-pwa-v33';
+const CACHE_NAME = 'meenmart-partners-pwa-v34';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
