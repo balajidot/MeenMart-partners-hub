@@ -46,3 +46,4 @@ for asset in ['manifest.webmanifest', 'favicon.svg', 'apple-touch-icon.png', 'pw
         shutil.copyfile(src, dst)
 
 print("\n🎉 Verification & Sync to dist/ completed successfully!")
+

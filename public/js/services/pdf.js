@@ -5,6 +5,7 @@ import { state } from '../state.js';
 import { PARTNERS } from '../config.js';
 import { 
   formatINR, 
+  escapeHtml, 
   getTodayString, 
   getYesterdayString, 
   getThisWeekStart, 
@@ -30,13 +31,15 @@ import {
       });
     }
 
-    window.exportToPDF = async function() {
-      if (state.transactions.length === 0) {
+    let currentStatementState = null;
+
+    export async function exportToPDF() {
+      if (!state.transactions || state.transactions.length === 0) {
         alert("PDF export panna entries edhum illa!");
         return;
       }
 
-      // Read current filters
+      // Read current filters from History tab
       const search = (document.getElementById('historySearchInput')?.value || '').toLowerCase().trim();
       const filterType = document.getElementById('hFilterType')?.value || 'all';
       const filterPartner = document.getElementById('hFilterPartner')?.value || 'all';
@@ -47,7 +50,7 @@ import {
       const monStr = getThisWeekStart();
       const monthStartStr = getThisMonthStart();
 
-      let filtered = state.transactions.filter(tx => {
+      let filtered = (state.transactions || []).filter(tx => {
         if (filterDate === 'today' && tx.date !== todayStr) return false;
         if (filterDate === 'yesterday' && tx.date !== yesterdayStr) return false;
         if (filterDate === 'this-week' && (tx.date < monStr || tx.date > todayStr)) return false;
@@ -76,11 +79,13 @@ import {
 
       let totalSales = 0;
       let totalExp = 0;
+      let totalTransfers = 0;
       let totalCap = 0;
+
       const pSummary = {
-        Balaji: { sales: 0, exp: 0 },
-        Nagoor: { sales: 0, exp: 0 },
-        JP: { sales: 0, exp: 0 }
+        Balaji: { sales: 0, exp: 0, transfersOut: 0, transfersIn: 0 },
+        Nagoor: { sales: 0, exp: 0, transfersOut: 0, transfersIn: 0 },
+        JP: { sales: 0, exp: 0, transfersOut: 0, transfersIn: 0 }
       };
 
       filtered.forEach(tx => {
@@ -91,6 +96,10 @@ import {
         } else if (tx.type === 'expense') {
           totalExp += amt;
           if (pSummary[tx.partner]) pSummary[tx.partner].exp += amt;
+        } else if (tx.type === 'transfer') {
+          totalTransfers += amt;
+          if (pSummary[tx.partner]) pSummary[tx.partner].transfersOut += amt;
+          if (tx.toPartner && pSummary[tx.toPartner]) pSummary[tx.toPartner].transfersIn += amt;
         } else if (tx.type === 'investment') {
           totalCap += amt;
         }
@@ -102,23 +111,59 @@ import {
       let filterTitle = 'All Transactions';
       if (filterDate === 'today') filterTitle = "Today (" + todayStr + ")";
       else if (filterDate === 'yesterday') filterTitle = "Yesterday (" + yesterdayStr + ")";
-      else if (filterDate === 'this-week') filterTitle = "This Week (" + monStr + " - " + todayStr + ")";
-      else if (filterDate === 'this-month') filterTitle = "This Month (" + monthStartStr + " - " + todayStr + ")";
+      else if (filterDate === 'this-week') filterTitle = "This Week (" + monStr + " to " + todayStr + ")";
+      else if (filterDate === 'this-month') filterTitle = "This Month (" + monthStartStr + " to " + todayStr + ")";
 
       const nowFormatted = new Date().toLocaleString('en-IN', {
         day: '2-digit', month: 'short', year: 'numeric',
         hour: '2-digit', minute: '2-digit', hour12: true
       });
+      const stmtNo = `MM-STMT-${todayStr.replace(/-/g, '').slice(2)}`;
+
+      currentStatementState = {
+        stmtNo,
+        filterTitle,
+        totalSales,
+        totalExp,
+        netProfit,
+        isProfit,
+        filteredCount: filtered.length,
+        pSummary
+      };
 
       const rowsHtml = filtered.map((tx, idx) => {
         const isExp = tx.type === 'expense';
         const isSales = tx.type === 'sales';
-        const typeLabel = isExp ? 'Selavu' : (isSales ? 'Varavu' : 'Mudhaleedu');
-        const typeColor = isExp ? '#dc2626' : (isSales ? '#16a34a' : '#0d9488');
-        const typeBg = isExp ? '#fef2f2' : (isSales ? '#f0fdf4' : '#f0fdfa');
-        const sign = isExp ? '-' : (isSales ? '+' : '');
-        const notes = tx.description ? escapeHtml(tx.description) : '-';
-        const cat = getCategoryLabel(tx.type, tx.category);
+        const isTransfer = tx.type === 'transfer';
+        const isCapital = tx.type === 'investment';
+
+        let typeLabel = 'Varavu';
+        let typeColor = '#059669';
+        let typeBg = '#ecfdf5';
+        let sign = '+';
+
+        if (isExp) {
+          typeLabel = 'Selavu';
+          typeColor = '#e11d48';
+          typeBg = '#fff1f2';
+          sign = '-';
+        } else if (isTransfer) {
+          typeLabel = 'Transfer';
+          typeColor = '#0284c7';
+          typeBg = '#f0f9ff';
+          sign = '';
+        } else if (isCapital) {
+          typeLabel = 'Mudhaleedu';
+          typeColor = '#7c3aed';
+          typeBg = '#f5f3ff';
+          sign = '+';
+        }
+
+        let desc = tx.description ? escapeHtml(tx.description) : '-';
+        if (isTransfer && tx.toPartner) {
+          desc = `<span style="color:#0284c7; font-weight:800;">${tx.partner} ➔ ${tx.toPartner}</span>: ${desc}`;
+        }
+        const cat = getCategoryLabel(tx.type, tx.category) || tx.category || '-';
 
         let time = '';
         if (tx.createdAt) {
@@ -127,177 +172,164 @@ import {
         }
 
         return `
-          <tr style="border-bottom: 1px solid #f1f5f9; font-size: 11px;">
-            <td style="padding: 8px 6px; color: #64748b; text-align: center;">${idx + 1}</td>
-            <td style="padding: 8px 6px; white-space: nowrap;">
-              <div style="font-weight: 700; color: #1e293b;">${tx.date}</div>
-              <div style="color: #94a3b8; font-size: 9px;">${time}</div>
+          <tr style="border-bottom: 1px solid #f1f5f9; page-break-inside: avoid; background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; font-size: 10px;">
+            <td style="padding: 7px 6px; text-align: center; color: #94a3b8;">${idx + 1}</td>
+            <td style="padding: 7px 6px; white-space: nowrap; color: #334155;">
+              <strong style="color: #0f172a;">${tx.date}</strong>
+              ${time ? `<div style="color: #94a3b8; font-size: 8px;">${time}</div>` : ''}
             </td>
-            <td style="padding: 8px 6px; font-weight: 700; color: #334155;">${tx.partner}</td>
-            <td style="padding: 8px 6px; font-weight: 700; color: #0f172a; max-width: 220px; word-break: break-word;">${notes}</td>
-            <td style="padding: 8px 6px; color: #475569;">${cat}</td>
-            <td style="padding: 8px 6px; text-align: center;">
-              <span style="background: ${typeBg}; color: ${typeColor}; padding: 3px 8px; border-radius: 6px; font-weight: 800; font-size: 10px; display: inline-block;">${typeLabel}</span>
+            <td style="padding: 7px 6px; font-weight: 700; color: #0f172a;">${tx.partner}</td>
+            <td style="padding: 7px 6px; color: #1e293b; max-width: 200px; word-break: break-word;">${desc}</td>
+            <td style="padding: 7px 6px; color: #64748b; font-size: 9px;">${cat}</td>
+            <td style="padding: 7px 6px; text-align: center;">
+              <span style="background: ${typeBg}; color: ${typeColor}; padding: 2px 6px; border-radius: 6px; font-weight: 800; font-size: 8px; display: inline-block;">${typeLabel}</span>
             </td>
-            <td style="padding: 8px 6px; text-align: right; font-weight: 900; color: ${typeColor}; font-size: 12px; white-space: nowrap;">
+            <td style="padding: 7px 6px; text-align: right; font-weight: 900; color: ${typeColor}; font-size: 11px; white-space: nowrap;">
               ${sign}${formatINR(tx.amount)}
             </td>
           </tr>
         `;
       }).join('');
 
-      const pdfHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>MeenMart_Accounts_Statement_${todayStr}</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; color: #0f172a; padding: 20px; font-size: 12px; }
-    .print-container { max-width: 820px; margin: 0 auto; background: #ffffff; padding: 24px; border-radius: 16px; box-shadow: 0 4px 20px -2px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
-    .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
-    .btn-print { background: #0d9488; color: #ffffff; border: none; padding: 10px 18px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(13,148,136,0.3); }
-    .btn-close { background: #f1f5f9; color: #475569; border: none; padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
-    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
-    .summary-card { padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0; }
-    .partner-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
-    .partner-card { padding: 10px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 11px; text-align: center; }
-    table { width: 100%; border-collapse: collapse; margin-top: 14px; }
-    th { background: #f8fafc; color: #475569; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 8px; border-bottom: 2px solid #e2e8f0; }
-    @media print {
-      body { background: #ffffff; padding: 0; }
-      .action-bar { display: none !important; }
-      .print-container { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
-      @page { margin: 10mm; size: A4 portrait; }
-    }
-  </style>
-</head>
-<body>
-  <div class="print-container">
-    <div class="action-bar">
-      <div>
-        <h2 style="font-size: 16px; font-weight: 800; color: #0f172a;">MeenMart Accounts Statement</h2>
-        <p style="font-size: 11px; color: #64748b;">Save as PDF or Print directly</p>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <button class="btn-print" onclick="window.print()">🖨️ Save as PDF / Print</button>
-        <button class="btn-close" onclick="window.close()">✕ Close</button>
-      </div>
-    </div>
-
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 2px solid #0d9488;">
-      <div>
-        <h1 style="font-size: 22px; font-weight: 900; color: #0d9488; letter-spacing: -0.5px;">MEENMART <span style="font-size: 12px; background: #ccfbf1; color: #0f766e; padding: 2px 8px; border-radius: 20px; font-weight: 700;">HUB</span></h1>
-        <p style="color: #64748b; font-size: 11px; margin-top: 2px;">தினசரி நிதி & கணக்கு மேலாண்மை அறிக்கை (Daily Accounts Statement)</p>
-      </div>
-      <div style="text-align: right; font-size: 10px; color: #64748b;">
-        <div><strong>Period:</strong> ${filterTitle}</div>
-        <div><strong>Generated:</strong> ${nowFormatted}</div>
-        <div><strong>Generated By:</strong> ${state.currentPartner || 'Admin'}</div>
-      </div>
-    </div>
-
-    <div class="summary-grid">
-      <div class="summary-card" style="background: #f0fdf4; border-color: #bbf7d0;">
-        <div style="font-size: 10px; font-weight: 800; color: #166534; text-transform: uppercase;">Total Income</div>
-        <div style="font-size: 18px; font-weight: 900; color: #16a34a; margin-top: 4px;">+${formatINR(totalSales)}</div>
-      </div>
-      <div class="summary-card" style="background: #fef2f2; border-color: #fecaca;">
-        <div style="font-size: 10px; font-weight: 800; color: #991b1b; text-transform: uppercase;">Total Expenses</div>
-        <div style="font-size: 18px; font-weight: 900; color: #dc2626; margin-top: 4px;">-${formatINR(totalExp)}</div>
-      </div>
-      <div class="summary-card" style="background: ${isProfit ? '#f0fdfa' : '#fff1f2'}; border-color: ${isProfit ? '#99f6e4' : '#fecdd3'};">
-        <div style="font-size: 10px; font-weight: 800; color: ${isProfit ? '#115e59' : '#9f1239'}; text-transform: uppercase;">${isProfit ? 'Net Profit (Laabam)' : 'Net Loss (Nashtam)'}</div>
-        <div style="font-size: 18px; font-weight: 900; color: ${isProfit ? '#0d9488' : '#e11d48'}; margin-top: 4px;">${isProfit ? '+' : ''}${formatINR(netProfit)}</div>
-      </div>
-    </div>
-
-    <div>
-      <div style="font-size: 11px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.5px;">Partner Wise Summary</div>
-      <div class="partner-grid">
-        <div class="partner-card">
-          <div style="font-weight: 800; color: #1e293b;">👨‍💻 Balaji</div>
-          <div style="color: #dc2626; margin-top: 2px;">Selavu: <strong>${formatINR(pSummary.Balaji.exp)}</strong></div>
-          <div style="color: #16a34a;">Varavu: <strong>${formatINR(pSummary.Balaji.sales)}</strong></div>
-        </div>
-        <div class="partner-card">
-          <div style="font-weight: 800; color: #1e293b;">🦐 Nagoor</div>
-          <div style="color: #dc2626; margin-top: 2px;">Selavu: <strong>${formatINR(pSummary.Nagoor.exp)}</strong></div>
-          <div style="color: #16a34a;">Varavu: <strong>${formatINR(pSummary.Nagoor.sales)}</strong></div>
-        </div>
-        <div class="partner-card">
-          <div style="font-weight: 800; color: #1e293b;">🛵 JP</div>
-          <div style="color: #dc2626; margin-top: 2px;">Selavu: <strong>${formatINR(pSummary.JP.exp)}</strong></div>
-          <div style="color: #16a34a;">Varavu: <strong>${formatINR(pSummary.JP.sales)}</strong></div>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top: 14px;">
-      <div style="font-size: 11px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.5px;">Detailed Entries (${filtered.length} Records)</div>
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 30px; text-align: center;">#</th>
-            <th style="text-align: left; width: 85px;">Date & Time</th>
-            <th style="text-align: left; width: 65px;">Partner</th>
-            <th style="text-align: left;">Notes / Description</th>
-            <th style="text-align: left; width: 100px;">Category</th>
-            <th style="text-align: center; width: 75px;">Type</th>
-            <th style="text-align: right; width: 85px;">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rowsHtml}
-        </tbody>
-        <tfoot>
-          <tr style="background: #f8fafc; font-weight: 900; border-top: 2px solid #cbd5e1; font-size: 11px;">
-            <td colspan="6" style="padding: 10px 8px; text-align: right; color: #334155;">Net Total:</td>
-            <td style="padding: 10px 8px; text-align: right; color: ${isProfit ? '#16a34a' : '#dc2626'}; font-size: 13px;">${isProfit ? '+' : ''}${formatINR(netProfit)}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-
-    <div style="margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #94a3b8;">
-      <div>MeenMart Hub • Official Financial Record</div>
-      <div>Confidential • Partners Only</div>
-    </div>
-  </div>
-</body>
-</html>`;
-
-      const ready = await ensureHtml2PdfLoaded();
-      if (!ready || typeof html2pdf === 'undefined') {
-        const blob = new Blob([pdfHtml], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        showToast("Accounts statement opened 📂");
+      const printArea = document.getElementById('accountsStatementPrintArea');
+      const modal = document.getElementById('accountsStatementModal');
+      if (!printArea || !modal) {
+        alert("Statement preview container not found!");
         return;
       }
 
-      const tempContainer = document.createElement('div');
-      tempContainer.innerHTML = pdfHtml;
-      const bodyContent = tempContainer.querySelector('.print-container') || tempContainer;
-      bodyContent.style.background = '#ffffff';
-      bodyContent.style.color = '#0f172a';
-      bodyContent.style.padding = '16px';
-      document.body.appendChild(bodyContent);
+      printArea.innerHTML = `
+        <div class="rounded-3xl p-5 bg-white text-slate-800 border-2 border-slate-200/90 shadow-xl space-y-3.5" style="background:#ffffff; color:#0f172a; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;">
+          
+          <!-- Header -->
+          <div class="flex items-start justify-between pb-3 border-b-2 border-teal-600">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">🐟</span>
+                <div>
+                  <h2 class="text-base font-black tracking-tight text-slate-900 leading-none">MEENMART HUB</h2>
+                  <span class="text-[9px] uppercase tracking-widest font-black text-teal-600 block mt-1">Official Accounts & Ledger Statement</span>
+                </div>
+              </div>
+              <p class="text-[10px] text-slate-400 font-semibold mt-1">தினசரி நிதி & கணக்கு மேலாண்மை அறிக்கை</p>
+            </div>
+            <div class="text-right">
+              <span class="text-[9px] font-mono font-bold text-slate-400 block">${stmtNo}</span>
+              <span class="text-[10px] font-black text-slate-700 block mt-0.5">${filterTitle}</span>
+              <span class="text-[8px] text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full font-bold uppercase mt-1 inline-block border border-teal-200">${filtered.length} Entries</span>
+            </div>
+          </div>
 
-      const fileName = `MeenMart_Accounts_${getTodayString()}.pdf`;
-      const opt = {
-        margin: [6, 6, 6, 6],
-        filename: fileName,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
+          <!-- Summary KPI Grid (3 Columns) -->
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="p-2.5 rounded-2xl bg-emerald-50/70 border border-emerald-200">
+              <span class="text-[8px] uppercase tracking-wider font-extrabold text-emerald-700 block">Total Income (வரவு)</span>
+              <strong class="text-sm font-black text-emerald-800 block mt-0.5">+${formatINR(totalSales)}</strong>
+            </div>
+            <div class="p-2.5 rounded-2xl bg-rose-50/70 border border-rose-200">
+              <span class="text-[8px] uppercase tracking-wider font-extrabold text-rose-700 block">Total Expenses (செலவு)</span>
+              <strong class="text-sm font-black text-rose-800 block mt-0.5">-${formatINR(totalExp)}</strong>
+            </div>
+            <div class="p-2.5 rounded-2xl ${isProfit ? 'bg-teal-50/70 border-teal-200' : 'bg-rose-50/70 border-rose-200'} border">
+              <span class="text-[8px] uppercase tracking-wider font-extrabold ${isProfit ? 'text-teal-700' : 'text-rose-700'} block">${isProfit ? 'Net Profit (லாபம்)' : 'Net Loss (நஷ்டம்)'}</span>
+              <strong class="text-sm font-black ${isProfit ? 'text-teal-800' : 'text-rose-800'} block mt-0.5">${isProfit ? '+' : ''}${formatINR(netProfit)}</strong>
+            </div>
+          </div>
+
+          <!-- Partner Financial Summary Cards -->
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+            <div class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Partner Spends & Collections Breakdown</div>
+            <div class="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+              <div class="p-2 rounded-xl bg-white border border-slate-200">
+                <strong class="text-slate-800 font-extrabold block">Balaji</strong>
+                <span class="text-[9px] text-rose-600 block">Spends: ${formatINR(pSummary.Balaji.exp)}</span>
+                <span class="text-[9px] text-emerald-600 block font-bold">Income: ${formatINR(pSummary.Balaji.sales)}</span>
+              </div>
+              <div class="p-2 rounded-xl bg-white border border-slate-200">
+                <strong class="text-slate-800 font-extrabold block">Nagoor</strong>
+                <span class="text-[9px] text-rose-600 block">Fish: ${formatINR(pSummary.Nagoor.exp)}</span>
+                <span class="text-[9px] text-slate-400 block">Income: ${formatINR(pSummary.Nagoor.sales)}</span>
+              </div>
+              <div class="p-2 rounded-xl bg-white border border-slate-200">
+                <strong class="text-slate-800 font-extrabold block">JP</strong>
+                <span class="text-[9px] text-rose-600 block">Petrol: ${formatINR(pSummary.JP.exp)}</span>
+                <span class="text-[9px] text-slate-400 block">Income: ${formatINR(pSummary.JP.sales)}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed Entries Table -->
+          <div class="space-y-1.5 pt-1">
+            <div class="flex items-center justify-between text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+              <span>Detailed Entries (${filtered.length} Records)</span>
+              <span>Net Total: ${formatINR(netProfit)}</span>
+            </div>
+            <table style="width: 100%; border-collapse: separate; border-spacing: 0; font-size: 10px; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+              <thead>
+                <tr style="background: #f1f5f9; color: #475569; font-weight: 800; font-size: 9px; text-transform: uppercase;">
+                  <th style="padding: 8px 6px; text-align: center; width: 28px;">#</th>
+                  <th style="padding: 8px 6px; text-align: left; width: 75px;">Date</th>
+                  <th style="padding: 8px 6px; text-align: left; width: 65px;">Partner</th>
+                  <th style="padding: 8px 6px; text-align: left;">Notes / Description</th>
+                  <th style="padding: 8px 6px; text-align: left; width: 95px;">Category</th>
+                  <th style="padding: 8px 6px; text-align: center; width: 70px;">Type</th>
+                  <th style="padding: 8px 6px; text-align: right; width: 75px;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+              <tfoot>
+                <tr style="background: #f8fafc; font-weight: 900; border-top: 2px solid #cbd5e1;">
+                  <td colspan="6" style="padding: 8px; text-align: right; color: #475569; font-size: 10px;">NET TOTAL (LAABAM):</td>
+                  <td style="padding: 8px; text-align: right; color: ${isProfit ? '#059669' : '#e11d48'}; font-size: 12px;">${isProfit ? '+' : ''}${formatINR(netProfit)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Footer Verification -->
+          <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-[8px] text-slate-400 font-mono">
+            <span>MeenMart Hub Official Financial Statement • Reconciled</span>
+            <span>Generated: ${nowFormatted} by ${state.currentPartner || 'Balaji'}</span>
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      if (typeof window.pushModalState === 'function') {
+        window.pushModalState('accountsStatementModal');
+      }
+    }
+
+    export async function saveOrShareAccountsStatementPDF() {
+      const area = document.getElementById('accountsStatementPrintArea');
+      const btn = document.getElementById('btnAccountsStatementDrive');
+      const textEl = document.getElementById('btnAccountsStatementDriveText');
+      if (!area) return;
+
+      const todayStr = getTodayString();
+      const fileName = `MeenMart_Accounts_Statement_${todayStr}.pdf`;
+
+      if (btn) btn.disabled = true;
+      if (textEl) textEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Creating PDF...';
 
       try {
-        const pdfBlob = await html2pdf().set(opt).from(bodyContent).outputPdf('blob');
-        if (bodyContent.parentNode) document.body.removeChild(bodyContent);
+        const ready = await ensureHtml2PdfLoaded();
+        if (!ready || typeof html2pdf === 'undefined') {
+          showToast("PDF engine unavailable offline.");
+          return;
+        }
 
-        // Auto-open PDF & trigger download (No share popup)
+        const opt = {
+          margin: [6, 6, 6, 6],
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        const pdfBlob = await html2pdf().set(opt).from(area).outputPdf('blob');
         const blobUrl = URL.createObjectURL(pdfBlob);
         const a = document.createElement('a');
         a.href = blobUrl;
@@ -306,17 +338,38 @@ import {
         a.click();
         document.body.removeChild(a);
         window.open(blobUrl, '_blank');
-        showToast("PDF auto-opened & downloaded! 📄");
+        showToast("Statement PDF downloaded! 📄");
       } catch (err) {
-        if (bodyContent.parentNode) document.body.removeChild(bodyContent);
-        console.error("PDF generation failed:", err);
+        console.error("Statement PDF error:", err);
         showToast("PDF generation failed: " + err.message);
+      } finally {
+        if (btn) btn.disabled = false;
+        if (textEl) textEl.innerHTML = 'Download PDF';
       }
-    };
+    }
 
-    // ==========================================
-    // 📄 WEEKLY SETTLEMENT PDF STATEMENT
-    // ==========================================
+    export function shareAccountsStatementWhatsApp() {
+      if (!currentStatementState) return;
+      const s = currentStatementState;
+      const text = `🧾 *MEENMART HUB - ACCOUNTS STATEMENT*\n` +
+        `🆔 *Statement:* ${s.stmtNo}\n` +
+        `📅 *Period:* ${s.filterTitle}\n` +
+        `👥 *Entries:* ${s.filteredCount} Records\n` +
+        `----------------------------------------\n` +
+        `🏪 *FINANCIAL SUMMARY (கடை கணக்கு):*\n` +
+        `• Total Income (வரவு): +${formatINR(s.totalSales)}\n` +
+        `• Total Expenses (செலவு): -${formatINR(s.totalExp)}\n` +
+        `• Net Profit (லாபம்): *${s.isProfit ? '+' : ''}${formatINR(s.netProfit)}*\n` +
+        `----------------------------------------\n` +
+        `👤 *PARTNER SPENDS & INCOME:*\n` +
+        `• Balaji: Spends ${formatINR(s.pSummary.Balaji.exp)} | Income ${formatINR(s.pSummary.Balaji.sales)}\n` +
+        `• Nagoor: Fish Spends ${formatINR(s.pSummary.Nagoor.exp)}\n` +
+        `• JP: Petrol Spends ${formatINR(s.pSummary.JP.exp)}\n` +
+        `----------------------------------------\n` +
+        `_Official accounts statement generated from MeenMart Hub_`;
+
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
 
 
     window.exportWeeklySettlementPDF = function() {
@@ -879,3 +932,6 @@ window.closePartnerInvoiceModal = closePartnerInvoiceModal;
 window.saveOrSharePartnerInvoicePDF = saveOrSharePartnerInvoicePDF;
 window.saveOrShareWeeklyReportPDF = saveOrShareWeeklyReportPDF;
 window.sharePartnerInvoiceWhatsApp = sharePartnerInvoiceWhatsApp;
+
+window.saveOrShareAccountsStatementPDF = saveOrShareAccountsStatementPDF;
+window.shareAccountsStatementWhatsApp = shareAccountsStatementWhatsApp;

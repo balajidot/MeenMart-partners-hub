@@ -1684,6 +1684,42 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- 📄 ACCOUNTS STATEMENT MODAL (CLEAN PREVIEW) -->
+    <!-- ========================================== -->
+    <div id="accountsStatementModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3.5">
+      <div onclick="closeAccountsStatementModal()" class="fixed inset-0 modal-backdrop transition-opacity"></div>
+      <div class="relative w-full max-w-md mx-auto bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar">
+        <!-- Modal Top Bar -->
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="text-base">📑</span>
+            <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">Accounts Statement</h3>
+          </div>
+          <button onclick="closeAccountsStatementModal()" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 text-xs flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Printable Canvas Area (No web action buttons inside here!) -->
+        <div id="accountsStatementPrintArea" class="space-y-3">
+          <!-- Dynamic Content Generated in exportToPDF() -->
+        </div>
+
+        <!-- Modal Bottom Action Bar -->
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button onclick="shareAccountsStatementWhatsApp()" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
+            <i class="fa-brands fa-whatsapp text-sm"></i>
+            <span>WhatsApp</span>
+          </button>
+          <button onclick="saveOrShareAccountsStatementPDF()" id="btnAccountsStatementDrive" class="w-full py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
+            <i class="fa-solid fa-file-pdf text-xs"></i>
+            <span id="btnAccountsStatementDriveText">Download PDF</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- 💳 RECORD PAYMENT / PARTIAL PAYOUT MODAL   -->
     <!-- ========================================== -->
     <div id="recordPaymentModal" class="hidden fixed inset-0 z-50 flex items-end justify-center">

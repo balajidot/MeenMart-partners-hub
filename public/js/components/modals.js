@@ -54,6 +54,8 @@ import {
           closePartnerInvoiceModal(true);
         } else if (topModal === 'weeklySettlementPdfModal') {
           closeWeeklySettlementPdfModal(true);
+        } else if (topModal === 'accountsStatementModal') {
+          closeAccountsStatementModal(true);
         } else if (topModal === 'editInvestmentTargetModal') {
           closeEditInvestmentTargetModal(true);
         } else if (topModal === 'categoryManagerModal') {
@@ -900,3 +902,11 @@ window.openEditModal = openEditModal;
 window.closeEditModal = closeEditModal;
 window.updateEditCategoryOptions = updateEditCategoryOptions;
 window.handleEditSubmit = handleEditSubmit;
+
+// Accounts Statement Modal
+export function closeAccountsStatementModal(fromPopState = false) {
+  const modal = document.getElementById('accountsStatementModal');
+  if (modal) modal.classList.add('hidden');
+  popModalState('accountsStatementModal', fromPopState);
+}
+window.closeAccountsStatementModal = closeAccountsStatementModal;
