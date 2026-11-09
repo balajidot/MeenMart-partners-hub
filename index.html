@@ -1886,6 +1886,8 @@
       customDateRange: { from: '', to: '' },
       transactions: [],
       settlements: {},
+      transactionsLoaded: false,
+      settlementsLoaded: false,
       categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
       catManagerTab: 'expense',
       settlementOffsetWeeks: 0,
@@ -2356,6 +2358,8 @@
           txs.push({ id: docSnap.id, ...docSnap.data() });
         });
         state.transactions = txs;
+        state.transactionsLoaded = true;
+        syncSettlementTransfersToLedger();
         updateUI();
       }, (err) => {
         console.error("Firestore Listen Error:", err);
@@ -2371,10 +2375,87 @@
           sMap[docSnap.id] = docSnap.data();
         });
         state.settlements = sMap;
+        state.settlementsLoaded = true;
+        syncSettlementTransfersToLedger();
         updateUI();
       }, (err) => {
         console.warn("Settlements listen error:", err);
       });
+    }
+
+    // Auto-Sync Settlement Payouts to Transactions Ledger (Backfill & Consistency Engine)
+    let isSyncingTransfers = false;
+    async function syncSettlementTransfersToLedger() {
+      if (isSyncingTransfers) return;
+      if (!state.currentUser || !state.settlementsLoaded || !state.transactionsLoaded) return;
+      if (!state.settlements || !Array.isArray(state.transactions)) return;
+
+      const currentEmail = (state.currentUser.email || '').toLowerCase().trim();
+      const currentPartner = PARTNER_EMAILS[currentEmail] || '';
+      // Due to strict Firestore security rules, only Balaji can record payout transactions paid by Balaji
+      if (currentPartner !== 'Balaji') return;
+
+      const missing = [];
+      Object.entries(state.settlements).forEach(([weekId, weekDoc]) => {
+        if (!weekDoc || !weekDoc.transfers) return;
+        ['Nagoor', 'JP'].forEach(partner => {
+          const rec = weekDoc.transfers[partner];
+          if (rec && Number(rec.paidAmount) > 0) {
+            const amt = Number(rec.paidAmount);
+            // Check if transfer already exists in transactions collection
+            const alreadyExists = state.transactions.some(t => 
+              t.type === 'transfer' && 
+              (
+                (t.weekId && t.weekId === weekId && t.toPartner === partner) ||
+                (t.toPartner === partner && Number(t.amount) === amt && (t.category === 'settlement_payout' || t.category === 'transfer'))
+              )
+            );
+            if (!alreadyExists) {
+              missing.push({ weekId, weekDoc, partner, rec, amt });
+            }
+          }
+        });
+      });
+
+      if (missing.length === 0) return;
+
+      isSyncingTransfers = true;
+      try {
+        for (const item of missing) {
+          // Double check to prevent duplicate transactions
+          const doubleCheck = state.transactions.some(t => 
+            t.type === 'transfer' && 
+            (
+              (t.weekId && t.weekId === item.weekId && t.toPartner === item.partner) ||
+              (t.toPartner === item.partner && Number(t.amount) === item.amt && (t.category === 'settlement_payout' || t.category === 'transfer'))
+            )
+          );
+          if (doubleCheck) continue;
+
+          const paidDate = item.rec.paidAt ? formatLocalDate(new Date(item.rec.paidAt)) : (item.weekDoc.weekEnd || getTodayString());
+          const newTx = {
+            type: 'transfer',
+            partner: 'Balaji',
+            toPartner: item.partner,
+            category: 'settlement_payout',
+            amount: item.amt,
+            date: paidDate || getTodayString(),
+            paymentMethod: item.rec.paymentMethod || 'GPay / UPI',
+            description: item.rec.notes ? `Settlement Payout: ${item.rec.notes}` : `Weekly Settlement Payout (${item.weekDoc.weekStart || ''} - ${item.weekDoc.weekEnd || ''})`,
+            weekId: item.weekId,
+            createdAt: item.rec.paidAt || Date.now(),
+            createdBy: currentEmail,
+            createdByPartner: 'Balaji'
+          };
+
+          await addDoc(collection(db, "transactions"), newTx);
+          console.log(`Auto-synced settlement transfer to transactions ledger: Balaji -> ${item.partner} (${formatINR(item.amt)})`);
+        }
+      } catch (err) {
+        console.warn("Settlement transfer auto-sync notice:", err);
+      } finally {
+        isSyncingTransfers = false;
+      }
     }
 
     // Master UI Update
@@ -2791,7 +2872,7 @@
           </div>
 
           <!-- 2. Nagoor: Settlement Entitlement & Payment Status -->
-          <div onclick="switchTab('settlement')" class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border ${isNagoorAllPaid ? 'border-emerald-200/80 dark:border-emerald-800/40' : (nagoorBalanceToPay > 0 ? 'border-amber-200 dark:border-amber-700/50 hover:border-amber-400' : 'border-slate-200 dark:border-slate-800')} shadow-sm space-y-2.5 cursor-pointer hover:shadow-md active:scale-99 transition" title="Click to view weekly settlement & record payment">
+          <div onclick="switchTab('accounts', 'settleTransfersContainer')" class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border ${isNagoorAllPaid ? 'border-emerald-200/80 dark:border-emerald-800/40' : (nagoorBalanceToPay > 0 ? 'border-amber-200 dark:border-amber-700/50 hover:border-amber-400' : 'border-slate-200 dark:border-slate-800')} shadow-sm space-y-2.5 cursor-pointer hover:shadow-md active:scale-99 transition" title="Click to view weekly settlement & record payment">
             <!-- Row 1: Identity & Amount -->
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2.5">
@@ -2824,7 +2905,7 @@
           </div>
 
           <!-- 3. JP: Settlement Entitlement & Payment Status -->
-          <div onclick="switchTab('settlement')" class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border ${isJpAllPaid ? 'border-emerald-200/80 dark:border-emerald-800/40' : (jpBalanceToPay > 0 ? 'border-amber-200 dark:border-amber-700/50 hover:border-amber-400' : 'border-slate-200 dark:border-slate-800')} shadow-sm space-y-2.5 cursor-pointer hover:shadow-md active:scale-99 transition" title="Click to view weekly settlement & record payment">
+          <div onclick="switchTab('accounts', 'settleTransfersContainer')" class="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border ${isJpAllPaid ? 'border-emerald-200/80 dark:border-emerald-800/40' : (jpBalanceToPay > 0 ? 'border-amber-200 dark:border-amber-700/50 hover:border-amber-400' : 'border-slate-200 dark:border-slate-800')} shadow-sm space-y-2.5 cursor-pointer hover:shadow-md active:scale-99 transition" title="Click to view weekly settlement & record payment">
             <!-- Row 1: Identity & Amount -->
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2.5">
@@ -6416,8 +6497,10 @@ ${transferSection}
       }
     };
 
-    // Navigation Switcher
-    window.switchTab = function(tabName) {
+    // Navigation Switcher (Multi-Tab Safe with Smooth Section Scroll)
+    window.switchTab = function(tabName, scrollTargetId = null) {
+      // Map alias 'settlement' to 'accounts'
+      if (tabName === 'settlement') tabName = 'accounts';
       state.currentTab = tabName;
       ['dashboard', 'history', 'analytics', 'accounts'].forEach(t => {
         const sec = document.getElementById(`tab-${t}`);
@@ -6437,6 +6520,16 @@ ${transferSection}
       if (tabName === 'analytics') renderAnalytics();
       if (tabName === 'accounts') renderAccounts();
       if (tabName === 'history') renderHistoryList();
+
+      if (scrollTargetId) {
+        setTimeout(() => {
+          const el = document.getElementById(scrollTargetId);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          else window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 80);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     };
 
     window.setHistoryDateFilter = function(p) {
