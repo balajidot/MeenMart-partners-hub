@@ -128,7 +128,7 @@ export function updatePaymentLivePreview() {
         <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400"></i>
         <span>Full Settlement ✅</span>
       </div>
-      <p class="text-[11px] opacity-80">${state.activePayout.partner} account will be marked fully settled for this week with 0 arrears.</p>
+      <p class="text-[11px] opacity-80">${state.activePayout.partner}'s payment will be marked as fully settled with ₹0 remaining.</p>
     `;
   } else if (val > 0 && val < totalDue) {
     const rem = totalDue - val;
@@ -148,7 +148,7 @@ export function updatePaymentLivePreview() {
         <i class="fa-solid fa-hand-holding-dollar text-teal-600 dark:text-teal-400"></i>
         <span>Advance Payment (+${formatINR(extra)})</span>
       </div>
-      <p class="text-[11px] opacity-80">Paid amount exceeds current entitlement. Extra credit will adjust next week.</p>
+      <p class="text-[11px] opacity-80">Paid amount is more than the total to pay. Extra money will adjust next week.</p>
     `;
   } else {
     box.className = "p-3 rounded-2xl border text-xs space-y-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400";
@@ -418,7 +418,7 @@ export function renderAccounts() {
     let statusIcon = '<i class="fa-solid fa-hourglass-half text-[11px] text-slate-400"></i>';
     let paymentDetailsText = 'Payment pending';
     let statusDetailsClass = 'text-slate-400';
-    let payBtnLabel = 'Record Payment 💳';
+    let payBtnLabel = 'Mark as Paid 💳';
     let payBtnClass = 'bg-teal-600 hover:bg-teal-500 text-white';
     let payBtnIcon = 'fa-solid fa-money-bill-transfer';
 
@@ -429,7 +429,7 @@ export function renderAccounts() {
       statusTextClass = 'text-emerald-700 dark:text-emerald-300';
       statusBadgeText = 'Paid in Full ✅';
       statusIcon = '<i class="fa-solid fa-circle-check text-xs text-emerald-500"></i>';
-      payBtnLabel = 'Edit Receipt 📝';
+      payBtnLabel = 'Edit Payment 📝';
       payBtnClass = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700';
       payBtnIcon = 'fa-solid fa-receipt';
       if (record && record.paidAt) {
@@ -454,13 +454,13 @@ export function renderAccounts() {
 
     const carryForwardHtml = carriedDue > 0
       ? `<div class="flex items-center justify-between text-amber-600 dark:text-amber-400 font-bold">
-           <span class="flex items-center gap-1"><i class="fa-solid fa-arrow-turn-down text-[9px]"></i> Previous Week Pending Due:</span>
+           <span class="flex items-center gap-1"><i class="fa-solid fa-arrow-turn-down text-[9px]"></i> Last Week Pending:</span>
            <span>+${formatINR(carriedDue)}</span>
          </div>`
       : '';
 
     const escapedReason = (reasonText || '').replace(/'/g, "\\'");
-    const roleExpenseLabel = partner === 'Nagoor' ? 'Fish Expense Reimbursement' : 'Petrol & Delivery Reimbursement';
+    const roleExpenseLabel = partner === 'Nagoor' ? 'Fish Buying Refund' : 'Petrol & Delivery Refund';
 
     return `
       <div class="p-4 rounded-3xl bg-white dark:bg-slate-900 border ${cardBorderClass} shadow-md space-y-3">
@@ -479,7 +479,7 @@ export function renderAccounts() {
             </div>
           </div>
           <div class="text-right">
-            <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block whitespace-nowrap">Total Due</span>
+            <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 block whitespace-nowrap">Total to Pay</span>
             <span class="text-base font-black text-teal-600 dark:text-teal-400 block whitespace-nowrap">${formatINR(totalDue)}</span>
           </div>
         </div>
@@ -503,14 +503,14 @@ export function renderAccounts() {
           </div>
           <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
             <span class="flex items-center gap-1">
-              <span>Equal 1/3 Profit Share</span>
+              <span>Your Profit Share (1/3)</span>
               <span class="text-[9px] text-teal-600 dark:text-teal-400 font-semibold">(Shop: ${formatINR(netProfit)} ÷ 3)</span>
             </span>
             <strong class="font-bold text-teal-600 dark:text-teal-400">+${formatINR(shareAmt)}</strong>
           </div>
           ${carryForwardHtml}
           <div class="pt-1.5 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between font-black text-slate-900 dark:text-white">
-            <span>Total Payable Amount:</span>
+            <span>Total to Pay:</span>
             <span class="text-teal-600 dark:text-teal-400 text-sm font-black">${formatINR(totalDue)}</span>
           </div>
         </div>
@@ -550,8 +550,8 @@ export function renderAccounts() {
         <div class="flex items-center gap-2.5">
           ${renderPartnerAvatar('Balaji', 'w-8 h-8', 'rounded-xl')}
           <div>
-            <span class="font-bold text-teal-950 dark:text-teal-200">Balaji Net Retained Cash</span>
-            <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Spends ${formatINR(weeklyPartnerExp.Balaji)} + Profit share ${formatINR(equalShare)}</div>
+            <span class="font-bold text-teal-950 dark:text-teal-200">Balaji's Share (Refund + Profit)</span>
+            <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Shop Spends ${formatINR(weeklyPartnerExp.Balaji)} + Profit share ${formatINR(equalShare)}</div>
           </div>
         </div>
         <span class="font-black text-teal-600 dark:text-teal-400 text-sm">${formatINR(balajiTotal)}</span>
@@ -831,39 +831,39 @@ export function copyWeeklyReportWhatsApp() {
 
   let transferSection = '';
   if (isProfit) {
-    transferSection = `🚀 Balaji Anupa Vendiyadhu:
-  ➔ Nagoor: ${formatINR(pExp.Nagoor + split)}
-  ➔ JP: ${formatINR(pExp.JP + split)}
-  ➔ Balaji Kaila Meedham: ${formatINR(pExp.Balaji + split)}`;
+    transferSection = `🚀 Payments to Partners:
+  ➔ Nagoor: ${formatINR(pExp.Nagoor + split)} (Fish Refund + Profit Share)
+  ➔ JP: ${formatINR(pExp.JP + split)} (Petrol & Delivery Refund + Profit Share)
+  ➔ Balaji's Total Share: ${formatINR(pExp.Balaji + split)}`;
   } else {
     const netNagoor = pExp.Nagoor - lossShare;
     const netJp = pExp.JP - lossShare;
-    transferSection = `🚀 Settlement Transfers (Loss):
-  ➔ Nagoor: ${netNagoor >= 0 ? 'Balaji thara vendiyadhu ' + formatINR(netNagoor) : 'Nagoor thara vendiyadhu ' + formatINR(Math.abs(netNagoor))}
-  ➔ JP: ${netJp >= 0 ? 'Balaji thara vendiyadhu ' + formatINR(netJp) : 'JP thara vendiyadhu ' + formatINR(Math.abs(netJp))}
+    transferSection = `🚀 Settlement Payments (Loss):
+  ➔ Nagoor: ${netNagoor >= 0 ? 'Pay Nagoor ' + formatINR(netNagoor) : 'Nagoor pays shop ' + formatINR(Math.abs(netNagoor))}
+  ➔ JP: ${netJp >= 0 ? 'Pay JP ' + formatINR(netJp) : 'JP pays shop ' + formatINR(Math.abs(netJp))}
   ➔ Balaji Loss: -${formatINR(lossShare)}`;
   }
 
-  const msg = `*MeenMart Hub - Weekly Settlement Statement* 🐟
+  const msg = `*MeenMart Hub - Weekly Settlement Summary* 🐟
 📅 Week: ${mStr} - ${sStr}
 -----------------------
-📈 Total Income: ${formatINR(sales)}
+📈 Total Sales: ${formatINR(sales)}
 💸 Total Expenses: ${formatINR(exp)}
-💎 ${isProfit ? 'Net Profit' : 'Net Loss'}: ${formatINR(Math.abs(profit))}
+💎 ${isProfit ? 'Shop Profit' : 'Shop Loss'}: ${formatINR(Math.abs(profit))}
 -----------------------
-🤝 Equal 1/3 Share: ${isProfit ? '+' : '-'}${formatINR(Math.abs(split))}
+🤝 Equal 1/3 Share: ${isProfit ? '+' : '-'}${formatINR(Math.abs(split))} Each
 -----------------------
-🔄 Expense Reimbursements:
-  🦐 Nagoor: ${formatINR(pExp.Nagoor)}
-  👨‍💻 Balaji: ${formatINR(pExp.Balaji)}
-  🛵 JP: ${formatINR(pExp.JP)}
+🔄 Money Spent from Pocket:
+  🦐 Nagoor (Fish Buying): ${formatINR(pExp.Nagoor)}
+  👨‍💻 Balaji (Cleaning, Ice, Covers, Ads): ${formatINR(pExp.Balaji)}
+  🛵 JP (Petrol & Delivery): ${formatINR(pExp.JP)}
 -----------------------
 ${transferSection}
 -----------------------
 ✅ MeenMart Hub`;
 
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(msg).then(() => showToast("WhatsApp Report Copy Aagiduchi! 📋"));
+    navigator.clipboard.writeText(msg).then(() => showToast("Weekly report copied to clipboard! 📋"));
   }
 }
 

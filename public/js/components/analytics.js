@@ -140,7 +140,7 @@ export async function renderAnalytics() {
   const capPendingText = document.getElementById('capitalPendingText');
   if (capPendingText) {
     capPendingText.innerText = pendingPool > 0 
-      ? `${formatINR(pendingPool)} Pending Deficit`
+      ? `${formatINR(pendingPool)} Remaining to Reach Target`
       : `Target Fully Reached! 🎯 ✅`;
   }
 

@@ -470,11 +470,11 @@ import {
         if (p === active) {
           btn.disabled = false;
           btn.className = "py-2.5 px-1 rounded-2xl border-2 border-teal-500 bg-teal-50 dark:bg-teal-500/25 text-center font-extrabold text-xs text-slate-900 dark:text-white shadow-sm ring-2 ring-teal-500/20";
-          btn.innerHTML = `<div class="flex items-center justify-center gap-1.5">${renderPartnerAvatar(p, "w-5 h-5", "rounded-md")} <span>${PARTNERS[p].name}</span></div> <span class="block text-[9px] text-teal-600 dark:text-teal-400 font-bold mt-0.5"><i class="fa-solid fa-lock text-[8px]"></i> Neenga</span>`;
+          btn.innerHTML = `<div class="flex items-center justify-center gap-1.5">${renderPartnerAvatar(p, "w-5 h-5", "rounded-md")} <span>${PARTNERS[p].name}</span></div> <span class="block text-[9px] text-teal-600 dark:text-teal-400 font-bold mt-0.5"><i class="fa-solid fa-lock text-[8px]"></i> You</span>`;
         } else {
           btn.disabled = true;
           btn.className = "py-2.5 px-1 rounded-2xl border border-slate-200 dark:border-slate-800/60 bg-slate-100/60 dark:bg-slate-900/40 text-center font-medium text-xs text-slate-400 dark:text-slate-500 opacity-40 cursor-not-allowed pointer-events-none";
-          btn.innerHTML = `<div class="flex items-center justify-center gap-1.5 opacity-60">${renderPartnerAvatar(p, "w-5 h-5", "rounded-md")} <span>${PARTNERS[p].name}</span></div> <span class="block text-[8px] text-slate-400 mt-0.5">🔒 Lock</span>`;
+          btn.innerHTML = `<div class="flex items-center justify-center gap-1.5 opacity-60">${renderPartnerAvatar(p, "w-5 h-5", "rounded-md")} <span>${PARTNERS[p].name}</span></div> <span class="block text-[8px] text-slate-400 mt-0.5">🔒 Locked</span>`;
         }
       });
     }
@@ -535,7 +535,7 @@ import {
       if (type === 'transfer') {
         if (toRow) toRow.classList.remove('hidden');
         if (pmRow) pmRow.classList.remove('hidden');
-        if (label) label.innerText = "From Partner (Sender):";
+        if (label) label.innerText = "Who is Sending Money:";
         if (!state.entryToPartner || state.entryToPartner === state.currentPartner) {
           state.entryToPartner = state.currentPartner === 'Balaji' ? 'Nagoor' : 'Balaji';
         }
@@ -545,11 +545,11 @@ import {
         if (toRow) toRow.classList.add('hidden');
         if (pmRow) pmRow.classList.add('hidden');
         if (type === 'sales') {
-          if (label) label.innerText = "Yaaru income vasool pannadhu?";
+          if (label) label.innerText = "Who Collected the Money:";
         } else if (type === 'expense') {
-          if (label) label.innerText = "Paid From Which Partner's Pocket?";
+          if (label) label.innerText = "Who Paid the Expense:";
         } else {
-          if (label) label.innerText = "Yaaru mudhaleedu pannadhu?";
+          if (label) label.innerText = "Who Contributed Capital:";
         }
       }
     };
@@ -557,7 +557,7 @@ import {
     window.selectEntryPartner = function(partner) {
       // Strict Rule: You can ONLY register under your own logged in partner profile!
       if (partner !== state.currentPartner) {
-        showToast("Unga login-la neenga mattum dhaan add panna mudiyum! 🔒", "⚠️");
+        showToast("You can only add entries under your own partner profile! 🔒", "⚠️");
         return;
       }
       if (navigator.vibrate) navigator.vibrate(8);
@@ -592,13 +592,13 @@ import {
 
       const amountVal = Number(document.getElementById('entryAmount').value);
       if (!amountVal || amountVal <= 0) {
-        alert("Olungana amount type pannunga!");
+        alert("Please enter a valid amount!");
         return;
       }
 
       const activePartner = state.currentPartner;
       if (!activePartner) {
-        alert("Please Google Login pannunga!");
+        alert("Please sign in with Google first!");
         return;
       }
 
@@ -626,15 +626,15 @@ import {
 
       try {
         await addDoc(collection(db, "transactions"), newTx);
-        showToast("Transaction saved successfully! ✅");
+        showToast("Entry saved successfully! ✅");
         closeEntryBottomSheet();
         document.getElementById('entryAmount').value = '';
         document.getElementById('entryDescription').value = '';
       } catch (err) {
-        alert("Entry save panradhula error: " + err.message);
+        alert("Error saving entry: " + err.message);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>Entry Save Pannu</span>`;
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>Save Entry</span>`;
       }
     };
 
@@ -644,16 +644,16 @@ import {
       if (!tx) return;
 
       if (!canUserModify(tx)) {
-        alert(`Idha create panna ${PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner} mattum dhaan delete panna mudiyum! 🔒`);
+        alert(`Only ${PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner} can delete this entry! 🔒`);
         return;
       }
 
-      if (confirm("Are you sure you want to delete this transaction? 🗑️")) {
+      if (confirm("Are you sure you want to delete this entry? 🗑️")) {
         try {
           await deleteDoc(doc(db, "transactions", id));
-          showToast("Transaction deleted successfully! 🗑️");
+          showToast("Entry deleted successfully! 🗑️");
         } catch (err) {
-          alert("Delete panradhula error: " + err.message);
+          alert("Error deleting entry: " + err.message);
         }
       }
     };
@@ -682,7 +682,7 @@ import {
         avatarContainer.innerHTML = renderPartnerAvatar(tx.partner, 'w-9 h-9', 'rounded-xl');
       }
 
-      document.getElementById('viewTxTitle').innerText = `${p.name}-oda Entry`;
+      document.getElementById('viewTxTitle').innerText = `${p.name}'s Entry`;
       document.getElementById('viewTxPartnerSub').innerText = `${p.name} • ${p.role || 'Partner'}`;
 
       const isExp = tx.type === 'expense';
@@ -704,7 +704,7 @@ import {
         const toText = tx.toPartner ? ` ➔ ${tx.toPartner}` : '';
         typeBadgeHtml = `<span class="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-300 text-xs font-bold">🔄 Transfer${toText}</span>`;
       } else {
-        typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-300 text-xs font-bold">💰 Mudhaleedu</span>';
+        typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-300 text-xs font-bold">💰 Capital</span>';
       }
       document.getElementById('viewTxTypeBadge').innerHTML = typeBadgeHtml;
 
@@ -714,7 +714,7 @@ import {
         notesEl.innerText = tx.description.trim();
         notesEl.classList.remove('italic', 'text-slate-400');
       } else {
-        notesEl.innerText = 'Kurippu (Notes) edhum illai.';
+        notesEl.innerText = 'No notes provided.';
         notesEl.classList.add('italic', 'text-slate-400');
       }
 
@@ -746,17 +746,17 @@ import {
       if (!id) return;
       const tx = state.transactions.find(t => t.id === id);
       if (!tx || !canUserModify(tx)) {
-        alert("Idha delete panna ungalluku permission illa! 🔒");
+        alert("You do not have permission to delete this entry! 🔒");
         return;
       }
 
-      if (confirm("இந்த பதிவை நிச்சயமாக நீக்க வேண்டுமா? 🗑️")) {
+      if (confirm("Are you sure you want to delete this entry? 🗑️")) {
         try {
           await deleteDoc(doc(db, "transactions", id));
           closeEditModal();
-          showToast("Transaction deleted successfully! 🗑️");
+          showToast("Entry deleted successfully! 🗑️");
         } catch (err) {
-          alert("Delete panradhula error: " + err.message);
+          alert("Error deleting entry: " + err.message);
         }
       }
     };
@@ -767,7 +767,7 @@ import {
       if (!tx) return;
 
       if (!canUserModify(tx)) {
-        alert(`Idha create panna ${PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner} mattum dhaan edit panna mudiyum! 🔒`);
+        alert(`Only ${PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner} can edit this entry! 🔒`);
         return;
       }
 
@@ -779,7 +779,7 @@ import {
       document.getElementById('editTxDate').value = tx.date;
       document.getElementById('editTxAmount').value = tx.amount;
       document.getElementById('editTxDescription').value = tx.description || '';
-      document.getElementById('editOwnershipBadge').innerText = `${PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner}-oda Entry 🔒`;
+      document.getElementById('editOwnershipBadge').innerText = `${PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner}'s Entry 🔒`;
 
       const toPartnerEl = document.getElementById('editTxToPartner');
       if (toPartnerEl) toPartnerEl.value = tx.toPartner || 'Nagoor';
@@ -825,7 +825,7 @@ import {
       const tx = state.transactions.find(t => t.id === id);
 
       if (!tx || !canUserModify(tx)) {
-        alert(`Idha create panna ${tx ? (PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner) : 'partner'} mattum dhaan edit panna mudiyum! 🔒`);
+        alert(`Only ${tx ? (PARTNERS[tx.partner] ? PARTNERS[tx.partner].name : tx.partner) : 'partner'} can edit this entry! 🔒`);
         return;
       }
 
@@ -846,10 +846,10 @@ import {
 
       try {
         await updateDoc(doc(db, "transactions", id), updated);
-        showToast("Transaction updated successfully! ✏️");
+        showToast("Entry updated successfully! ✏️");
         closeEditModal();
       } catch (err) {
-        alert("Update panradhula error: " + err.message);
+        alert("Error updating entry: " + err.message);
       }
     };
 

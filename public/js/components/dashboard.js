@@ -333,24 +333,24 @@ export function renderDashboard() {
             <div>
               <div class="flex items-center gap-1.5">
                 <span class="font-extrabold text-sm text-slate-900 dark:text-white">Balaji</span>
-                <span class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 whitespace-nowrap">Shop Cash in Hand</span>
+                <span class="text-[9px] px-2 py-0.5 rounded-full font-bold bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 whitespace-nowrap">Cash with Balaji</span>
               </div>
-              <span class="text-[10px] text-slate-400 font-medium block mt-0.5">Collections & Business Account</span>
+              <span class="text-[10px] text-slate-400 font-medium block mt-0.5">Shop Cash & Bank</span>
             </div>
           </div>
           <div class="text-right flex-shrink-0">
             <span class="font-black ${balajiColorClass} text-base block">${formatINR(balajiLiveCash)}</span>
-            <span class="text-[9px] text-slate-400 font-medium block whitespace-nowrap">In Hand & Bank</span>
+            <span class="text-[9px] text-slate-400 font-medium block whitespace-nowrap">Net Cash in Hand</span>
           </div>
         </div>
         <!-- Row 2: Inset Math Card (Zero Truncation Responsive Layout) -->
         <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1 text-[11px]">
           <div class="flex items-center justify-between font-semibold text-slate-600 dark:text-slate-300">
-            <span>Total Collections:</span>
+            <span>Shop Total Sales:</span>
             <span class="font-extrabold text-slate-900 dark:text-white">+${formatINR(totalAllSales)}</span>
           </div>
           <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-0.5 border-t border-slate-200/40 dark:border-slate-700/40">
-            <span>Spends (${formatINR(totalBalajiSpends)}) • Paid (${formatINR(totalAllPayoutsPaid)})</span>
+            <span>Shop Spends (${formatINR(totalBalajiSpends)}) • Paid Out (${formatINR(totalAllPayoutsPaid)})</span>
             <span class="font-black text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/50 px-2 py-0.5 rounded-md border border-teal-100 dark:border-teal-900">${formatINR(balajiLiveCash)} Left</span>
           </div>
         </div>
@@ -359,13 +359,13 @@ export function renderDashboard() {
         <div class="p-2.5 rounded-xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/40 text-[10px] space-y-1.5">
           <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
             <span class="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400">
-              <i class="fa-solid fa-hourglass-half text-[9px]"></i> Owed to Partners (JP Due):
+              <i class="fa-solid fa-hourglass-half text-[9px]"></i> Pending to Pay JP:
             </span>
             <strong class="font-extrabold text-amber-600 dark:text-amber-400">${formatINR(pendingToPartners)}</strong>
           </div>
           <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
             <span class="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
-              <i class="fa-solid fa-circle-check text-[9px]"></i> Balaji's Earned Profit:
+              <i class="fa-solid fa-circle-check text-[9px]"></i> Balaji's Profit Share:
             </span>
             <strong class="font-extrabold text-emerald-600 dark:text-emerald-400">${formatINR(balajiRetainedProfit)}</strong>
           </div>
@@ -373,7 +373,7 @@ export function renderDashboard() {
             <div class="pt-1 border-t border-teal-100 dark:border-teal-900/40">
               <button type="button" onclick="quickPocketBalajiProfit(${balajiRetainedProfit})" class="w-full py-1.5 px-3 rounded-xl bg-teal-600/10 hover:bg-teal-600/20 text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-700 text-[10px] font-bold flex items-center justify-center gap-1.5 active:scale-98 transition shadow-xs">
                 <i class="fa-solid fa-wallet text-xs"></i>
-                <span>Pocket My Profit (${formatINR(balajiRetainedProfit)}) ➔ Leaves only JP Due</span>
+                <span>Take My Profit (${formatINR(balajiRetainedProfit)})</span>
               </button>
             </div>
           ` : ''}
@@ -393,32 +393,32 @@ export function renderDashboard() {
                   ${isNagoorAllPaid ? 'All Paid ✅' : (nagoorBalanceToPay > 0 ? 'Payment Pending ⏳' : 'No Spends')}
                 </span>
               </div>
-              <span class="text-[10px] text-slate-400 font-medium block mt-0.5">Fish Purchase & Harbor Supply</span>
+              <span class="text-[10px] text-slate-400 font-medium block mt-0.5">Fish Buying</span>
             </div>
           </div>
           <div class="text-right flex-shrink-0">
             <span class="font-black ${isNagoorAllPaid ? 'text-emerald-600 dark:text-emerald-400' : (nagoorBalanceToPay > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400')} text-base block whitespace-nowrap">
               ${isNagoorAllPaid ? 'All Cleared ✅' : (nagoorBalanceToPay > 0 ? formatINR(nagoorBalanceToPay) + ' to Pay' : '₹0 Balance')}
             </span>
-            <span class="text-[9px] text-slate-400 font-medium block whitespace-nowrap">${isNagoorAllPaid ? 'Fully Settled' : (nagoorBalanceToPay > 0 ? 'Balaji to Pay Nagoor' : 'Settled')}</span>
+            <span class="text-[9px] text-slate-400 font-medium block whitespace-nowrap">${isNagoorAllPaid ? 'Fully Paid' : (nagoorBalanceToPay > 0 ? 'Balaji to Pay Nagoor' : 'Settled')}</span>
           </div>
         </div>
         <!-- Row 2: Inset Math Card (Zero Truncation Layout) -->
         <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1 text-[11px]">
           ${nagoorTotalDue > 0 
             ? `<div class="flex items-center justify-between font-semibold text-slate-700 dark:text-slate-300">
-                 <span>Fish Spends: ${formatINR(currWeekPExp.Nagoor)} • Profit: ${formatINR(currWeekEqualShare)}</span>
+                 <span>Fish Buying: ${formatINR(currWeekPExp.Nagoor)} • Profit: ${formatINR(currWeekEqualShare)}</span>
                  <span class="font-bold ${isNagoorAllPaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'} text-[10px] bg-white dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 whitespace-nowrap">
                    ${isNagoorAllPaid ? 'Paid in Full ✅' : formatINR(nagoorBalanceToPay) + ' Due'}
                  </span>
                </div>
                ${prevNagoorCarried > 0 ? `
                  <div class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-between pt-0.5 border-t border-slate-200/40 dark:border-slate-700/40">
-                   <span>+ Prior Week Pending Due:</span>
+                   <span>+ Last Week Pending:</span>
                    <strong>+${formatINR(prevNagoorCarried)}</strong>
                  </div>
                ` : ''}`
-            : `<div class="text-slate-400 text-center py-0.5">No fish purchases recorded this week (₹0)</div>`}
+            : `<div class="text-slate-400 text-center py-0.5">No fish purchases this week (₹0)</div>`}
         </div>
       </div>
 
@@ -435,32 +435,32 @@ export function renderDashboard() {
                   ${isJpAllPaid ? 'All Paid ✅' : (jpBalanceToPay > 0 ? 'Payment Pending ⏳' : 'No Spends')}
                 </span>
               </div>
-              <span class="text-[10px] text-slate-400 font-medium block mt-0.5">Petrol & Delivery Operations</span>
+              <span class="text-[10px] text-slate-400 font-medium block mt-0.5">Delivery & Petrol</span>
             </div>
           </div>
           <div class="text-right flex-shrink-0">
             <span class="font-black ${isJpAllPaid ? 'text-emerald-600 dark:text-emerald-400' : (jpBalanceToPay > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400')} text-base block whitespace-nowrap">
               ${isJpAllPaid ? 'All Cleared ✅' : (jpBalanceToPay > 0 ? formatINR(jpBalanceToPay) + ' to Pay' : '₹0 Balance')}
             </span>
-            <span class="text-[9px] text-slate-400 font-medium block whitespace-nowrap">${isJpAllPaid ? 'Fully Settled' : (jpBalanceToPay > 0 ? 'Balaji to Pay JP' : 'Settled')}</span>
+            <span class="text-[9px] text-slate-400 font-medium block whitespace-nowrap">${isJpAllPaid ? 'Fully Paid' : (jpBalanceToPay > 0 ? 'Balaji to Pay JP' : 'Settled')}</span>
           </div>
         </div>
         <!-- Row 2: Inset Math Card (Zero Truncation Layout) -->
         <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1 text-[11px]">
           ${jpTotalDue > 0 
             ? `<div class="flex items-center justify-between font-semibold text-slate-700 dark:text-slate-300">
-                 <span>Petrol: ${formatINR(currWeekPExp.JP)} • Profit: ${formatINR(currWeekEqualShare)}</span>
+                 <span>Delivery & Petrol: ${formatINR(currWeekPExp.JP)} • Profit: ${formatINR(currWeekEqualShare)}</span>
                  <span class="font-bold ${isJpAllPaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'} text-[10px] bg-white dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 whitespace-nowrap">
                    ${isJpAllPaid ? 'Paid in Full ✅' : formatINR(jpBalanceToPay) + ' Due'}
                  </span>
                </div>
                ${prevJpCarried > 0 ? `
                  <div class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-between pt-0.5 border-t border-slate-200/40 dark:border-slate-700/40">
-                   <span>+ Prior Week Pending Due:</span>
+                   <span>+ Last Week Pending:</span>
                    <strong>+${formatINR(prevJpCarried)}</strong>
                  </div>
                ` : ''}`
-            : `<div class="text-slate-400 text-center py-0.5">No petrol or delivery recorded this week (₹0)</div>`}
+            : `<div class="text-slate-400 text-center py-0.5">No delivery spends this week (₹0)</div>`}
         </div>
       </div>
     `;
@@ -493,7 +493,7 @@ export function renderRecentTransactions() {
 
 export async function quickPocketBalajiProfit(amt) {
   if (!amt || amt <= 0) return;
-  if (!confirm(`Take ${formatINR(amt)} as personal profit withdrawal? This will record a transfer and leave only other partners' pending dues in shop cash.`)) return;
+  if (!confirm(`Take ${formatINR(amt)} as your profit? Shop cash will then only show money owed to partners.`)) return;
   try {
     const tx = {
       type: 'transfer',
@@ -509,9 +509,9 @@ export async function quickPocketBalajiProfit(amt) {
       createdByPartner: 'Balaji'
     };
     await addDoc(collection(db, "transactions"), tx);
-    showToast(`Profit of ${formatINR(amt)} withdrawn! Shop cash now reflects partners' dues. ✅`);
+    showToast(`Saved! Took ${formatINR(amt)} profit ✅`);
   } catch (err) {
-    alert("Withdrawal error: " + err.message);
+    alert("Error: " + err.message);
   }
 }
 
