@@ -343,32 +343,41 @@ export function renderDashboard() {
             <span class="text-[9px] text-slate-400 font-medium block whitespace-nowrap">In Hand & Bank</span>
           </div>
         </div>
-        <!-- Row 2: Inset Full-Width Math Pill -->
-        <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-          <span class="truncate">Income ${formatINR(totalAllSales)} - Spends ${formatINR(totalBalajiSpends)} - Paid ${formatINR(totalAllPayoutsPaid)}</span>
-          <span class="text-[10px] font-bold text-teal-600 dark:text-teal-400 ml-2 whitespace-nowrap flex-shrink-0">${formatINR(balajiLiveCash)} Left</span>
+        <!-- Row 2: Inset Math Card (Zero Truncation Responsive Layout) -->
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1 text-[11px]">
+          <div class="flex items-center justify-between font-semibold text-slate-600 dark:text-slate-300">
+            <span>Total Collections:</span>
+            <span class="font-extrabold text-slate-900 dark:text-white">+${formatINR(totalAllSales)}</span>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-0.5 border-t border-slate-200/40 dark:border-slate-700/40">
+            <span>Spends (${formatINR(totalBalajiSpends)}) • Paid (${formatINR(totalAllPayoutsPaid)})</span>
+            <span class="font-black text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/50 px-2 py-0.5 rounded-md border border-teal-100 dark:border-teal-900">${formatINR(balajiLiveCash)} Left</span>
+          </div>
         </div>
+
         <!-- Row 3: Transparent Breakdown (JP Due vs Balaji Profit) -->
-        <div class="p-2 rounded-xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/40 text-[10px] space-y-1">
+        <div class="p-2.5 rounded-xl bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/40 text-[10px] space-y-1.5">
           <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
-            <span class="flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
+            <span class="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400">
               <i class="fa-solid fa-hourglass-half text-[9px]"></i> Owed to Partners (JP Due):
             </span>
             <strong class="font-extrabold text-amber-600 dark:text-amber-400">${formatINR(pendingToPartners)}</strong>
           </div>
           <div class="flex items-center justify-between text-slate-600 dark:text-slate-300">
-            <span class="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
+            <span class="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
               <i class="fa-solid fa-circle-check text-[9px]"></i> Balaji's Earned Profit:
             </span>
             <strong class="font-extrabold text-emerald-600 dark:text-emerald-400">${formatINR(balajiRetainedProfit)}</strong>
           </div>
+          ${balajiRetainedProfit > 0 ? `
+            <div class="pt-1 border-t border-teal-100 dark:border-teal-900/40">
+              <button type="button" onclick="quickPocketBalajiProfit(${balajiRetainedProfit})" class="w-full py-1.5 px-3 rounded-xl bg-teal-600/10 hover:bg-teal-600/20 text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-700 text-[10px] font-bold flex items-center justify-center gap-1.5 active:scale-98 transition shadow-xs">
+                <i class="fa-solid fa-wallet text-xs"></i>
+                <span>Pocket My Profit (${formatINR(balajiRetainedProfit)}) ➔ Leaves only JP Due</span>
+              </button>
+            </div>
+          ` : ''}
         </div>
-        ${balajiRetainedProfit > 0 ? `
-          <button type="button" onclick="quickPocketBalajiProfit(${balajiRetainedProfit})" class="w-full py-1.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-[10px] font-bold flex items-center justify-center gap-1.5 active:scale-98 transition shadow-xs">
-            <i class="fa-solid fa-wallet text-xs"></i>
-            <span>Withdraw / Pocket My Profit (${formatINR(balajiRetainedProfit)})</span>
-          </button>
-        ` : ''}
       </div>
 
       <!-- 2. Nagoor: Settlement Entitlement & Payment Status -->
@@ -394,13 +403,22 @@ export function renderDashboard() {
             <span class="text-[9px] text-slate-400 font-medium block whitespace-nowrap">${isNagoorAllPaid ? 'Fully Settled' : (nagoorBalanceToPay > 0 ? 'Balaji to Pay Nagoor' : 'Settled')}</span>
           </div>
         </div>
-        <!-- Row 2: Inset Full-Width Math Pill -->
-        <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+        <!-- Row 2: Inset Math Card (Zero Truncation Layout) -->
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1 text-[11px]">
           ${nagoorTotalDue > 0 
-            ? `<span class="truncate">Spent ${formatINR(currWeekPExp.Nagoor)} (Fish) + ${formatINR(currWeekEqualShare)} Profit${prevNagoorCarried > 0 ? ' + ' + formatINR(prevNagoorCarried) + ' Last Week' : ''}</span>
-               <span class="text-[10px] font-bold ${isNagoorAllPaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'} ml-2 whitespace-nowrap flex-shrink-0">${isNagoorAllPaid ? 'Paid in Full' : formatINR(nagoorBalanceToPay) + ' Due'}</span>`
-            : `<span class="text-slate-400">No fish purchases recorded this week</span>
-               <span class="text-[10px] text-slate-400">₹0</span>`}
+            ? `<div class="flex items-center justify-between font-semibold text-slate-700 dark:text-slate-300">
+                 <span>Fish Spends: ${formatINR(currWeekPExp.Nagoor)} • Profit: ${formatINR(currWeekEqualShare)}</span>
+                 <span class="font-bold ${isNagoorAllPaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'} text-[10px] bg-white dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                   ${isNagoorAllPaid ? 'Paid in Full ✅' : formatINR(nagoorBalanceToPay) + ' Due'}
+                 </span>
+               </div>
+               ${prevNagoorCarried > 0 ? `
+                 <div class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-between pt-0.5 border-t border-slate-200/40 dark:border-slate-700/40">
+                   <span>+ Prior Week Pending Due:</span>
+                   <strong>+${formatINR(prevNagoorCarried)}</strong>
+                 </div>
+               ` : ''}`
+            : `<div class="text-slate-400 text-center py-0.5">No fish purchases recorded this week (₹0)</div>`}
         </div>
       </div>
 
@@ -427,13 +445,22 @@ export function renderDashboard() {
             <span class="text-[9px] text-slate-400 font-medium block whitespace-nowrap">${isJpAllPaid ? 'Fully Settled' : (jpBalanceToPay > 0 ? 'Balaji to Pay JP' : 'Settled')}</span>
           </div>
         </div>
-        <!-- Row 2: Inset Full-Width Math Pill -->
-        <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+        <!-- Row 2: Inset Math Card (Zero Truncation Layout) -->
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1 text-[11px]">
           ${jpTotalDue > 0 
-            ? `<span class="truncate">Spent ${formatINR(currWeekPExp.JP)} (Petrol) + ${formatINR(currWeekEqualShare)} Profit${prevJpCarried > 0 ? ' + ' + formatINR(prevJpCarried) + ' Last Week' : ''}</span>
-               <span class="text-[10px] font-bold ${isJpAllPaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'} ml-2 whitespace-nowrap flex-shrink-0">${isJpAllPaid ? 'Paid in Full' : formatINR(jpBalanceToPay) + ' Due'}</span>`
-            : `<span class="text-slate-400">No petrol or delivery recorded this week</span>
-               <span class="text-[10px] text-slate-400">₹0</span>`}
+            ? `<div class="flex items-center justify-between font-semibold text-slate-700 dark:text-slate-300">
+                 <span>Petrol: ${formatINR(currWeekPExp.JP)} • Profit: ${formatINR(currWeekEqualShare)}</span>
+                 <span class="font-bold ${isJpAllPaid ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'} text-[10px] bg-white dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                   ${isJpAllPaid ? 'Paid in Full ✅' : formatINR(jpBalanceToPay) + ' Due'}
+                 </span>
+               </div>
+               ${prevJpCarried > 0 ? `
+                 <div class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-between pt-0.5 border-t border-slate-200/40 dark:border-slate-700/40">
+                   <span>+ Prior Week Pending Due:</span>
+                   <strong>+${formatINR(prevJpCarried)}</strong>
+                 </div>
+               ` : ''}`
+            : `<div class="text-slate-400 text-center py-0.5">No petrol or delivery recorded this week (₹0)</div>`}
         </div>
       </div>
     `;

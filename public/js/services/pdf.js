@@ -550,9 +550,17 @@ import {
       const isPartial = (paidAmount > 0 && remainingDue > 0);
 
       const billNo = `MM-SETTLE-${startStr.replace(/-/g, '').slice(2)}-${partner.toUpperCase().slice(0, 3)}`;
-      const issueDate = new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const issueDate = new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
       const roleText = partner === 'Nagoor' ? 'Fish Procurement & Supply' : 'Delivery & Petrol Operations';
       const roleExpenseLabel = partner === 'Nagoor' ? 'Fish Expense Reimbursement' : 'Petrol & Delivery Reimbursement';
+
+      let formattedPaidAt = null;
+      if (record?.paidAt) {
+        const pDate = new Date(Number(record.paidAt));
+        if (!isNaN(pDate.getTime())) {
+          formattedPaidAt = pDate.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+      }
 
       currentInvoiceState = {
         partner,
@@ -572,74 +580,104 @@ import {
         remainingDue,
         isPaid,
         isPartial,
-        method: record?.paymentMethod || 'Cash / UPI',
-        paidAt: record?.paidAt || null,
+        method: record?.paymentMethod || 'GPay / UPI',
+        paidAt: formattedPaidAt,
         note: record?.receiptNote || 'Settlement verified'
       };
 
       printArea.innerHTML = `
-        <!-- Authentic Digital Voucher Card with Clean White Print Canvas -->
-        <div class="rounded-3xl p-5 bg-white text-slate-800 border-2 border-slate-200/90 shadow-xl space-y-3.5 print-voucher" style="background:#ffffff; color:#0f172a; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;">
+        <!-- Luxury Digital Settlement Voucher (Apple Wallet / Cred Style) -->
+        <div class="rounded-3xl p-6 bg-white text-slate-800 border border-slate-200/80 shadow-2xl space-y-4 print-voucher relative overflow-hidden" style="background:#ffffff; color:#0f172a; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;">
           
+          <!-- Top Perforated Ticket Accent Bar -->
+          <div class="h-1.5 w-full bg-gradient-to-r from-teal-500 via-emerald-400 to-teal-600 rounded-full mb-2"></div>
+
           <!-- Voucher Header -->
-          <div class="flex items-start justify-between pb-3 border-b-2 border-teal-600">
+          <div class="flex items-start justify-between pb-3.5 border-b border-slate-100">
             <div>
-              <div class="flex items-center gap-2">
-                <span class="text-2xl">🐟</span>
+              <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-teal-50 flex items-center justify-center text-xl shadow-xs border border-teal-100">
+                  🐟
+                </div>
                 <div>
                   <h2 class="text-base font-black tracking-tight text-slate-900 leading-none">MEENMART HUB</h2>
-                  <span class="text-[9px] uppercase tracking-widest font-black text-teal-600 block mt-1">Official Partner Settlement Bill</span>
+                  <span class="text-[9px] uppercase tracking-widest font-black text-teal-600 block mt-1">Official Partner Settlement Voucher</span>
                 </div>
               </div>
             </div>
             <div class="text-right">
-              <span class="text-[9px] font-mono font-bold text-slate-400 block">${billNo}</span>
-              <span class="text-[10px] font-black text-slate-700 block mt-0.5">${formattedRange}</span>
-              <span class="text-[8px] text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full font-bold uppercase mt-1 inline-block border border-teal-200">Reconciled Voucher</span>
-            </div>
-          </div>
-
-          <!-- Parties Row (Cashier Balaji & Payee Partner) -->
-          <div class="grid grid-cols-2 gap-2 text-[10px] p-2.5 rounded-2xl bg-slate-50 border border-slate-200">
-            <div class="border-r border-slate-200 pr-2">
-              <span class="text-slate-400 font-bold block uppercase text-[8px] tracking-wider">Payer (கடை காசாளர்):</span>
-              <strong class="text-slate-900 font-black text-xs block mt-0.5">Balaji</strong>
-              <span class="text-slate-500 text-[9px] block">MeenMart Revenue & Collections</span>
-            </div>
-            <div class="pl-1">
-              <span class="text-slate-400 font-bold block uppercase text-[8px] tracking-wider">Payee (பங்குதாரர்):</span>
-              <strong class="text-teal-700 font-black text-xs block mt-0.5">${partner}</strong>
-              <span class="text-slate-500 text-[9px] block">${roleText}</span>
-            </div>
-          </div>
-
-          <!-- SECTION 1: Shop Business Financial Context (கடை மொத்தக் கணக்கு) -->
-          <div class="p-3 rounded-2xl bg-teal-50/70 border border-teal-200 space-y-2">
-            <div class="flex items-center justify-between pb-1.5 border-b border-teal-200/80">
-              <span class="text-[10px] font-black uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
-                <span>🏪</span> 1. Shop Financial Summary (கடை கணக்கு)
+              <span class="text-[10px] font-mono font-extrabold text-slate-500 block bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200/60">${billNo}</span>
+              <span class="text-[10px] font-black text-slate-700 block mt-1">${formattedRange}</span>
+              <span class="text-[8px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold uppercase mt-1 inline-flex items-center gap-1 border border-emerald-200">
+                <i class="fa-solid fa-circle-check text-[8px]"></i> Reconciled
               </span>
-              <span class="text-[8px] font-extrabold text-teal-700 bg-white px-2 py-0.5 rounded-full border border-teal-200">Weekly Audit</span>
+            </div>
+          </div>
+
+          <!-- Parties Card (Cashier Balaji ➔ Payee Partner) -->
+          <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/70 border border-slate-200/80 shadow-xs">
+            <div class="flex items-center justify-between">
+              <!-- Payer: Balaji -->
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl overflow-hidden border border-slate-200 shadow-xs flex-shrink-0 bg-white">
+                  ${renderPartnerAvatar('Balaji', 'w-full h-full', '')}
+                </div>
+                <div>
+                  <span class="text-[8px] uppercase tracking-wider font-extrabold text-slate-400 block">Payer & Cashier</span>
+                  <strong class="text-xs font-black text-slate-900 block leading-tight">Balaji</strong>
+                  <span class="text-[9px] text-slate-500 block">MeenMart Revenue</span>
+                </div>
+              </div>
+
+              <!-- Transfer Direction Indicator -->
+              <div class="flex flex-col items-center px-2">
+                <span class="text-[8px] font-bold text-teal-600 uppercase">Payout</span>
+                <div class="w-8 h-8 rounded-full bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center text-xs my-0.5 shadow-xs">
+                  <i class="fa-solid fa-arrow-right"></i>
+                </div>
+              </div>
+
+              <!-- Payee: Partner -->
+              <div class="flex items-center gap-2.5 text-right flex-row-reverse">
+                <div class="w-9 h-9 rounded-xl overflow-hidden border border-teal-200 shadow-xs flex-shrink-0 bg-white">
+                  ${renderPartnerAvatar(partner, 'w-full h-full', '')}
+                </div>
+                <div>
+                  <span class="text-[8px] uppercase tracking-wider font-extrabold text-teal-600 block">Payee Partner</span>
+                  <strong class="text-xs font-black text-slate-900 block leading-tight">${partner}</strong>
+                  <span class="text-[9px] text-slate-500 block truncate max-w-[110px]">${roleText}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 1: Shop Business Financial Summary -->
+          <div class="p-3.5 rounded-2xl bg-teal-50/50 border border-teal-100 shadow-xs space-y-2.5">
+            <div class="flex items-center justify-between pb-1.5 border-b border-teal-200/60">
+              <span class="text-[10px] font-black uppercase tracking-wider text-teal-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-store text-teal-600 text-xs"></i> 1. Shop Financial Summary (கடை கணக்கு)
+              </span>
+              <span class="text-[8px] font-extrabold text-teal-700 bg-white px-2 py-0.5 rounded-full border border-teal-200 shadow-xs">Weekly Audit</span>
             </div>
 
-            <div class="grid grid-cols-3 gap-1.5 text-center text-[10px]">
-              <div class="bg-white p-2 rounded-xl border border-teal-100">
-                <span class="text-slate-400 block text-[8px] uppercase font-bold">Total Income</span>
-                <strong class="text-slate-900 font-black text-xs text-emerald-700">+${formatINR(weeklySales)}</strong>
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="bg-white p-2 rounded-xl border border-teal-100/80 shadow-xs">
+                <span class="text-slate-400 block text-[8px] uppercase font-bold tracking-wider">Total Income</span>
+                <strong class="text-slate-900 font-black text-xs text-emerald-600 block mt-0.5">+${formatINR(weeklySales)}</strong>
               </div>
-              <div class="bg-white p-2 rounded-xl border border-teal-100">
-                <span class="text-slate-400 block text-[8px] uppercase font-bold">Total Expenses</span>
-                <strong class="text-slate-900 font-black text-xs text-rose-600">-${formatINR(weeklyExp)}</strong>
+              <div class="bg-white p-2 rounded-xl border border-teal-100/80 shadow-xs">
+                <span class="text-slate-400 block text-[8px] uppercase font-bold tracking-wider">Total Expenses</span>
+                <strong class="text-slate-900 font-black text-xs text-rose-500 block mt-0.5">-${formatINR(weeklyExp)}</strong>
               </div>
-              <div class="bg-white p-2 rounded-xl border border-teal-100">
-                <span class="text-slate-400 block text-[8px] uppercase font-bold">Net Profit</span>
-                <strong class="text-slate-900 font-black text-xs text-teal-700">+${formatINR(netProfit)}</strong>
+              <div class="bg-white p-2 rounded-xl border border-teal-100/80 shadow-xs">
+                <span class="text-slate-400 block text-[8px] uppercase font-bold tracking-wider">Net Profit</span>
+                <strong class="text-slate-900 font-black text-xs text-teal-600 block mt-0.5">+${formatINR(netProfit)}</strong>
               </div>
             </div>
 
-            <div class="bg-white p-2 rounded-xl border border-teal-200/70 flex items-center justify-between text-[11px]">
-              <span class="font-bold text-slate-700 flex items-center gap-1">
-                <span>🤝</span> Equal 1/3 Profit Split:
+            <div class="bg-white p-2.5 rounded-xl border border-teal-200/70 flex items-center justify-between text-xs shadow-xs">
+              <span class="font-bold text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-handshake text-teal-600 text-xs"></i> Equal 1/3 Profit Split:
               </span>
               <div class="text-right">
                 <strong class="text-teal-700 font-black text-xs">+${formatINR(equalShare)} Each</strong>
@@ -648,95 +686,112 @@ import {
             </div>
           </div>
 
-          <!-- SECTION 2: Inch-by-Inch Step-by-Step Partner Settlement Math (உங்களுக்கான கணக்கு) -->
-          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
-            <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+          <!-- SECTION 2: Partner Step-by-Step Entitlement Breakdown -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+            <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
               <span class="text-[10px] font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-                <span>🔍</span> 2. ${partner}'s Settlement Math (உங்களுக்கான கணக்கு)
+                <i class="fa-solid fa-calculator text-teal-600 text-xs"></i> 2. ${partner}'s Settlement Math (உங்களுக்கான கணக்கு)
               </span>
-              <span class="text-[8px] text-slate-400 font-bold uppercase">Inch-by-Inch Breakdown</span>
+              <span class="text-[8px] text-slate-400 font-bold uppercase tracking-wider">Audit Breakdown</span>
             </div>
 
-            <!-- 1. Pocket Reimbursement -->
-            <div class="flex items-start justify-between text-xs">
-              <div>
-                <strong class="text-slate-800 font-extrabold block">① ${roleExpenseLabel}</strong>
-                <span class="text-[9px] text-slate-500 block">Out-of-pocket spend to be refunded 100%</span>
+            <!-- ① Out of Pocket Reimbursement -->
+            <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-teal-100 text-teal-800 font-black text-[10px] flex items-center justify-center">1</div>
+                <div>
+                  <strong class="text-slate-800 font-bold block text-xs">${roleExpenseLabel}</strong>
+                  <span class="text-[9px] text-slate-400 block">Out-of-pocket spend to be refunded 100%</span>
+                </div>
               </div>
               <span class="font-black text-slate-900 text-xs">+${formatINR(partnerSpends)}</span>
             </div>
 
-            <!-- 2. Profit Share -->
-            <div class="flex items-start justify-between text-xs">
-              <div>
-                <strong class="text-slate-800 font-extrabold block">② Equal 1/3 Net Profit Share</strong>
-                <span class="text-[9px] text-teal-700 block">Your equal 1/3 share of shop net profit</span>
+            <!-- ② Equal 1/3 Net Profit Share -->
+            <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 font-black text-[10px] flex items-center justify-center">2</div>
+                <div>
+                  <strong class="text-slate-800 font-bold block text-xs">Equal 1/3 Net Profit Share</strong>
+                  <span class="text-[9px] text-emerald-600 font-medium block">Your equal 1/3 share of shop net profit</span>
+                </div>
               </div>
-              <span class="font-black text-teal-700 text-xs">+${formatINR(equalShare)}</span>
+              <span class="font-black text-emerald-600 text-xs">+${formatINR(equalShare)}</span>
             </div>
 
-            <!-- 3. Carry Forward -->
+            <!-- ③ Previous Week Carry Forward -->
             ${carriedDue > 0 ? `
-            <div class="flex items-start justify-between text-xs p-2 rounded-xl bg-amber-50 border border-amber-200">
-              <div>
-                <strong class="text-amber-900 font-extrabold block">③ Previous Week Pending Due</strong>
-                <span class="text-[9px] text-amber-700 block">Unpaid balance carried forward from last week</span>
+            <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-amber-50/70 border border-amber-200">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-amber-200 text-amber-900 font-black text-[10px] flex items-center justify-center">3</div>
+                <div>
+                  <strong class="text-amber-900 font-bold block text-xs">Previous Week Pending Due</strong>
+                  <span class="text-[9px] text-amber-700 block">Unpaid balance carried forward from last week</span>
+                </div>
               </div>
               <span class="font-black text-amber-800 text-xs">+${formatINR(carriedDue)}</span>
             </div>
             ` : `
-            <div class="flex items-start justify-between text-[11px] text-slate-400">
-              <div>
-                <span class="font-bold block">③ Previous Week Arrears</span>
-                <span class="text-[9px] text-slate-400 block">All previous weeks cleared (No pending dues)</span>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 px-2 py-1">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-slate-100 text-slate-400 font-black text-[10px] flex items-center justify-center">3</div>
+                <div>
+                  <span class="font-bold text-slate-500 block">Previous Week Arrears</span>
+                  <span class="text-[9px] text-slate-400 block">All previous weeks cleared (No pending dues)</span>
+                </div>
               </div>
-              <span class="font-semibold text-slate-500">₹0</span>
+              <span class="font-semibold text-slate-400">₹0</span>
             </div>
             `}
 
             <!-- Total Calculation Bar -->
-            <div class="pt-2 border-t-2 border-slate-300 flex items-center justify-between">
+            <div class="pt-2.5 border-t-2 border-slate-200 flex items-center justify-between">
               <div>
                 <span class="text-xs font-black text-slate-900 uppercase tracking-tight block">Total Settlement Due</span>
-                <span class="text-[8px] text-slate-500 font-semibold">(Refund + Profit Share + Prior Balance)</span>
+                <span class="text-[9px] text-slate-400 font-semibold">(Refund + Profit Share + Prior Balance)</span>
               </div>
-              <span class="text-base font-black text-teal-700">${formatINR(totalDue)}</span>
+              <span class="text-xl font-black text-teal-600 tracking-tight">${formatINR(totalDue)}</span>
             </div>
           </div>
 
-          <!-- SECTION 3: Payment Status & Reconciliation -->
-          <div class="p-3 rounded-2xl ${isPaid ? 'bg-emerald-50 border border-emerald-300' : (isPartial ? 'bg-amber-50 border border-amber-300' : 'bg-slate-100 border border-slate-300')} space-y-1.5">
+          <!-- SECTION 3: Payment Status & Reconciliation Banner -->
+          <div class="p-3.5 rounded-2xl ${isPaid ? 'bg-emerald-50 border border-emerald-300/80 shadow-xs' : (isPartial ? 'bg-amber-50 border border-amber-300/80 shadow-xs' : 'bg-slate-50 border border-slate-300')} space-y-2">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5 font-black text-xs ${isPaid ? 'text-emerald-800' : (isPartial ? 'text-amber-800' : 'text-slate-800')}">
-                ${isPaid ? '<span>✅</span> PAID IN FULL' : (isPartial ? '<span>🟡</span> PARTIALLY PAID' : '<span>⏳</span> PAYMENT PENDING')}
+              <div class="flex items-center gap-2 font-black text-xs ${isPaid ? 'text-emerald-800' : (isPartial ? 'text-amber-800' : 'text-slate-800')}">
+                <i class="${isPaid ? 'fa-solid fa-circle-check text-emerald-600' : (isPartial ? 'fa-solid fa-clock text-amber-600' : 'fa-solid fa-hourglass-half text-slate-400')} text-sm"></i>
+                <span class="tracking-wide">${isPaid ? 'PAID IN FULL' : (isPartial ? 'PARTIALLY PAID' : 'PAYMENT PENDING')}</span>
               </div>
-              <span class="text-[9px] font-bold text-slate-500">${currentInvoiceState.paidAt ? 'Paid: ' + currentInvoiceState.paidAt : 'Due from Balaji'}</span>
+              <span class="text-[9px] font-bold text-slate-500 bg-white/80 px-2 py-0.5 rounded-md border border-slate-200/60">
+                ${currentInvoiceState.paidAt ? 'Paid: ' + currentInvoiceState.paidAt : 'Due from Balaji'}
+              </span>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 text-[10px] pt-1 border-t border-slate-200/80">
+            <div class="grid grid-cols-2 gap-2 text-[10px] pt-1.5 border-t border-slate-200/60">
               <div>
                 <span class="text-slate-500 block font-semibold">Amount Paid:</span>
                 <strong class="text-slate-900 font-black text-xs">${formatINR(paidAmount)}</strong>
-                ${currentInvoiceState.paidAt ? `<span class="text-[8px] text-slate-400 block">via ${currentInvoiceState.method}</span>` : ''}
+                ${currentInvoiceState.paidAt ? `<span class="text-[9px] text-teal-700 font-semibold block">via ${currentInvoiceState.method}</span>` : ''}
               </div>
               <div class="text-right">
                 <span class="text-slate-500 block font-semibold">Remaining to Pay:</span>
-                <strong class="${remainingDue === 0 ? 'text-emerald-700' : 'text-rose-600'} font-black text-xs">${remainingDue === 0 ? '₹0 (All Cleared)' : formatINR(remainingDue)}</strong>
+                <strong class="${remainingDue === 0 ? 'text-emerald-600' : 'text-rose-600'} font-black text-xs">
+                  ${remainingDue === 0 ? '₹0 (All Cleared)' : formatINR(remainingDue)}
+                </strong>
               </div>
             </div>
           </div>
 
-          <!-- SECTION 4: Digital Verification & Signatures -->
-          <div class="pt-2 border-t border-slate-200 grid grid-cols-2 gap-4 text-[9px] text-slate-500">
+          <!-- SECTION 4: Digital Verification Footer -->
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[9px] text-slate-500">
             <div>
               <span class="block text-slate-400">Payer & Cashier:</span>
-              <span class="font-bold text-slate-800 block mt-0.5">Balaji (MeenMart)</span>
-              <span class="text-[8px] text-emerald-600 block">Verified & Reconciled ✔</span>
+              <span class="font-extrabold text-slate-800 block mt-0.5">Balaji (MeenMart)</span>
+              <span class="text-[8px] text-emerald-600 font-bold block">Verified & Reconciled ✔</span>
             </div>
             <div class="text-right">
               <span class="block text-slate-400">Payee Partner:</span>
-              <span class="font-bold text-slate-800 block mt-0.5">${partner}</span>
-              <span class="text-[8px] text-slate-400 block">Official Partnership Record</span>
+              <span class="font-extrabold text-slate-800 block mt-0.5">${partner}</span>
+              <span class="text-[8px] text-teal-600 font-bold block">Official Partnership Record</span>
             </div>
           </div>
 

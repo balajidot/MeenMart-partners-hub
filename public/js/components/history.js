@@ -138,14 +138,14 @@ export function renderHistoryList() {
       }
     }
 
-    // Daily Summary on Right
+    // Daily Summary on Right (Clean • separator, never double minus)
     let daySummary = '';
     if (g.totalSales > 0 && g.totalExp > 0) {
-      daySummary = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">+${formatINR(g.totalSales)}</span> <span class="text-slate-400">•</span> <span class="text-rose-600 dark:text-rose-400 font-bold">-${formatINR(g.totalExp)}</span>`;
+      daySummary = `<span class="text-emerald-600 dark:text-emerald-400 font-black">+${formatINR(g.totalSales)}</span> <span class="text-slate-300 dark:text-slate-600">•</span> <span class="text-rose-600 dark:text-rose-400 font-black">-${formatINR(Math.abs(g.totalExp))}</span>`;
     } else if (g.totalSales > 0) {
-      daySummary = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">Income: +${formatINR(g.totalSales)}</span>`;
+      daySummary = `<span class="text-emerald-600 dark:text-emerald-400 font-black">+${formatINR(g.totalSales)}</span>`;
     } else if (g.totalExp > 0) {
-      daySummary = `<span class="text-rose-600 dark:text-rose-400 font-bold">Expenses: -${formatINR(g.totalExp)}</span>`;
+      daySummary = `<span class="text-rose-600 dark:text-rose-400 font-black">-${formatINR(Math.abs(g.totalExp))}</span>`;
     }
 
     return `
@@ -181,20 +181,20 @@ export function renderTransactionItem(tx, showActions = true, showDate = false) 
   let sign = '';
 
   if (isExp) {
-    typeBadge = '<span class="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[10px] font-bold">Expense</span>';
+    typeBadge = '<span class="px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300 text-[10px] font-extrabold border border-rose-200/60 dark:border-rose-900/40">Expense</span>';
     amountColor = 'text-rose-600 dark:text-rose-400';
     sign = '-';
   } else if (isSales) {
-    typeBadge = '<span class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold">Income</span>';
+    typeBadge = '<span class="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 text-[10px] font-extrabold border border-emerald-200/60 dark:border-emerald-900/40">Income</span>';
     amountColor = 'text-emerald-600 dark:text-emerald-400';
     sign = '+';
   } else if (isTransfer) {
     const toText = tx.toPartner ? ` ➔ ${tx.toPartner}` : '';
-    typeBadge = `<span class="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold">🔄 Transfer${toText}</span>`;
+    typeBadge = `<span class="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 text-[10px] font-extrabold border border-indigo-200/60 dark:border-indigo-900/40 inline-flex items-center gap-1"><i class="fa-solid fa-arrow-right-arrow-left text-[8px]"></i> Transfer${toText}</span>`;
     amountColor = 'text-indigo-600 dark:text-indigo-400';
     sign = '⇄ ';
   } else {
-    typeBadge = '<span class="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-300 text-[10px] font-bold">Investment</span>';
+    typeBadge = '<span class="px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-300 text-[10px] font-extrabold border border-teal-200/60 dark:border-teal-900/40">Capital</span>';
     amountColor = 'text-teal-600 dark:text-teal-400';
     sign = '';
   }
@@ -275,13 +275,14 @@ export function handleTransactionCardClick(id) {
 }
 
 export function setHistoryDateFilter(p) {
+  if (navigator.vibrate) navigator.vibrate(8);
   state.historyFilter.date = p;
   ['all', 'today', 'yesterday', 'this-week', 'this-month'].forEach(k => {
     const btn = document.getElementById(`hDate-${k}`);
     if (btn) {
       btn.className = (k === p) 
-        ? "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white flex-shrink-0 whitespace-nowrap shadow-sm" 
-        : "px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap";
+        ? "px-3 py-1.5 rounded-xl text-xs font-black bg-teal-600 text-white flex-shrink-0 whitespace-nowrap shadow-xs active:scale-95 transition" 
+        : "px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex-shrink-0 whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition";
     }
   });
   renderHistoryList();
@@ -296,6 +297,19 @@ export function handleHistorySearchInput() {
   }, 120);
 }
 
+// 1-Tap Partner Filter Navigation from Dashboard Partner Widgets
+export function filterHistoryByPartner(partner) {
+  if (navigator.vibrate) navigator.vibrate(8);
+  if (typeof window.switchTab === 'function') {
+    window.switchTab('history');
+  }
+  const select = document.getElementById('hFilterPartner');
+  if (select) {
+    select.value = partner;
+  }
+  renderHistoryList();
+}
+
 // Expose handlers on window for HTML onclick
 if (typeof window !== 'undefined') {
   window.renderHistoryList = renderHistoryList;
@@ -303,5 +317,6 @@ if (typeof window !== 'undefined') {
   window.renderTransactionItem = renderTransactionItem;
   window.handleTransactionCardClick = handleTransactionCardClick;
   window.setHistoryDateFilter = setHistoryDateFilter;
+  window.filterHistoryByPartner = filterHistoryByPartner;
 }
 

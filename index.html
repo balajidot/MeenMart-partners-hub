@@ -405,40 +405,76 @@
             <span class="text-[10px] text-slate-400">Out-of-Pocket</span>
           </div>
 
-          <div class="grid grid-cols-3 gap-2" id="partnerSummaryCards">
+          <div class="grid grid-cols-3 gap-2.5" id="partnerSummaryCards">
             <!-- Balaji -->
-            <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-blue-500">
-              <div class="flex justify-center" id="cardAvatar-Balaji">👨‍💻</div>
-              <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">Balaji</div>
-              <div class="text-[9px] text-slate-400">Clean, Cover, Ads</div>
-              <div id="partnerCardPresence-Balaji" class="min-h-[16px]"></div>
-              <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
-                <div class="text-slate-500">Expenses: <strong class="text-rose-600 dark:text-rose-400" id="cardBalajiExp">₹0</strong></div>
-                <div class="text-slate-500">Income: <strong class="text-emerald-600 dark:text-emerald-400" id="cardBalajiSales">₹0</strong></div>
+            <div onclick="filterHistoryByPartner('Balaji')" role="button" class="app-card rounded-2xl p-3 text-center space-y-2 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-teal-500/40 hover:shadow-md active:scale-95 transition cursor-pointer relative overflow-hidden" title="Click to view Balaji's transactions">
+              <div class="relative inline-block mx-auto">
+                <div class="w-10 h-10 rounded-2xl overflow-hidden shadow-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center mx-auto" id="cardAvatar-Balaji">
+                  👨‍💻
+                </div>
+              </div>
+              <div>
+                <div class="font-black text-xs text-slate-900 dark:text-white leading-tight">Balaji</div>
+                <div class="text-[9px] font-semibold text-slate-400 block mt-0.5">Cashier & Ops</div>
+              </div>
+              <div id="partnerCardPresence-Balaji" class="min-h-[16px] flex items-center justify-center"></div>
+              <div class="pt-1.5 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-1">
+                <div class="flex items-center justify-between text-[9px] text-slate-400">
+                  <span>Spend</span>
+                  <strong class="text-rose-600 dark:text-rose-400 font-extrabold" id="cardBalajiExp">₹0</strong>
+                </div>
+                <div class="flex items-center justify-between text-[9px] text-slate-400">
+                  <span>Income</span>
+                  <strong class="text-emerald-600 dark:text-emerald-400 font-extrabold" id="cardBalajiSales">₹0</strong>
+                </div>
               </div>
             </div>
 
             <!-- Nagoor -->
-            <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-emerald-500">
-              <div class="flex justify-center" id="cardAvatar-Nagoor">🦐</div>
-              <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">Nagoor</div>
-              <div class="text-[9px] text-slate-400">Fish Purchase</div>
-              <div id="partnerCardPresence-Nagoor" class="min-h-[16px]"></div>
-              <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
-                <div class="text-slate-500">Expenses: <strong class="text-rose-600 dark:text-rose-400" id="cardNagoorExp">₹0</strong></div>
-                <div class="text-slate-500">Income: <strong class="text-emerald-600 dark:text-emerald-400" id="cardNagoorSales">₹0</strong></div>
+            <div onclick="filterHistoryByPartner('Nagoor')" role="button" class="app-card rounded-2xl p-3 text-center space-y-2 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-emerald-500/40 hover:shadow-md active:scale-95 transition cursor-pointer relative overflow-hidden" title="Click to view Nagoor's transactions">
+              <div class="relative inline-block mx-auto">
+                <div class="w-10 h-10 rounded-2xl overflow-hidden shadow-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center mx-auto" id="cardAvatar-Nagoor">
+                  🦐
+                </div>
+              </div>
+              <div>
+                <div class="font-black text-xs text-slate-900 dark:text-white leading-tight">Nagoor</div>
+                <div class="text-[9px] font-semibold text-slate-400 block mt-0.5">Fish Purchase</div>
+              </div>
+              <div id="partnerCardPresence-Nagoor" class="min-h-[16px] flex items-center justify-center"></div>
+              <div class="pt-1.5 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-1">
+                <div class="flex items-center justify-between text-[9px] text-slate-400">
+                  <span>Spend</span>
+                  <strong class="text-rose-600 dark:text-rose-400 font-extrabold" id="cardNagoorExp">₹0</strong>
+                </div>
+                <div class="flex items-center justify-between text-[9px] text-slate-400">
+                  <span>Income</span>
+                  <strong class="text-emerald-600 dark:text-emerald-400 font-extrabold" id="cardNagoorSales">₹0</strong>
+                </div>
               </div>
             </div>
 
             <!-- JP -->
-            <div class="app-card rounded-2xl p-2.5 text-center space-y-1 border-t-2 border-t-amber-500">
-              <div class="flex justify-center" id="cardAvatar-JP">🛵</div>
-              <div class="font-extrabold text-xs text-slate-900 dark:text-white mt-1">JP</div>
-              <div class="text-[9px] text-slate-400">Delivery & Petrol</div>
-              <div id="partnerCardPresence-JP" class="min-h-[16px]"></div>
-              <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
-                <div class="text-slate-500">Expenses: <strong class="text-rose-600 dark:text-rose-400" id="cardJpExp">₹0</strong></div>
-                <div class="text-slate-500">Income: <strong class="text-emerald-600 dark:text-emerald-400" id="cardJpSales">₹0</strong></div>
+            <div onclick="filterHistoryByPartner('JP')" role="button" class="app-card rounded-2xl p-3 text-center space-y-2 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-amber-500/40 hover:shadow-md active:scale-95 transition cursor-pointer relative overflow-hidden" title="Click to view JP's transactions">
+              <div class="relative inline-block mx-auto">
+                <div class="w-10 h-10 rounded-2xl overflow-hidden shadow-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center mx-auto" id="cardAvatar-JP">
+                  🛵
+                </div>
+              </div>
+              <div>
+                <div class="font-black text-xs text-slate-900 dark:text-white leading-tight">JP</div>
+                <div class="text-[9px] font-semibold text-slate-400 block mt-0.5">Delivery & Petrol</div>
+              </div>
+              <div id="partnerCardPresence-JP" class="min-h-[16px] flex items-center justify-center"></div>
+              <div class="pt-1.5 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-1">
+                <div class="flex items-center justify-between text-[9px] text-slate-400">
+                  <span>Spend</span>
+                  <strong class="text-rose-600 dark:text-rose-400 font-extrabold" id="cardJpExp">₹0</strong>
+                </div>
+                <div class="flex items-center justify-between text-[9px] text-slate-400">
+                  <span>Income</span>
+                  <strong class="text-emerald-600 dark:text-emerald-400 font-extrabold" id="cardJpSales">₹0</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -467,10 +503,10 @@
       <!-- ======================================== -->
       <section id="tab-history" class="hidden space-y-3.5 fade-in">
         
-        <!-- SEARCH & FILTER HEADER -->
-        <div class="app-card rounded-2xl p-3.5 space-y-3">
+        <!-- SEARCH & FILTER HEADER (FINTECH MODERNIZED) -->
+        <div class="app-card rounded-3xl p-4 space-y-3.5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
           
-          <!-- Search & CSV Export Row -->
+          <!-- Search & Export Actions Row -->
           <div class="flex items-center space-x-2">
             <div class="relative flex-1">
               <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -486,54 +522,55 @@
                 data-form-type="other"
                 oninput="handleHistorySearchInput()" 
                 placeholder="Search notes, category, amount..." 
-                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500" 
+                class="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl pl-9 pr-3 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all placeholder:text-slate-400" 
               />
             </div>
             <!-- PDF Statement Button -->
-            <button onclick="exportToPDF()" title="Download PDF Statement" class="py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition flex-shrink-0">
+            <button onclick="exportToPDF()" title="Download PDF Statement" class="py-2.5 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 border border-slate-200/80 dark:border-slate-700 font-bold text-xs flex items-center gap-1.5 shadow-xs active:scale-95 transition flex-shrink-0">
               <i class="fa-solid fa-file-pdf text-sm"></i>
-              <span>PDF</span>
+              <span class="text-[11px] font-extrabold">PDF</span>
             </button>
             <!-- CSV Download Button -->
-            <button onclick="exportToCSV()" title="Export CSV" class="py-2 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center gap-1 shadow-sm active:scale-95 transition flex-shrink-0">
-              <i class="fa-solid fa-file-excel text-emerald-600"></i>
-              <span>CSV</span>
+            <button onclick="exportToCSV()" title="Export CSV" class="py-2.5 px-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 border border-slate-200/80 dark:border-slate-700 font-bold text-xs flex items-center gap-1 shadow-xs active:scale-95 transition flex-shrink-0">
+              <i class="fa-solid fa-file-excel text-sm"></i>
+              <span class="text-[11px] font-extrabold">CSV</span>
             </button>
           </div>
 
-          <!-- Date Filter Chips -->
-          <div class="space-y-1">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date Filter:</span>
-            <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1 pr-6 -mx-1 px-1">
-              <button onclick="setHistoryDateFilter('all')" id="hDate-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white flex-shrink-0 whitespace-nowrap shadow-sm">All</button>
-              <button onclick="setHistoryDateFilter('today')" id="hDate-today" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">Today</button>
-              <button onclick="setHistoryDateFilter('yesterday')" id="hDate-yesterday" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">Yesterday</button>
-              <button onclick="setHistoryDateFilter('this-week')" id="hDate-this-week" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">This Week</button>
-              <button onclick="setHistoryDateFilter('this-month')" id="hDate-this-month" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex-shrink-0 whitespace-nowrap">This Month</button>
-            </div>
+          <!-- Horizontal Date Filter Capsule Pills -->
+          <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-0.5 pr-2 -mx-1 px-1">
+            <button onclick="setHistoryDateFilter('all')" id="hDate-all" class="px-3 py-1.5 rounded-xl text-xs font-black bg-teal-600 text-white flex-shrink-0 whitespace-nowrap shadow-xs active:scale-95 transition">All</button>
+            <button onclick="setHistoryDateFilter('today')" id="hDate-today" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex-shrink-0 whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition">Today</button>
+            <button onclick="setHistoryDateFilter('yesterday')" id="hDate-yesterday" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex-shrink-0 whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition">Yesterday</button>
+            <button onclick="setHistoryDateFilter('this-week')" id="hDate-this-week" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex-shrink-0 whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition">This Week</button>
+            <button onclick="setHistoryDateFilter('this-month')" id="hDate-this-month" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex-shrink-0 whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition">This Month</button>
           </div>
 
-          <!-- Type & Partner Segmented Selectors -->
-          <div class="grid grid-cols-2 gap-2 pt-1">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 mb-1">Type:</label>
-              <select id="hFilterType" onchange="renderHistoryList()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none">
-                <option value="all">All Types</option>
+          <!-- Type & Partner Segmented Selectors with Custom Carets -->
+          <div class="grid grid-cols-2 gap-2 pt-0.5">
+            <div class="relative">
+              <select id="hFilterType" onchange="renderHistoryList()" class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-2xl pl-3 pr-8 py-2 text-xs text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:border-teal-500 transition cursor-pointer">
+                <option value="all">⚡ All Types</option>
                 <option value="expense">💸 Expenses</option>
                 <option value="sales">📈 Income</option>
                 <option value="transfer">🔄 Transfers</option>
                 <option value="investment">💰 Investments</option>
               </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                <i class="fa-solid fa-chevron-down text-[10px]"></i>
+              </div>
             </div>
 
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 mb-1">Partner:</label>
-              <select id="hFilterPartner" onchange="renderHistoryList()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none">
-                <option value="all">All Partners</option>
+            <div class="relative">
+              <select id="hFilterPartner" onchange="renderHistoryList()" class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 rounded-2xl pl-3 pr-8 py-2 text-xs text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:border-teal-500 transition cursor-pointer">
+                <option value="all">👥 All Partners</option>
                 <option value="Balaji">👨‍💻 Balaji</option>
                 <option value="Nagoor">🦐 Nagoor</option>
                 <option value="JP">🛵 JP</option>
               </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                <i class="fa-solid fa-chevron-down text-[10px]"></i>
+              </div>
             </div>
           </div>
 
