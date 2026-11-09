@@ -272,10 +272,10 @@
       </div>
 
       <!-- LIVE CO-FOUNDERS PRESENCE STRIP -->
-      <div id="partnerPresenceBar" class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+      <div id="partnerPresenceBar" onclick="openPresenceDetailModal()" class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs cursor-pointer hover:opacity-95 transition" title="Click to view co-founders real-time online status and last seen">
         <div class="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 font-extrabold text-[10px] tracking-wider uppercase">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Online:</span>
+          <span>Online Status:</span>
         </div>
         <div id="partnerPresenceList" class="flex items-center gap-1.5">
           <!-- Dynamically populated by renderPartnerPresence() -->
@@ -351,7 +351,7 @@
           <!-- 3 Mini Metric Cards -->
           <div class="grid grid-cols-3 gap-2 pt-1 border-t border-white/10 text-center">
             <div class="bg-white/10 rounded-xl p-2">
-              <span class="block text-[9px] text-teal-100 font-medium">Sales</span>
+              <span class="block text-[9px] text-teal-100 font-medium">Income</span>
               <span class="text-xs font-extrabold text-emerald-300" id="dashHeroSales">₹0</span>
             </div>
             <div class="bg-white/10 rounded-xl p-2">
@@ -400,7 +400,7 @@
               <div id="partnerCardPresence-Balaji" class="min-h-[16px]"></div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Expenses: <strong class="text-rose-600 dark:text-rose-400" id="cardBalajiExp">₹0</strong></div>
-                <div class="text-slate-500">Revenue: <strong class="text-emerald-600 dark:text-emerald-400" id="cardBalajiSales">₹0</strong></div>
+                <div class="text-slate-500">Income: <strong class="text-emerald-600 dark:text-emerald-400" id="cardBalajiSales">₹0</strong></div>
               </div>
             </div>
 
@@ -412,7 +412,7 @@
               <div id="partnerCardPresence-Nagoor" class="min-h-[16px]"></div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Expenses: <strong class="text-rose-600 dark:text-rose-400" id="cardNagoorExp">₹0</strong></div>
-                <div class="text-slate-500">Revenue: <strong class="text-emerald-600 dark:text-emerald-400" id="cardNagoorSales">₹0</strong></div>
+                <div class="text-slate-500">Income: <strong class="text-emerald-600 dark:text-emerald-400" id="cardNagoorSales">₹0</strong></div>
               </div>
             </div>
 
@@ -424,7 +424,7 @@
               <div id="partnerCardPresence-JP" class="min-h-[16px]"></div>
               <div class="pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px] space-y-0.5">
                 <div class="text-slate-500">Expenses: <strong class="text-rose-600 dark:text-rose-400" id="cardJpExp">₹0</strong></div>
-                <div class="text-slate-500">Revenue: <strong class="text-emerald-600 dark:text-emerald-400" id="cardJpSales">₹0</strong></div>
+                <div class="text-slate-500">Income: <strong class="text-emerald-600 dark:text-emerald-400" id="cardJpSales">₹0</strong></div>
               </div>
             </div>
           </div>
@@ -506,7 +506,7 @@
               <select id="hFilterType" onchange="renderHistoryList()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none">
                 <option value="all">All Types</option>
                 <option value="expense">💸 Expenses</option>
-                <option value="sales">📈 Sales</option>
+                <option value="sales">📈 Income</option>
                 <option value="investment">💰 Investments</option>
               </select>
             </div>
@@ -568,7 +568,7 @@
           <!-- Period Totals Grid (Totals Everywhere!) -->
           <div class="grid grid-cols-4 gap-2 text-center pt-1">
             <div class="p-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/40">
-              <span class="block text-[8px] uppercase tracking-wider font-extrabold text-emerald-600 dark:text-emerald-400">Total Sales</span>
+              <span class="block text-[8px] uppercase tracking-wider font-extrabold text-emerald-600 dark:text-emerald-400">Total Income</span>
               <span class="text-xs font-black text-slate-900 dark:text-white" id="analyticsPeriodSales">₹0</span>
             </div>
             <div class="p-2 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/40">
@@ -762,7 +762,7 @@
               </div>
               <div class="text-3xl font-black text-emerald-600 dark:text-emerald-400" id="settleNetProfit">₹0</div>
               <div class="flex justify-center space-x-3 text-xs text-slate-500 pt-1">
-                <span>Revenue: <strong class="text-slate-900 dark:text-white font-bold" id="settleTotalSales">₹0</strong></span>
+                <span>Income: <strong class="text-slate-900 dark:text-white font-bold" id="settleTotalSales">₹0</strong></span>
                 <span>Expenses: <strong class="text-slate-900 dark:text-white font-bold" id="settleTotalExpenses">₹0</strong></span>
               </div>
             </div>
@@ -799,7 +799,7 @@
                 <span class="text-[9px] px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 border border-teal-200/80 dark:border-teal-800/60 text-teal-700 dark:text-teal-300 font-bold">Auto Carry-Forward</span>
               </div>
               <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-snug">
-                Sales revenue is collected by Balaji. Pay partners or generate itemized settlement bills:
+                Shop income is collected by Balaji. Pay partners or generate itemized settlement bills:
               </p>
               <div id="settleTransfersContainer" class="space-y-3">
                 <!-- Spacious cards with Record Payment & Invoice Bill buttons (No Squishing!) -->
@@ -852,7 +852,7 @@
             <!-- 3 Lifetime KPI Metric Cards -->
             <div class="grid grid-cols-3 gap-2 text-center">
               <div class="p-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/40">
-                <span class="block text-[9px] uppercase tracking-wider font-extrabold text-emerald-600 dark:text-emerald-400">Lifetime Revenue</span>
+                <span class="block text-[9px] uppercase tracking-wider font-extrabold text-emerald-600 dark:text-emerald-400">Lifetime Income</span>
                 <span class="text-sm font-black text-slate-900 dark:text-white" id="allTimeSales">₹0</span>
               </div>
               <div class="p-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-800/40">
@@ -974,7 +974,7 @@
         <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
           <div>
             <h3 class="font-extrabold text-sm text-slate-900 dark:text-white">Quick Add</h3>
-            <p class="text-[10px] text-slate-400">Add Expense, Sales, or Capital entry</p>
+            <p class="text-[10px] text-slate-400">Add Expense, Income, or Capital entry</p>
           </div>
           <button onclick="closeEntryBottomSheet()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center text-xs">
             <i class="fa-solid fa-xmark"></i>
@@ -990,7 +990,7 @@
                 <span>💸</span><span>Expense</span>
               </button>
               <button type="button" onclick="selectEntryType('sales')" id="typeBtn-sales" class="py-2.5 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
-                <span>📈</span><span>Sales</span>
+                <span>📈</span><span>Income</span>
               </button>
               <button type="button" onclick="selectEntryType('investment')" id="typeBtn-investment" class="py-2.5 rounded-xl text-xs font-medium flex items-center justify-center space-x-1 text-slate-600 dark:text-slate-400">
                 <span>💰</span><span>Investment</span>
@@ -1352,7 +1352,7 @@
               <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Type</label>
               <select id="editTxType" onchange="updateEditCategoryOptions()" required class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-2 text-xs text-slate-900 dark:text-white">
                 <option value="expense">💸 Expense</option>
-                <option value="sales">📈 Sales</option>
+                <option value="sales">📈 Income</option>
                 <option value="investment">💰 Mudhaleedu</option>
               </select>
             </div>
@@ -1587,8 +1587,8 @@
             <span>Share Bill</span>
           </button>
           <button onclick="saveOrSharePartnerInvoicePDF()" id="btnPartnerInvoiceDrive" class="w-full py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
-            <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
-            <span id="btnPartnerInvoiceDriveText">Save to Drive / PDF</span>
+            <i class="fa-solid fa-file-pdf text-xs"></i>
+            <span id="btnPartnerInvoiceDriveText">Open PDF / Download</span>
           </button>
         </div>
       </div>
@@ -1620,8 +1620,8 @@
             <span>WhatsApp</span>
           </button>
           <button onclick="saveOrShareWeeklyReportPDF()" id="btnWeeklyReportDrive" class="w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition">
-            <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
-            <span id="btnWeeklyReportDriveText">Save to Drive / PDF</span>
+            <i class="fa-solid fa-file-pdf text-xs"></i>
+            <span id="btnWeeklyReportDriveText">Open PDF / Download</span>
           </button>
         </div>
       </div>
@@ -1809,9 +1809,9 @@
         { id: "other_expense", label: "🛠️ Other Expenses" }
       ],
       sales: [
-        { id: "cash_sales", label: "💵 Customer Cash Sales" },
+        { id: "cash_sales", label: "💵 Customer Cash Income" },
         { id: "online_gateway", label: "💳 Online Gateway (Bank)" },
-        { id: "bulk_hotel_sales", label: "🏢 Bulk / Hotel Sales" }
+        { id: "bulk_hotel_sales", label: "🏢 Bulk / Hotel Income" }
       ],
       investment: [
         { id: "freezer_box", label: "🧊 Deep Freezer Box" },
@@ -2699,7 +2699,7 @@
             </div>
             <!-- Row 2: Inset Full-Width Math Pill -->
             <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-              <span class="truncate">Sales ${formatINR(totalAllSales)} - Spends ${formatINR(totalBalajiSpends)} - Paid ${formatINR(totalAllPayoutsPaid)}</span>
+              <span class="truncate">Income ${formatINR(totalAllSales)} - Spends ${formatINR(totalBalajiSpends)} - Paid ${formatINR(totalAllPayoutsPaid)}</span>
               <span class="text-[10px] font-bold text-teal-600 dark:text-teal-400 ml-2 whitespace-nowrap flex-shrink-0">${formatINR(balajiLiveCash)} Left</span>
             </div>
           </div>
@@ -2901,7 +2901,7 @@
         if (g.totalSales > 0 && g.totalExp > 0) {
           daySummary = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">+${formatINR(g.totalSales)}</span> <span class="text-slate-400">•</span> <span class="text-rose-600 dark:text-rose-400 font-bold">-${formatINR(g.totalExp)}</span>`;
         } else if (g.totalSales > 0) {
-          daySummary = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">Sales: +${formatINR(g.totalSales)}</span>`;
+          daySummary = `<span class="text-emerald-600 dark:text-emerald-400 font-bold">Income: +${formatINR(g.totalSales)}</span>`;
         } else if (g.totalExp > 0) {
           daySummary = `<span class="text-rose-600 dark:text-rose-400 font-bold">Expenses: -${formatINR(g.totalExp)}</span>`;
         }
@@ -2943,7 +2943,7 @@
         amountColor = 'text-rose-600 dark:text-rose-400';
         sign = '-';
       } else if (isSales) {
-        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold">Sales</span>';
+        typeBadge = '<span class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold">Income</span>';
         amountColor = 'text-emerald-600 dark:text-emerald-400';
         sign = '+';
       } else {
@@ -3214,7 +3214,7 @@
 
     <div class="summary-grid">
       <div class="summary-card" style="background: #f0fdf4; border-color: #bbf7d0;">
-        <div style="font-size: 10px; font-weight: 800; color: #166534; text-transform: uppercase;">Total Revenue (Sales)</div>
+        <div style="font-size: 10px; font-weight: 800; color: #166534; text-transform: uppercase;">Total Income</div>
         <div style="font-size: 18px; font-weight: 900; color: #16a34a; margin-top: 4px;">+${formatINR(totalSales)}</div>
       </div>
       <div class="summary-card" style="background: #fef2f2; border-color: #fecaca;">
@@ -3311,22 +3311,8 @@
       try {
         const pdfBlob = await html2pdf().set(opt).from(bodyContent).outputPdf('blob');
         if (bodyContent.parentNode) document.body.removeChild(bodyContent);
-        const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
-        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-          try {
-            await navigator.share({
-              files: [pdfFile],
-              title: fileName,
-              text: 'MeenMart Accounts Statement'
-            });
-            showToast("Saved / Shared to Drive successfully! 📂");
-            return;
-          } catch (shareErr) {
-            if (shareErr.name === 'AbortError') return;
-          }
-        }
-
+        // Auto-open PDF & trigger download (No share popup)
         const blobUrl = URL.createObjectURL(pdfBlob);
         const a = document.createElement('a');
         a.href = blobUrl;
@@ -3335,7 +3321,7 @@
         a.click();
         document.body.removeChild(a);
         window.open(blobUrl, '_blank');
-        showToast("PDF downloaded! Open in Google Drive 📂");
+        showToast("PDF auto-opened & downloaded! 📄");
       } catch (err) {
         if (bodyContent.parentNode) document.body.removeChild(bodyContent);
         console.error("PDF generation failed:", err);
@@ -3399,7 +3385,7 @@
           <!-- KPI Summary Grid -->
           <div class="grid grid-cols-3 gap-2 text-center">
             <div class="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60">
-              <div class="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">Weekly Sales</div>
+              <div class="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">Weekly Income</div>
               <div class="text-sm font-black text-slate-900 dark:text-white mt-0.5">+${formatINR(weeklySales)}</div>
             </div>
             <div class="p-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-800/60">
@@ -3724,7 +3710,7 @@
       const partnerCardsContainer = document.getElementById('capitalPartnerCardsContainer');
       if (partnerCardsContainer) {
         const partnersList = [
-          { name: 'Balaji', role: 'Sales & Tech Lead', color: 'bg-blue-500', barText: 'text-blue-500', amount: partnerInvested.Balaji },
+          { name: 'Balaji', role: 'Income Collection & Tech Lead', color: 'bg-blue-500', barText: 'text-blue-500', amount: partnerInvested.Balaji },
           { name: 'Nagoor', role: 'Fish Purchase Lead', color: 'bg-emerald-500', barText: 'text-emerald-500', amount: partnerInvested.Nagoor },
           { name: 'JP', role: 'Delivery & Operations', color: 'bg-amber-500', barText: 'text-amber-500', amount: partnerInvested.JP }
         ];
@@ -3815,7 +3801,7 @@
         if (dailySummaryEl) {
           const net = totalDailySales - totalDailyExp;
           dailySummaryEl.innerHTML = `
-            <span>Sales: <strong class="text-emerald-600 dark:text-emerald-400">${formatINR(totalDailySales)}</strong> | Exp: <strong class="text-rose-600 dark:text-rose-400">${formatINR(totalDailyExp)}</strong></span>
+            <span>Income: <strong class="text-emerald-600 dark:text-emerald-400">${formatINR(totalDailySales)}</strong> | Exp: <strong class="text-rose-600 dark:text-rose-400">${formatINR(totalDailyExp)}</strong></span>
             <span class="${net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}">Net: ${net >= 0 ? '+' : '-'}${formatINR(Math.abs(net))}</span>
           `;
         }
@@ -3825,7 +3811,7 @@
           data: {
             labels,
             datasets: [
-              { label: 'Revenue', data: salesData, backgroundColor: '#10B981', borderRadius: 4, barThickness: 16, maxBarThickness: 24 },
+              { label: 'Income', data: salesData, backgroundColor: '#10B981', borderRadius: 4, barThickness: 16, maxBarThickness: 24 },
               { label: 'Expenses', data: expData, backgroundColor: '#EF4444', borderRadius: 4, barThickness: 16, maxBarThickness: 24 }
             ]
           },
@@ -4309,7 +4295,7 @@
 
             <div class="grid grid-cols-3 gap-1.5 text-center text-[10px]">
               <div class="bg-white p-2 rounded-xl border border-teal-100">
-                <span class="text-slate-400 block text-[8px] uppercase font-bold">Total Sales</span>
+                <span class="text-slate-400 block text-[8px] uppercase font-bold">Total Income</span>
                 <strong class="text-slate-900 font-black text-xs text-emerald-700">+${formatINR(weeklySales)}</strong>
               </div>
               <div class="bg-white p-2 rounded-xl border border-teal-100">
@@ -4474,25 +4460,8 @@
         };
 
         const pdfBlob = await html2pdf().set(opt).from(area).outputPdf('blob');
-        const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
-        // On mobile / Android, navigator.share with PDF triggers Google Drive / Drive PDF Viewer directly!
-        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-          try {
-            await navigator.share({
-              files: [pdfFile],
-              title: fileName,
-              text: `MeenMart Settlement Bill for ${partner}`
-            });
-            showToast("Saved / Shared to Drive successfully! 📂");
-            return;
-          } catch (shareErr) {
-            if (shareErr.name === 'AbortError') return; // User closed sheet
-            console.warn("Share sheet dismissed or unsupported, triggering direct download:", shareErr);
-          }
-        }
-
-        // Direct Download & Open in Browser / Drive PDF Viewer (Never open printer dialog)
+        // Auto-open PDF & trigger download directly (No share popup)
         const blobUrl = URL.createObjectURL(pdfBlob);
         const a = document.createElement('a');
         a.href = blobUrl;
@@ -4501,13 +4470,13 @@
         a.click();
         document.body.removeChild(a);
         window.open(blobUrl, '_blank');
-        showToast("PDF downloaded! Open in Google Drive 📂");
+        showToast("PDF auto-opened & downloaded! 📄");
       } catch (err) {
         console.error("PDF generation error:", err);
         showToast("PDF generation failed: " + err.message);
       } finally {
         if (btn) btn.disabled = false;
-        if (textEl) textEl.innerHTML = 'Save to Drive / PDF';
+        if (textEl) textEl.innerHTML = 'Open PDF / Download';
       }
     };
 
@@ -4539,23 +4508,8 @@
         };
 
         const pdfBlob = await html2pdf().set(opt).from(area).outputPdf('blob');
-        const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
-        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-          try {
-            await navigator.share({
-              files: [pdfFile],
-              title: fileName,
-              text: 'MeenMart Hub - Weekly Settlement Statement'
-            });
-            showToast("Saved / Shared to Drive successfully! 📂");
-            return;
-          } catch (shareErr) {
-            if (shareErr.name === 'AbortError') return;
-            console.warn("Share sheet dismissed, triggering direct download:", shareErr);
-          }
-        }
-
+        // Auto-open PDF & trigger download directly (No share popup)
         const blobUrl = URL.createObjectURL(pdfBlob);
         const a = document.createElement('a');
         a.href = blobUrl;
@@ -4564,13 +4518,13 @@
         a.click();
         document.body.removeChild(a);
         window.open(blobUrl, '_blank');
-        showToast("PDF downloaded! Open in Google Drive 📂");
+        showToast("PDF auto-opened & downloaded! 📄");
       } catch (err) {
         console.error("Weekly PDF generation error:", err);
         showToast("PDF generation failed: " + err.message);
       } finally {
         if (btn) btn.disabled = false;
-        if (textEl) textEl.innerHTML = 'Save to Drive / PDF';
+        if (textEl) textEl.innerHTML = 'Open PDF / Download';
       }
     };
 
@@ -4583,7 +4537,7 @@
 👤 *Partner:* ${s.partner} (${s.roleText})
 ----------------------------------------
 🏪 *1. SHOP FINANCIAL SUMMARY (கடை கணக்கு):*
-• Total Shop Sales: ${formatINR(s.weeklySales)}
+• Total Shop Income: ${formatINR(s.weeklySales)}
 • Total Shop Expenses: -${formatINR(s.weeklyExp)}
 • Shop Net Profit: +${formatINR(s.netProfit)}
 💡 *Equal 1/3 Partner Share:* ${formatINR(s.netProfit)} ÷ 3 = *+${formatINR(s.equalShare)} Each*
@@ -5317,7 +5271,7 @@ _Verified official digital record from MeenMart Hub_`;
                 ${renderPartnerAvatar('Balaji', 'w-8 h-8', 'rounded-xl')}
                 <div>
                   <div class="text-xs font-black text-slate-900 dark:text-white">Balaji</div>
-                  <div class="text-[10px] text-slate-500">Sales Collection & Tech Lead</div>
+                  <div class="text-[10px] text-slate-500">Income Collection & Tech Lead</div>
                 </div>
               </div>
               <div class="text-right">
@@ -5335,7 +5289,7 @@ _Verified official digital record from MeenMart Hub_`;
                 <span class="text-xs font-bold text-teal-600 dark:text-teal-400">+${formatINR(eachShare)}</span>
               </div>
               <div class="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800">
-                <span class="text-[9px] text-slate-400 block">Total Sales In</span>
+                <span class="text-[9px] text-slate-400 block">Total Income In</span>
                 <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">${formatINR(allTimeSales)}</span>
               </div>
             </div>
@@ -5393,14 +5347,14 @@ _Verified official digital record from MeenMart Hub_`;
       const msg = `*MeenMart Hub - All-Time Cumulative Ledger* 🌐
 Day 1 to Today
 -----------------------
-📈 Lifetime Revenue: ${formatINR(sales)}
+📈 Lifetime Income: ${formatINR(sales)}
 💸 Lifetime Expenses: ${formatINR(exp)}
 💎 Lifetime Profit: ${profit >= 0 ? '+' : '-'}${formatINR(Math.abs(profit))}
 🤝 1/3 Equal Share Each: ${eachShare >= 0 ? '+' : '-'}${formatINR(Math.abs(eachShare))}
 -----------------------
 🦐 Nagoor Purchases: ${formatINR(pExp.Nagoor)} | Received: ${formatINR(paidNagoor)} | Net Due: ${formatINR(nagoorDue)}
 🛵 JP Spends: ${formatINR(pExp.JP)} | Received: ${formatINR(paidJp)} | Net Due: ${formatINR(jpDue)}
-👨‍💻 Balaji Spends: ${formatINR(pExp.Balaji)} | Sales In: ${formatINR(sales)}
+👨‍💻 Balaji Spends: ${formatINR(pExp.Balaji)} | Income In: ${formatINR(sales)}
 -----------------------
 ⚖️ Current Outstanding Dues:
 ➔ Balaji to Nagoor: ${nagoorDue > 0 ? formatINR(nagoorDue) : 'Settled ✅'}
@@ -5493,7 +5447,7 @@ Day 1 to Today
       const msg = `*MeenMart Hub - Weekly Settlement Statement* 🐟
 📅 Week: ${mStr} - ${sStr}
 -----------------------
-📈 Total Sales: ${formatINR(sales)}
+📈 Total Income: ${formatINR(sales)}
 💸 Total Expenses: ${formatINR(exp)}
 💎 ${isProfit ? 'Net Profit' : 'Net Loss'}: ${formatINR(Math.abs(profit))}
 -----------------------
@@ -5653,7 +5607,7 @@ ${transferSection}
 
       const label = document.getElementById('entryPartnerLabel');
       if (type === 'sales') {
-        label.innerText = "Yaaru sales vasool pannadhu?";
+        label.innerText = "Yaaru income vasool pannadhu?";
       } else if (type === 'expense') {
         label.innerText = "Paid From Which Partner's Pocket?";
       } else {
@@ -5820,6 +5774,24 @@ ${transferSection}
       return (Date.now() - (item.lastSeen || 0)) < 65000;
     };
 
+    window.getPartnerEffectiveLastSeen = function(p) {
+      if (state.presence && state.presence[p] && state.presence[p].lastSeen) {
+        return Number(state.presence[p].lastSeen);
+      }
+      // Smart Fallback: If no presence heartbeat yet recorded, use partner's latest transaction timestamp
+      const pTx = (state.transactions || []).filter(t => t.partner === p || t.createdByPartner === p);
+      if (pTx.length > 0) {
+        pTx.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        const latest = pTx[0];
+        if (latest.createdAt) return Number(latest.createdAt);
+        if (latest.date) {
+          const d = new Date(latest.date);
+          if (!isNaN(d.getTime())) return d.getTime();
+        }
+      }
+      return null;
+    };
+
     window.getPartnerShortLastSeen = function(timestamp) {
       if (!timestamp) return 'Offline';
       const now = Date.now();
@@ -5879,14 +5851,13 @@ ${transferSection}
         const el = document.getElementById(`partnerCardPresence-${p}`);
         if (!el) return;
         const online = isPartnerOnline(p);
-        const item = state.presence ? state.presence[p] : null;
-        const lastSeen = item ? item.lastSeen : null;
+        const effectiveLastSeen = getPartnerEffectiveLastSeen(p);
 
         if (online) {
           el.innerHTML = `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Active</span>`;
-        } else if (lastSeen) {
-          const shortText = getPartnerShortLastSeen(lastSeen);
-          el.innerHTML = `<span class="text-[9px] text-slate-400 font-medium" title="${formatPartnerLastSeen(lastSeen)}">Seen ${shortText}</span>`;
+        } else if (effectiveLastSeen) {
+          const shortText = getPartnerShortLastSeen(effectiveLastSeen);
+          el.innerHTML = `<span class="inline-flex items-center gap-1 text-[9px] text-slate-500 dark:text-slate-400 font-semibold bg-slate-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded-full" title="${formatPartnerLastSeen(effectiveLastSeen)}"><i class="fa-regular fa-clock text-[8px]"></i> Seen ${shortText}</span>`;
         } else {
           el.innerHTML = `<span class="text-[9px] text-slate-400 font-medium">Offline</span>`;
         }
@@ -5899,14 +5870,13 @@ ${transferSection}
       const partners = ['Balaji', 'Nagoor', 'JP'];
       list.innerHTML = partners.map(p => {
         const isOnline = isPartnerOnline(p);
-        const item = state.presence ? state.presence[p] : null;
-        const lastSeen = item ? item.lastSeen : null;
-        const shortLastSeen = isOnline ? 'Online' : getPartnerShortLastSeen(lastSeen);
-        const fullLastSeen = isOnline ? 'Active Now' : formatPartnerLastSeen(lastSeen);
+        const effectiveLastSeen = getPartnerEffectiveLastSeen(p);
+        const shortLastSeen = isOnline ? 'Online' : getPartnerShortLastSeen(effectiveLastSeen);
+        const fullLastSeen = isOnline ? 'Active Now' : formatPartnerLastSeen(effectiveLastSeen);
 
         const isMe = state.currentPartner === p;
-        const dotColor = isOnline ? 'bg-emerald-500 ring-2 ring-emerald-200 dark:ring-emerald-950' : 'bg-slate-300 dark:bg-slate-600';
-        const statusClass = isOnline ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-400 dark:text-slate-500 font-medium';
+        const dotColor = isOnline ? 'bg-emerald-500 ring-2 ring-emerald-200 dark:ring-emerald-950 animate-pulse' : 'bg-slate-300 dark:bg-slate-600';
+        const statusClass = isOnline ? 'text-emerald-600 dark:text-emerald-400 font-extrabold' : 'text-slate-500 dark:text-slate-400 font-medium';
         const bgClass = isOnline ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200/50 dark:border-emerald-800/40' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/40';
 
         return `
@@ -5916,7 +5886,7 @@ ${transferSection}
               <span class="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotColor}"></span>
             </div>
             <span class="font-bold text-slate-700 dark:text-slate-200">${p}</span>
-            <span class="${statusClass} text-[9px]">${isOnline ? '🟢' : shortLastSeen}</span>
+            <span class="${statusClass} text-[9px]">${isOnline ? '🟢 Online' : shortLastSeen}</span>
           </button>
         `;
       }).join('');
@@ -5942,9 +5912,8 @@ ${transferSection}
       const partners = ['Balaji', 'Nagoor', 'JP'];
       container.innerHTML = partners.map(p => {
         const isOnline = isPartnerOnline(p);
-        const item = state.presence ? state.presence[p] : null;
-        const lastSeen = item ? item.lastSeen : null;
-        const statusText = formatPartnerLastSeen(lastSeen);
+        const effectiveLastSeen = getPartnerEffectiveLastSeen(p);
+        const statusText = isOnline ? 'Active Now (Online)' : formatPartnerLastSeen(effectiveLastSeen);
         const partnerInfo = PARTNERS[p] || { name: p, role: 'Partner' };
         const isMe = state.currentPartner === p;
 
@@ -6080,7 +6049,7 @@ ${transferSection}
       if (isExp) {
         typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-300 text-xs font-bold">💸 Expense</span>';
       } else if (isSales) {
-        typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-300 text-xs font-bold">📈 Sales</span>';
+        typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-300 text-xs font-bold">📈 Income</span>';
       } else {
         typeBadgeHtml = '<span class="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-300 text-xs font-bold">💰 Mudhaleedu</span>';
       }
